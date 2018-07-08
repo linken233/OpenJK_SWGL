@@ -354,7 +354,8 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->NPC->scriptFlags |= SCF_NO_GROUPS;//don't use combat points or group AI
 		ent->flags |= (FL_SHIELDED|FL_NO_KNOCKBACK);//low-level shots bounce off, no knockback
 	}
-	if ( !Q_stricmp( "Yoda", ent->NPC_type ) )
+	if ( !Q_stricmp( "Yoda", ent->NPC_type ) || !Q_stricmp("Ep1_Yoda", ent->NPC_type) || 
+		!Q_stricmp("Ep2_Yoda", ent->NPC_type) || !Q_stricmp("Ep3_Yoda", ent->NPC_type))
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_NO_FORCE;//force powers don't work on him
 		ent->NPC->aiFlags |= NPCAI_BOSS_CHARACTER;
@@ -365,6 +366,19 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		|| !Q_stricmp( "cultist_lightning", ent->NPC_type ))
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
+	}
+	if (!Q_stricmp("Valkorion", ent->NPC_type) ||
+		!Q_stricmp("Ep7_Snoke", ent->NPC_type) || 
+		!Q_stricmp("Ep8_Snoke", ent->NPC_type) || 
+		!Q_stricmp("Emperor_Palpatine", ent->NPC_type))
+	{
+		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
+		ent->flags |= FL_SHIELDED;
+	}
+	if (!Q_stricmp("Captain_Phasma", ent->NPC_type))
+	{
+		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+		ent->flags |= FL_SHIELDED;
 	}
 	if (!Q_stricmp( "Rax", ent->NPC_type ) )
 	{
@@ -3090,241 +3104,6 @@ void SP_NPC_SWTOR_SITH(gentity_t *self)
 	SP_NPC_spawner(self);
 }
 
-void SP_NPC_LEGACY_JEDI(gentity_t *self)
-{
-	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
-		{//random!
-			int sanityCheck = 20;	//just in case
-			while (sanityCheck--)
-			{
-				switch (Q_irand(0, 30))
-				{
-				case 0:
-					self->NPC_type = "legacy_jedi1";
-					break;
-				case 1:
-					self->NPC_type = "legacy_jedi2";
-					break;
-				case 2:
-					self->NPC_type = "legacy_jedi3";
-					break;
-				case 3:
-					self->NPC_type = "legacy_jedi4";
-					break;
-				case 4:
-					self->NPC_type = "legacy_jedi5";
-					break;
-				case 5:
-					self->NPC_type = "legacy_jedi6";
-					break;
-				case 6:
-					self->NPC_type = "legacy_jedi7";
-					break;
-				case 7:
-					self->NPC_type = "legacy_jedi8";
-					break;
-				case 8:
-					self->NPC_type = "legacy_jedi9";
-					break;
-				case 9:
-					self->NPC_type = "legacy_jedi10";
-					break;
-				case 10:
-					self->NPC_type = "legacy_jedi11";
-					break;
-				case 11:
-					self->NPC_type = "legacy_jedi12";
-					break;
-				case 12:
-					self->NPC_type = "legacy_jedi13";
-					break;
-				case 13:
-					self->NPC_type = "legacy_jedi14";
-					break;
-				case 14:
-					self->NPC_type = "legacy_jedi15";
-					break;
-				case 15:
-					self->NPC_type = "legacy_jedi16";
-					break;
-				case 16:
-					self->NPC_type = "legacy_jedi17";
-					break;
-				case 17:
-					self->NPC_type = "legacy_jedi18";
-					break;
-				case 18:
-					self->NPC_type = "legacy_jedi19";
-					break;
-				case 19:
-					self->NPC_type = "legacy_jedi20";
-					break;
-				case 20:
-					self->NPC_type = "legacy_jedi21";
-					break;
-				case 21:
-					self->NPC_type = "legacy_jedi22";
-					break;
-				case 22:
-					self->NPC_type = "legacy_jedi23";
-					break;
-				case 23:
-					self->NPC_type = "legacy_jedi24";
-					break;
-				case 24:
-					self->NPC_type = "legacy_jedi25";
-					break;
-				case 25:
-					self->NPC_type = "legacy_jedi26";
-					break;
-				case 26:
-					self->NPC_type = "legacy_jedi27";
-					break;
-				case 27:
-					self->NPC_type = "legacy_jedi28";
-					break;
-				case 28:
-					self->NPC_type = "legacy_jedi29";
-					break;
-				case 29:
-					self->NPC_type = "legacy_jedi30";
-					break;
-				case 30:
-				default://just in case
-					self->NPC_type = "legacy_jedi1";
-					break;
-				}
-				if (strstr(self->NPC_type, g_char_model->string) != NULL)
-				{//bah, we're using this one, try again
-					continue;
-				}
-				break;	//get out of the while
-			}
-		}
-	}
-
-	SP_NPC_spawner(self);
-}
-
-void SP_NPC_LEGACY_SITH(gentity_t *self)
-{
-	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
-		{//random!
-			int sanityCheck = 20;	//just in case
-			while (sanityCheck--)
-			{
-				switch (Q_irand(0, 30))
-				{
-				case 0:
-					self->NPC_type = "legacy_sith1";
-					break;
-				case 1:
-					self->NPC_type = "legacy_sith2";
-					break;
-				case 2:
-					self->NPC_type = "legacy_sith3";
-					break;
-				case 3:
-					self->NPC_type = "legacy_sith4";
-					break;
-				case 4:
-					self->NPC_type = "legacy_sith5";
-					break;
-				case 5:
-					self->NPC_type = "legacy_sith6";
-					break;
-				case 6:
-					self->NPC_type = "legacy_sith7";
-					break;
-				case 7:
-					self->NPC_type = "legacy_sith8";
-					break;
-				case 8:
-					self->NPC_type = "legacy_sith9";
-					break;
-				case 9:
-					self->NPC_type = "legacy_sith10";
-					break;
-				case 10:
-					self->NPC_type = "legacy_sith11";
-					break;
-				case 11:
-					self->NPC_type = "legacy_sith12";
-					break;
-				case 12:
-					self->NPC_type = "legacy_sith13";
-					break;
-				case 13:
-					self->NPC_type = "legacy_sith14";
-					break;
-				case 14:
-					self->NPC_type = "legacy_sith15";
-					break;
-				case 15:
-					self->NPC_type = "legacy_sith16";
-					break;
-				case 16:
-					self->NPC_type = "legacy_sith17";
-					break;
-				case 17:
-					self->NPC_type = "legacy_sith18";
-					break;
-				case 18:
-					self->NPC_type = "legacy_sith19";
-					break;
-				case 19:
-					self->NPC_type = "legacy_sith20";
-					break;
-				case 20:
-					self->NPC_type = "legacy_sith21";
-					break;
-				case 21:
-					self->NPC_type = "legacy_sith22";
-					break;
-				case 22:
-					self->NPC_type = "legacy_sith23";
-					break;
-				case 23:
-					self->NPC_type = "legacy_sith24";
-					break;
-				case 24:
-					self->NPC_type = "legacy_sith25";
-					break;
-				case 25:
-					self->NPC_type = "legacy_sith26";
-					break;
-				case 26:
-					self->NPC_type = "legacy_sith27";
-					break;
-				case 27:
-					self->NPC_type = "legacy_sith28";
-					break;
-				case 28:
-					self->NPC_type = "legacy_sith29";
-					break;
-				case 29:
-					self->NPC_type = "legacy_sith30";
-					break;
-				case 30:
-				default://just in case
-					self->NPC_type = "legacy_sith1";
-					break;
-				}
-				if (strstr(self->NPC_type, g_char_model->string) != NULL)
-				{//bah, we're using this one, try again
-					continue;
-				}
-				break;	//get out of the while
-			}
-		}
-	}
-
-	SP_NPC_spawner(self);
-}
 
 /*QUAKED NPC_Prisoner(1 0 0) (-16 -16 -24) (16 16 40) ELDER x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
@@ -5029,18 +4808,6 @@ static void NPC_Spawn_f(void)
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_SWTOR_SITH(NPCspawner);
-	}
-	else if (!Q_stricmp("legacy_jedi", NPCspawner->NPC_type))
-	{//special case, for testing
-		NPCspawner->NPC_type = NULL;
-		NPCspawner->spawnflags |= 4;
-		SP_NPC_LEGACY_JEDI(NPCspawner);
-	}
-	else if (!Q_stricmp("legacy_sith", NPCspawner->NPC_type))
-	{//special case, for testing
-		NPCspawner->NPC_type = NULL;
-		NPCspawner->spawnflags |= 4;
-		SP_NPC_LEGACY_SITH(NPCspawner);
 	}
 	else if (!Q_stricmp("imperial", NPCspawner->NPC_type))
 	{//special case, for testing
