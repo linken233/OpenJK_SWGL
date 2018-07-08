@@ -1785,58 +1785,23 @@ void Menu_SetItemExec(const menuDef_t *menu, const char *itemName, const char *t
 	}
 
 	count = Menu_ItemsMatchingGroup((menuDef_t *)menu, itemName);
-
+	
 	for (j = 0; j < count; j++)
 	{
 		item = Menu_GetMatchingItemByNumber((menuDef_t *)menu, j, itemName);
 		if (item != NULL)
 		{
-			
-			item->exec = (char*)text;
-				return;
-				/**
-				// Just copying what was in ItemParse_cvar()
-				if (item->typeData)
-				{
-					editFieldDef_t *editPtr;
-					editPtr = (editFieldDef_t*)item->typeData;
-					editPtr->minVal = -1;
-					editPtr->maxVal = -1;
-					editPtr->defVal = -1;
-				}
-			}
-			else
+			if (((text[0] == 'n') && (text[1] == 'p') && (text[2] == 'c')))
 			{
-				if (item->type == ITEM_TYPE_TEXTSCROLL)
-				{
-					char cvartext[1024];
-					textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
-					if (scrollPtr)
-					{
-						scrollPtr->startPos = 0;
-						scrollPtr->endPos = 0;
-					}
-
-					if (item->cvar)
-					{
-						DC->getCVarString(item->cvar, cvartext, sizeof(cvartext));
-						item->text = cvartext;
-					}
-					else
-					{
-						item->action = (char *)text;
-					}
-
-					Item_TextScroll_BuildLines(item);
-				}
-				else
-				{
-					item->action = (char *)text;
-				}**/
+				item->exec = (char*)text;
+				return;
 			}
-		
-	}
 
+		}
+	}
+	item->exec = (char*) "Outside";
+	return;
+	
 }
 
 // Set all the items within a given menu, with the given itemName, to the given text
@@ -2929,11 +2894,14 @@ qboolean Script_Exec ( itemDef_t *item, const char **args)
 	const char *val;
 	if (item->exec != NULL)
 	{
-		DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
+		if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
+		{
+			DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
+		}
 	}	
 	else if (String_Parse(args, &val))
 	{
-		DC->executeText(EXEC_APPEND, va("%s ; ", val));
+		DC->executeText(EXEC_APPEND, va("%s; ", val));
 	}
 
 	return qtrue;
