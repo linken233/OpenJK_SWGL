@@ -1799,7 +1799,6 @@ void Menu_SetItemExec(const menuDef_t *menu, const char *itemName, const char *t
 
 		}
 	}
-	item->exec = (char*) "Outside";
 	return;
 	
 }
@@ -2892,18 +2891,24 @@ Script_Exec
 qboolean Script_Exec ( itemDef_t *item, const char **args)
 {
 	const char *val;
-	if (item->exec != NULL)
+	try
 	{
-		if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
+		if (item->exec != NULL)
 		{
-			DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
+			if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
+			{
+				DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
+			}
 		}
-	}	
-	else if (String_Parse(args, &val))
-	{
-		DC->executeText(EXEC_APPEND, va("%s; ", val));
+		else if (String_Parse(args, &val))
+		{
+			DC->executeText(EXEC_APPEND, va("%s; ", val));
+		}
 	}
+	catch (...)
+	{
 
+	}
 	return qtrue;
 }
 
