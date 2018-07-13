@@ -216,7 +216,7 @@ qboolean G_ParseLiteral( const char **data, const char *string )
 //
 // NPC parameters file : ext_data/NPCs/*.npc*
 //
-#define MAX_NPC_DATA_SIZE 0x80000
+#define MAX_NPC_DATA_SIZE 0x100000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 /*
@@ -4203,7 +4203,7 @@ void NPC_LoadParms( void )
 {
 	int			len, totallen, npcExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
-	char		npcExtensionListBuf[8192];			//	The list of file names read in, EDIT: Npcs, lots and lots of npcs =D
+	char		npcExtensionListBuf[16384];			//	The list of file names read in, EDIT: Npcs, lots and lots of npcs =D
 
 	//gi.Printf( "Parsing ext_data/npcs/*.npc definitions\n" );
 

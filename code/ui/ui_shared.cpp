@@ -1776,30 +1776,39 @@ void Menu_SetItemBackground(const menuDef_t *menu,const char *itemName, const ch
 // Change the exec command for a button.
 void Menu_SetItemExec(const menuDef_t *menu, const char *itemName, const char *text)
 {
-	itemDef_t	*item;
-	int			j, count;
-
-	if (!menu)	// No menu???
+	try
 	{
-		return;
-	}
 
-	count = Menu_ItemsMatchingGroup((menuDef_t *)menu, itemName);
-	
-	for (j = 0; j < count; j++)
-	{
-		item = Menu_GetMatchingItemByNumber((menuDef_t *)menu, j, itemName);
-		if (item != NULL)
+		itemDef_t	*item;
+		int			j, count;
+
+		if (!menu)	// No menu???
 		{
-			if (((text[0] == 'n') && (text[1] == 'p') && (text[2] == 'c')))
-			{
-				item->exec = (char*)text;
-				return;
-			}
+			return;
+		}
 
+		count = Menu_ItemsMatchingGroup((menuDef_t *)menu, itemName);
+
+		for (j = 0; j < count; j++)
+		{
+			item = Menu_GetMatchingItemByNumber((menuDef_t *)menu, j, itemName);
+			if (item != NULL)
+			{
+				if (((text[0] == 'n') && (text[1] == 'p') && (text[2] == 'c')))
+				{
+					item->exec = (char*)text;
+					return;
+				}
+
+			}
 		}
 	}
+	catch (...)
+	{
+
+	}
 	return;
+
 	
 }
 
@@ -2110,14 +2119,22 @@ Script_SetItemExec
 */
 qboolean Script_SetItemExec(itemDef_t *item, const char **args)
 {
-	// expecting text
-	const char *itemName;
-	const char *text;
-
-	// expecting text
-	if (String_Parse(args, &itemName) && String_Parse(args, &text))
+	try
 	{
-		Menu_SetItemExec((menuDef_t *)item->parent, itemName, text);
+		// expecting text
+		const char *itemName;
+		const char *text;
+
+		// expecting text
+		if (String_Parse(args, &itemName) && String_Parse(args, &text))
+		{
+			Menu_SetItemExec((menuDef_t *)item->parent, itemName, text);
+		}
+	}
+
+	catch (...)
+	{
+
 	}
 	return qtrue;
 }
@@ -4405,7 +4422,14 @@ qboolean ItemParse_action( itemDef_t *item)
 
 qboolean ItemParse_exec(itemDef_t *item)
 {
-	if (!PC_Script_Parse(&item->exec))
+	try
+	{
+		if (!PC_Script_Parse(&item->exec))
+		{
+			return qfalse;
+		}
+	}
+	catch (...)
 	{
 		return qfalse;
 	}
