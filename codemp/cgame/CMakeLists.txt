@@ -83,7 +83,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_weaponinit.c"
 	"${MPDir}/cgame/cg_weapons.c"
 	"${MPDir}/cgame/fx_blaster.c"
-	"${MPDir}/cgame/fx_clone.c"
 	"${MPDir}/cgame/fx_bowcaster.c"
 	"${MPDir}/cgame/fx_bryarpistol.c"
 	"${MPDir}/cgame/fx_demp2.c"
@@ -107,7 +106,7 @@ set(MPCGameCommonFiles
 	"${MPDir}/qcommon/q_shared.h"
 	"${MPDir}/qcommon/qfiles.h"
 	"${MPDir}/qcommon/tags.h"
-
+	
 	${SharedCommonFiles}
 	)
 source_group("common" FILES ${MPCGameCommonFiles})
