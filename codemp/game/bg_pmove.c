@@ -6121,20 +6121,6 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			}
 			break;
 
-		case WP_REY:
-
-			// alt-fire charges the weapon
-			//if ( pm->gametype == GT_SIEGE )
-			if (1)
-			{
-				if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
-				{
-					charging = qtrue;
-					altFire = qtrue;
-				}
-			}
-			break;
-
 		case WP_DISRUPTOR:
 			if ((pm->cmd.buttons & BUTTON_ATTACK) &&
 				pm->ps->zoomMode == 1 &&
@@ -11238,3 +11224,4 @@ void Pmove (pmove_t *pmove) {
 		}
 	}
 }
+
