@@ -1163,11 +1163,7 @@ typedef struct cgMedia_s {
 	qhandle_t	blackSaberBlurShader;
 	qhandle_t	saberBlurShader;
 	qhandle_t	swordTrailShader;
-
-	qhandle_t SaberTrailShader;
- 	qhandle_t SaberBladeShader;
- 	qhandle_t SaberEndShader;
-
+	
 	qhandle_t	rgbSaberGlowShader;
 	qhandle_t	rgbSaberCoreShader;
 
