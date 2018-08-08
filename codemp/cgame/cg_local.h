@@ -1165,6 +1165,7 @@ typedef struct cgMedia_s {
 	qhandle_t	saberBlurShader;
 	qhandle_t	swordTrailShader;
 
+<<<<<<< HEAD
 	qhandle_t SaberTrailShader;
  	qhandle_t SaberBladeShader;
  	qhandle_t SaberEndShader;
@@ -1172,6 +1173,8 @@ typedef struct cgMedia_s {
 	qhandle_t	rgbSaberGlowShader;
 	qhandle_t	rgbSaberCoreShader;
 
+=======
+>>>>>>> parent of 82dcf958... SFX Sabers (MP)
 	qhandle_t	yellowDroppedSaberShader;
 
 	qhandle_t	rivetMarkShader;
