@@ -5553,10 +5553,14 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 	float	glowscale = 0.5;
 	float 	v1, v2, len;
 
+<<<<<<< HEAD
 	vec3_t rgb = { 1, 1, 1 };
 	int i;
 
 	qhandle_t	glow = 0, blade = 0;
+=======
+	qhandle_t	glow = 0;
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 	refEntity_t saber;
 
 	VectorSubtract(blade_tip, blade_muz, blade_dir);
@@ -5610,6 +5614,7 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 		cgs.media.SaberEndShader = trap->R_RegisterShader("SFX_Sabers/saber_end");
 		cgs.media.SaberTrailShader = trap->R_RegisterShader("SFX_Sabers/saber_trail");
 		break;
+<<<<<<< HEAD
 	case SABER_RGB:
 		glow = cgs.media.rgbSaberGlowShader;
 		cgs.media.SaberBladeShader = trap->R_RegisterShader("SFX_Sabers/saber_blade");
@@ -5628,6 +5633,8 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 		cgs.media.SaberEndShader = trap->R_RegisterShader("SFX_Sabers/saber_end_black");
 		cgs.media.SaberTrailShader = trap->R_RegisterShader("SFX_Sabers/saber_trail_black");
 		break;
+=======
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 	default:
 		glow = cgs.media.blueSaberGlowShader;
 		cgs.media.SaberBladeShader = trap->R_RegisterShader("SFX_Sabers/saber_blade");
@@ -5640,9 +5647,16 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 
 	if (doLight)
 	{
+<<<<<<< HEAD
     	CG_RGBForSaberColor( color, rgb, cnum, bnum);
     	VectorScale( rgb, 0.66f, rgb );
     	trap->R_AddLightToScene(mid, ((blade_len*2.0f) + (Q_flrand(0.0f, 2.0f)*10.0f)), rgb[0], rgb[1], rgb[2]);
+=======
+    vec3_t rgb={1,1,1};
+    CG_RGBForSaberColor( color, rgb, cnum, bnum);
+    VectorScale( rgb, 0.66f, rgb );
+    trap->R_AddLightToScene( mid, (blade_len*2.0f) + (Q_flrand(0.0f, 1.0f)*10.0f), rgb[0], rgb[1], rgb[2] );
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 	}
 
 	//Distance Scale
@@ -5731,9 +5745,12 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 		rfx |= RF_FORCEPOST;
 	}
 
+<<<<<<< HEAD
 	for (i = 0; i<3; i++)
 	rgb[i] *= 255;
 
+=======
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 	{
 		saber.renderfx = rfx;
 		if (blade_len - ((effectradius*AngleScale) / 2) > 0)
@@ -5744,6 +5761,7 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 			VectorCopy(blade_dir, saber.axis[0]);
 			saber.reType = RT_SABER_GLOW;
 			saber.customShader = glow;
+<<<<<<< HEAD
 			saber.shaderRGBA[0] = 0xff * effectalpha;
 			saber.shaderRGBA[1] = 0xff * effectalpha;
 			saber.shaderRGBA[2] = 0xff * effectalpha;
@@ -5755,6 +5773,12 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 				saber.shaderRGBA[i] = rgb[i] * effectalpha;
 				saber.shaderRGBA[3] = 255 * effectalpha;	
 			}    
+=======
+			saber.shaderRGBA[0] = 0xff;
+			saber.shaderRGBA[1] = 0xff;
+			saber.shaderRGBA[2] = 0xff;
+			saber.shaderRGBA[3] = 0xff;
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 
 			trap->R_AddRefEntityToScene(&saber);
 		}
@@ -5789,6 +5813,7 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 			saber.shaderRGBA[1] = 0xff * effectalpha;
 			saber.shaderRGBA[2] = 0xff * effectalpha;
 			saber.shaderRGBA[3] = 0xff * effectalpha;
+<<<<<<< HEAD
             
 			if(color == SABER_RGB)
 			{
@@ -5796,6 +5821,9 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 				saber.shaderRGBA[i] = rgb[i] * effectalpha;
 				saber.shaderRGBA[3] = 255 * effectalpha;
 			}	
+=======
+
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 
 			trap->R_AddRefEntityToScene(&saber);
 		}
@@ -5835,6 +5863,7 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 			saber.shaderRGBA[2] = 0xff * effectalpha;
 			saber.shaderRGBA[3] = 0xff * effectalpha;
 
+<<<<<<< HEAD
 			if(color == SABER_RGB)
 			{	
 				for(i=0;i<3;i++)
@@ -5842,6 +5871,8 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 				saber.shaderRGBA[3] = 255 * effectalpha;
 			}
 
+=======
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 			trap->R_AddRefEntityToScene(&saber);
 		}
 
@@ -5912,6 +5943,7 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 			saber.shaderRGBA[1] = 0xff * effectalpha;
 			saber.shaderRGBA[2] = 0xff * effectalpha;
 			saber.shaderRGBA[3] = 0xff * effectalpha;
+<<<<<<< HEAD
             
 			if(color == SABER_RGB)
 			{	
@@ -5920,6 +5952,9 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 				saber.shaderRGBA[3] = 255 * effectalpha;
 			}
 				
+=======
+
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 			trap->R_AddRefEntityToScene(&saber);
 		}
 
@@ -5955,8 +5990,14 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 
 		saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
 		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+<<<<<<< HEAD
 		
 		trap->R_AddRefEntityToScene(&saber);
+=======
+
+		trap->R_AddRefEntityToScene(&saber);
+
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 	}
 }
 
@@ -6094,7 +6135,30 @@ void CG_DoSaber(vec3_t origin, vec3_t dir, float length, float lengthMax, float 
 	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
 	//	saber.radius = (1.0 + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+<<<<<<< HEAD
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;	
+=======
+	if (color != SABER_RGB)
+		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+	else
+	{
+		for (i = 0; i<3; i++)
+			saber.shaderRGBA[i] = rgb[i];
+		saber.shaderRGBA[3] = 255;
+	}
+
+	sbak = saber;
+	trap->R_AddRefEntityToScene( &saber );
+
+	if (color != SABER_RGB)
+		return;
+
+	sbak.customShader = cgs.media.rgbSaberCoreShader;
+	saber.reType = RT_LINE;
+	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 
 	trap->R_AddRefEntityToScene( &saber );
 }
@@ -7254,6 +7318,7 @@ CheckTrail:
 		   case SABER_PURPLE:
 		     VectorSet(rgb1, 220.0f, 0.0f, 255.0f);
 		     break;
+<<<<<<< HEAD
 		   case SABER_RGB:
 				{
 				int cnum = cent->currentState.clientNum;
@@ -7276,6 +7341,8 @@ CheckTrail:
 			case SABER_BLACK:
 				VectorSet( rgb1, 255.0f, 255.0f, 255.0f );
 				break;
+=======
+>>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 		   default:
 		     VectorSet(rgb1, 0.0f, 64.0f, 255.0f);
 		     break;
