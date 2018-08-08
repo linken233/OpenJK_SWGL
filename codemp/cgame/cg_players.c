@@ -5545,7 +5545,6 @@ void CG_DoSaberLight(saberInfo_t *saber, int cnum, int bnum)
 	}
 }
 
-<<<<<<< HEAD
 void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t trail_muz, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight, qboolean doTrail, int cnum, int bnum)
 {
 	vec3_t	dif, mid, blade_dir, end_dir, trail_dir, base_dir;
@@ -6003,9 +6002,6 @@ void CG_DoSFXSaber(vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t 
 }
 
 void CG_DoSaber(vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight, int cnum, int bnum)
-=======
-void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight )
->>>>>>> parent of 82dcf958... SFX Sabers (MP)
 {
 	vec3_t		mid;
 	qhandle_t	blade = 0, glow = 0;
@@ -6731,6 +6727,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 {
 	vec3_t	org_, end, v,
 			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};	// shut the compiler up
+	vec3_t	rgb1={255.0f,255.0f,255.0f};
 	trace_t	trace;
 	int i = 0;
 	int trailDur;
@@ -6994,6 +6991,9 @@ CheckTrail:
 	//FIXME: if trailStyle is 1, use the motion blur instead
 
 	saberTrail = &client->saber[saberNum].blade[bladeNum].trail;
+
+	if( cg_SFXSabers.integer == 0 )
+	{
 	saberTrail->duration = saberMoveData[cent->currentState.saberMove].trailLength;
 
 	trailDur = (saberTrail->duration/5.0f);
@@ -7230,7 +7230,6 @@ CheckTrail:
 		VectorCopy( org_, saberTrail->base );
 		VectorMA( end, 3.0f, axis_[0], saberTrail->tip );
 		saberTrail->lastTime = cg.time;
-<<<<<<< HEAD
 
 		}
 	}
@@ -7354,8 +7353,6 @@ CheckTrail:
 		   VectorCopy(saberTrail->dualtip, fx.mVerts[2].origin);
 		   VectorCopy(saberTrail->dualbase, fx.mVerts[3].origin);
 		 }
-=======
->>>>>>> parent of 82dcf958... SFX Sabers (MP)
 	}
 
 JustDoIt:
@@ -7374,6 +7371,9 @@ JustDoIt:
 		}
 		return;
 	}
+
+	if( cg_SFXSabers.integer < 1 )
+	{
 	// Pass in the renderfx flags attached to the saber weapon model...this is done so that saber glows
 	//	will get rendered properly in a mirror...not sure if this is necessary??
 	//CG_DoSaber( org_, axis_[0], saberLen, client->saber[saberNum].blade[bladeNum].lengthMax, client->saber[saberNum].blade[bladeNum].radius,
@@ -7382,7 +7382,6 @@ JustDoIt:
 		(saber_colors_t)scolor, renderfx, (qboolean)(client->saber[saberNum].numBlades < 3 && !(client->saber[saberNum].saberFlags2&SFL2_NO_DLIGHT)),
 		cent->currentState.clientNum, saberNum);
 }
-<<<<<<< HEAD
 	else
 	{
 		if( cg_SFXSabers.integer >= 1 )
@@ -7439,8 +7438,6 @@ JustDoIt:
 	}
 }	
 
-=======
->>>>>>> parent of 82dcf958... SFX Sabers (MP)
 
 int CG_IsMindTricked(int trickIndex1, int trickIndex2, int trickIndex3, int trickIndex4, int client)
 {
