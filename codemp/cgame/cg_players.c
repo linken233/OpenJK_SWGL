@@ -12208,3 +12208,4 @@ void CG_ResetPlayerEntity( centity_t *cent )
 		trap->Print("%i ResetPlayerEntity yaw=%i\n", cent->currentState.number, cent->pe.torso.yawAngle );
 	}
 }
+
