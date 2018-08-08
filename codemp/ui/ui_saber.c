@@ -52,6 +52,7 @@ static qhandle_t blueSaberGlowShader;
 static qhandle_t blueSaberCoreShader;
 static qhandle_t purpleSaberGlowShader;
 static qhandle_t purpleSaberCoreShader;
+<<<<<<< HEAD
 static qhandle_t SaberBladeShader;
 static qhandle_t rgbSaberGlowShader;
 static qhandle_t rgbSaberCoreShader;
@@ -59,6 +60,8 @@ static qhandle_t unstableRedSaberGlowShader;
 static qhandle_t unstableRedSaberCoreShader;
 static qhandle_t blackSaberGlowShader;
 static qhandle_t blackSaberCoreShader;
+=======
+>>>>>>> parent of 57f129da... SFX Sabers: Now Shown in The Menus if Turned on (MP)
 
 void UI_CacheSaberGlowGraphics( void )
 {//FIXME: these get fucked by vid_restarts
@@ -74,12 +77,15 @@ void UI_CacheSaberGlowGraphics( void )
 	blueSaberCoreShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/blue_line" );
 	purpleSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/purple_glow" );
 	purpleSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/purple_line" );
+<<<<<<< HEAD
 	rgbSaberGlowShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/rgb_glow" );
 	rgbSaberCoreShader 			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/rgb_line" );
 	unstableRedSaberGlowShader 	= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/unstable_red_glow" );
 	unstableRedSaberCoreShader 	= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/unstable_red_line" );
 	blackSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/black_glow" );
 	blackSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/black_line" );
+=======
+>>>>>>> parent of 57f129da... SFX Sabers: Now Shown in The Menus if Turned on (MP)
 }
 
 qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel )
@@ -254,6 +260,7 @@ void UI_SaberLoadParms( void )
 	WP_SaberLoadParms();
 }
 
+<<<<<<< HEAD
 void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float radius, saber_colors_t color )
 {
 	vec3_t	mid;
@@ -550,6 +557,9 @@ void RGB_AdjustPimpSaberColor(vec3_t color, int n)
 }
 
 void UI_DoSaber(vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color, int snum)
+=======
+void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color )
+>>>>>>> parent of 57f129da... SFX Sabers: Now Shown in The Menus if Turned on (MP)
 {
 	vec3_t		mid, rgb={1,1,1};
 	qhandle_t	blade = 0, glow = 0;
@@ -936,6 +946,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 		return;
 	}
 
+<<<<<<< HEAD
 
 	if (ui_SFXSabers.integer)
 	{
@@ -945,6 +956,9 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	{
 		UI_DoSaber(bladeOrigin, axis[0], bladeLength, bladeLength, bladeRadius, bladeColor, snum);
 	}
+=======
+	UI_DoSaber( bladeOrigin, axis[0], bladeLength, bladeLength, bladeRadius, bladeColor );
+>>>>>>> parent of 57f129da... SFX Sabers: Now Shown in The Menus if Turned on (MP)
 }
 
 void UI_GetSaberForMenu( char *saber, int saberNum )

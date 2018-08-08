@@ -134,6 +134,7 @@ XCVAR_DEF( ui_singlePlayerActive,			"0",					NULL,				CVAR_INTERNAL )
 XCVAR_DEF( ui_team_fraglimit,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_team_friendly,				"1",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_team_timelimit,				"20",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+<<<<<<< HEAD
 XCVAR_DEF( ui_SFXSabers,						"1", NULL, CVAR_ARCHIVE )
 XCVAR_DEF( ui_SFXSabersGlowSize,		"1.0", NULL, CVAR_ARCHIVE )
 XCVAR_DEF( ui_SFXSabersCoreSize,		"1.0", NULL, CVAR_ARCHIVE )
@@ -143,5 +144,7 @@ XCVAR_DEF(ui_sab1_b, "255", NULL, CVAR_INTERNAL)
 XCVAR_DEF(ui_sab2_r, "255", NULL, CVAR_INTERNAL)
 XCVAR_DEF(ui_sab2_g, "255", NULL, CVAR_INTERNAL)
 XCVAR_DEF(ui_sab2_b, "255", NULL, CVAR_INTERNAL)
+=======
+>>>>>>> parent of 57f129da... SFX Sabers: Now Shown in The Menus if Turned on (MP)
 
 #undef XCVAR_DEF
