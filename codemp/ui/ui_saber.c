@@ -254,7 +254,7 @@ void UI_SaberLoadParms( void )
 	WP_SaberLoadParms();
 }
 
-void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float radius, saber_colors_t color )
+void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float radius, saber_colors_t color, int snum )
 {
 	vec3_t	mid;
 	float	radiusmult, effectradius, coreradius;
@@ -264,6 +264,9 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 
 	qhandle_t	glow = 0, blade = 0;
 	refEntity_t saber;
+
+	vec3_t rgb = { 1, 1, 1 };
+	int i;
 
 	blade_len = lengthMax;
 
@@ -300,7 +303,6 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 			SaberBladeShader = trap->R_RegisterShaderNoMip("SFX_Sabers/saber_blade");
 			break;
 		case SABER_BLUE:
-<<<<<<< HEAD
 			glow = trap->R_RegisterShaderNoMip( "gfx/effects/sabers/blue_glow" );
 			blade = trap->R_RegisterShaderNoMip( "gfx/effects/sabers/blue_line" );
 			SaberBladeShader = trap->R_RegisterShaderNoMip("SFX_Sabers/saber_blade");
@@ -330,9 +332,6 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 			blade = trap->R_RegisterShaderNoMip( "gfx/effects/sabers/black_line" );
 			SaberBladeShader = trap->R_RegisterShaderNoMip("SFX_Sabers/saber_blade_black");
 			break;
-=======
-			glow = blueSaberGlowShader;
->>>>>>> parent of 1b4f31d1... SFX Sabers have RGB (MP)
 		default:
 			break;
 	}
@@ -350,8 +349,8 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 		radiusmult = 1.0;
 	}
 
-	effectradius	= ((radius * 1.6) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*ui_SFXSabersGlowSize.value;
-	coreradius		= ((radius * 0.4) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*ui_SFXSabersCoreSize.value;
+	effectradius	= ((radius * 1.6) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*cg_SFXSabersGlowSize.value;
+	coreradius		= ((radius * 0.4) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*cg_SFXSabersCoreSize.value;
 
 		coreradius *= 0.9;
 
@@ -365,10 +364,16 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 			VectorCopy( blade_dir, saber.axis[0] );
 			saber.reType = RT_SABER_GLOW;
 			saber.customShader = glow;
-			saber.shaderRGBA[0] = 0xff * effectalpha;
-			saber.shaderRGBA[1] = 0xff * effectalpha;
-			saber.shaderRGBA[2] = 0xff * effectalpha;
-			saber.shaderRGBA[3] = 0xff * effectalpha;
+
+			if (color != SABER_RGB)
+				saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+			else
+			{
+				int i;
+				for (i = 0; i<3; i++)
+					saber.shaderRGBA[i] = rgb[i] * 255;
+				saber.shaderRGBA[3] = 255;
+			}
 
 			trap->R_AddRefEntityToScene( &saber );
 		}
@@ -937,9 +942,9 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	}
 
 
-	if (ui_SFXSabers.integer)
+	if (cg_SFXSabers.integer)
 	{
-		UI_DoSFXSaber( bladeOrigin, axis[0], bladeLength, bladeRadius, bladeColor );
+		UI_DoSFXSaber( bladeOrigin, axis[0], bladeLength, bladeRadius, bladeColor, snum);
 	}
 	else
 	{
