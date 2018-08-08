@@ -5302,9 +5302,10 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 		case WP_BOBA:
 			if (altFire)
 			{
-  				WP_FireBobaRifle(ent, altFire);
-				WP_FireBobaRifle(ent, altFire);
-				WP_FireBobaRifle(ent, altFire);
+				for (int i = 0; i < 3; i++)
+				{
+					WP_FireBobaRifle(ent, altFire);
+				}
 				break;
 			}
 			else
