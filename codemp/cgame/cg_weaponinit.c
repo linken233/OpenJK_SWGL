@@ -313,7 +313,6 @@ void CG_RegisterWeapon( int weaponNum) {
 		break;
 
 	case WP_CLONECARBINE:
-	case WP_CLONERIFLE:
 		weaponInfo->selectSound			= trap->S_RegisterSound("sound/weapons/dc15/select.mp3");
 
 		weaponInfo->flashSound[0]		= trap->S_RegisterSound( "sound/weapons/dc15/fire.mp3");
