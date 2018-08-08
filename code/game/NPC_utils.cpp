@@ -1032,6 +1032,11 @@ qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy )
 		return qtrue;
 	}
 
+	if (self->client->playerTeam == TEAM_SOLO || enemy->client->playerTeam == TEAM_SOLO)
+	{
+		return qtrue;
+	}
+
 	//Can't be on the same team
 	if ( enemy->client->playerTeam == self->client->playerTeam )
 	{

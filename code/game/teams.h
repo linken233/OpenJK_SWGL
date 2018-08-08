@@ -30,6 +30,7 @@ typedef enum //# team_e
 	TEAM_PLAYER,
 	TEAM_ENEMY,
 	TEAM_NEUTRAL,	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
+	TEAM_SOLO,
 
 	//# #eol
 	TEAM_NUM_TEAMS

@@ -102,6 +102,8 @@ stringID_table_t TeamTable[] =
 	ENUM2STRING(TEAM_ENEMY),
 	{ "neutral", TEAM_NEUTRAL },	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
 	ENUM2STRING(TEAM_NEUTRAL),	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
+	{ "solo", TEAM_SOLO},
+	ENUM2STRING(TEAM_SOLO),
 	{ "",	-1 }
 };
 
