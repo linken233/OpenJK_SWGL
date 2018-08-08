@@ -271,7 +271,6 @@ int WeaponReadyAnim[WP_NUM_WEAPONS] =
 	TORSO_WEAPONREADY3,//TORSO_WEAPONREADY6,//WP_REBELRIFLE,
 	TORSO_WEAPONREADY2,//WP_REY,
 	TORSO_WEAPONREADY2,//WP_JANGO,
-	TORSO_WEAPONREADY3,//TORSO_WEAPONREADY6,//WP_BOBA,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -307,7 +306,6 @@ int WeaponReadyLegsAnim[WP_NUM_WEAPONS] =
 	BOTH_STAND1,//TORSO_WEAPONREADY6,//WP_REBELRIFLE,
 	BOTH_STAND1,//WP_REY,
 	BOTH_STAND1,//WP_JANGO,
-	BOTH_STAND1,//TORSO_WEAPONREADY6,//WP_BOBA,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -343,7 +341,6 @@ int WeaponAttackAnim[WP_NUM_WEAPONS] =
 	BOTH_ATTACK3,//BOTH_ATTACK6,//WP_REBELRIFLE,
 	BOTH_ATTACK2,//WP_REY,
 	BOTH_ATTACK2,//WP_JANGO,
-	BOTH_ATTACK3,//BOTH_ATTACK6,//WP_BOBA,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -1604,23 +1601,6 @@ Don't place this
 		100,
 		IT_WEAPON,
 		WP_JANGO,
-/* precache */ "",
-/* sounds */ "",
-		"@MENUS_THE_PRIMARY_WEAPON_OF"				// description
-	},
-
-/*QUAKED weapon_boba (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
-*/
-	{
-		"weapon_boba",
-		"sound/weapons/w_pkup.wav",
-							{ "models/weapons2/ee-3/ee-3_w.glm", 0, 0, 0},
-/* view */		"models/weapons2/ee-3/ee-3_mp.md3",
-/* icon */		"gfx/hud/w_icon_ee-3",
-/* pickup *///	"EE-3",
-		100,
-		IT_WEAPON,
-		WP_BOBA,
 /* precache */ "",
 /* sounds */ "",
 		"@MENUS_THE_PRIMARY_WEAPON_OF"				// description
