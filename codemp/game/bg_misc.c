@@ -272,7 +272,6 @@ int WeaponReadyAnim[WP_NUM_WEAPONS] =
 	TORSO_WEAPONREADY2,//WP_REY,
 	TORSO_WEAPONREADY2,//WP_JANGO,
 	TORSO_WEAPONREADY3,//TORSO_WEAPONREADY6,//WP_BOBA,
-	TORSO_WEAPONREADY2,//WP_CLONEPISTOL,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -309,7 +308,6 @@ int WeaponReadyLegsAnim[WP_NUM_WEAPONS] =
 	BOTH_STAND1,//WP_REY,
 	BOTH_STAND1,//WP_JANGO,
 	BOTH_STAND1,//TORSO_WEAPONREADY6,//WP_BOBA,
-	BOTH_STAND1,//WP_CLONEPISTOL,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -346,7 +344,6 @@ int WeaponAttackAnim[WP_NUM_WEAPONS] =
 	BOTH_ATTACK2,//WP_REY,
 	BOTH_ATTACK2,//WP_JANGO,
 	BOTH_ATTACK3,//BOTH_ATTACK6,//WP_BOBA,
-	BOTH_ATTACK2,//WP_CLONEPISTOL,
 
 	//NOT VALID (e.g. should never really be used):
 	BOTH_STAND1,//WP_EMPLACED_GUN,
@@ -1627,25 +1624,6 @@ Don't place this
 /* precache */ "",
 /* sounds */ "",
 		"@MENUS_THE_PRIMARY_WEAPON_OF"				// description
-	},
-
-/*QUAKED weapon_clonepistol (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
-Don't place this
-*/
-	{
-		"weapon_clonepistol",
-		"sound/weapons/w_pkup.wav",
-			     { "models/weapons2/clone/demp2_w.glm",
-		0, 0, 0},
-/* view */		"models/weapons2/clone/demp2_mp.md3",
-/* icon */		"gfx/hud/w_icon_clonepistol",//"gfx/hud/w_icon_clonepistol",
-/* pickup *///	"DC-17 Hand Pistol",
-		100,
-		IT_WEAPON,
-		WP_CLONEPISTOL,
-/* precache */ "",
-/* sounds */ "",
-		"@SP_INGAME_CLONEPISTOL"					// description
 	},
 
 /*QUAKED weapon_emplaced (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
