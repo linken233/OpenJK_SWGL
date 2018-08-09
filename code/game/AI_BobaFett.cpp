@@ -1111,7 +1111,10 @@ void	Boba_Update()
 	//-----------------------------------
 	if (player && player->inuse && !NPC->enemy && NPC->client->NPC_class != CLASS_MANDALORIAN)
 	{
-		G_SetEnemy(NPC, player);
+		if (!Q_stricmp("bobafett1", NPC->targetname) || !Q_stricmp("bobafett", NPC->targetname))
+		{
+			G_SetEnemy(NPC, player);
+		}
 		NPC->svFlags				|= SVF_LOCKEDENEMY;	// Don't forget about the enemy once you've found him
 	}
 
