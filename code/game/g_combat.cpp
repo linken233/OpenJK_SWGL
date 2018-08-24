@@ -6693,7 +6693,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					attacker->client->ps.persistant[PERS_ENEMIES_KILLED]++;
 				}
 			}
-			else if ( targTeam == TEAM_PLAYER )
+
+			else if ( (targTeam == TEAM_PLAYER && (targ->s.number == 0)) || (targTeam == TEAM_PLAYER && attacker == player) || targTeam == TEAM_SOLO)
 			{//on the same team, and target is an ally
 				qboolean takeDamage = qtrue;
 				qboolean yellAtAttacker = qtrue;
