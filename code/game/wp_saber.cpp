@@ -6260,6 +6260,7 @@ void WP_SaberInFlightReflectCheck( gentity_t *self, usercmd_t *ucmd  )
 
 qboolean WP_SaberValidateEnemy( gentity_t *self, gentity_t *enemy )
 {
+	
 	if ( !enemy )
 	{
 		return qfalse;
@@ -6301,7 +6302,7 @@ qboolean WP_SaberValidateEnemy( gentity_t *self, gentity_t *enemy )
 		return qfalse;
 	}
 
-	if ( enemy->client->playerTeam == self->client->playerTeam )
+	if ( enemy->client->playerTeam == self->client->playerTeam && (enemy->client->playerTeam != TEAM_SOLO && self->client->playerTeam != TEAM_SOLO))
 	{//on same team
 		return qfalse;
 	}
@@ -6500,8 +6501,8 @@ void WP_RunSaber( gentity_t *self, gentity_t *saber )
 			if ( self->client->ps.forcePowerLevel[FP_SABERTHROW] > FORCE_LEVEL_2
 				&& self->client->ps.saberEntityState == SES_LEAVING )
 			{//max level
-				if ( self->enemy &&
-					!WP_SaberValidateEnemy( self, self->enemy ) )
+				if ( (self->enemy &&
+					!WP_SaberValidateEnemy( self, self->enemy )))
 				{//if my enemy isn't valid to auto-aim at, don't autoaim
 				}
 				else
@@ -10743,10 +10744,10 @@ void ForceGrip( gentity_t *self )
 			return;
 		}
 
-		switch ( traceEnt->client->NPC_class )
+		switch (traceEnt->client->NPC_class)
 		{
 		case CLASS_GALAKMECH://cant grip him, he's in armor
-			G_AddVoiceEvent( traceEnt, Q_irand(EV_PUSHED1, EV_PUSHED3), Q_irand( 3000, 5000 ) );
+			G_AddVoiceEvent(traceEnt, Q_irand(EV_PUSHED1, EV_PUSHED3), Q_irand(3000, 5000));
 			return;
 			break;
 		case CLASS_HAZARD_TROOPER://cant grip him, he's in armor
@@ -10758,7 +10759,7 @@ void ForceGrip( gentity_t *self )
 		case CLASS_SAND_CREATURE://much too big to grip!
 			return;
 			break;
-		//no droids either...?
+			//no droids either...?
 		case CLASS_GONK:
 		case CLASS_R2D2:
 		case CLASS_R5D2:
@@ -10769,7 +10770,7 @@ void ForceGrip( gentity_t *self )
 			//*sigh*... in JK3, you'll be able to grab and move *anything*...
 			return;
 			break;
-		//not even combat droids?  (No animation for being gripped...)
+			//not even combat droids?  (No animation for being gripped...)
 		case CLASS_SABER_DROID:
 		case CLASS_ASSASSIN_DROID:
 			//*sigh*... in JK3, you'll be able to grab and move *anything*...
@@ -10797,8 +10798,8 @@ void ForceGrip( gentity_t *self )
 		case CLASS_JEDI:
 			if ( traceEnt->NPC && traceEnt->NPC->rank > RANK_CIVILIAN && self->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
 			{
-				Jedi_PlayDeflectSound( traceEnt );
-				ForceThrow( traceEnt, qfalse );
+				Jedi_PlayDeflectSound(traceEnt);
+				ForceThrow(traceEnt, qfalse);
 				return;
 			}
 			break;
@@ -10881,15 +10882,14 @@ void ForceGrip( gentity_t *self )
 					&& (traceEnt->NPC->scriptFlags&SCF_DONT_FLEE) )
 				{//*SIGH*... if an NPC can't flee, they can't run after and pick up their weapon, do don't drop it
 				}
-				else if ( traceEnt->s.weapon != WP_SABER )
+				else if ( traceEnt->s.weapon != WP_SABER)
 				{
 					WP_DropWeapon( traceEnt, NULL );
 				}
 				else
 				{
-					//turn it off?
 					traceEnt->client->ps.SaberDeactivate();
-					G_SoundOnEnt( traceEnt, CHAN_WEAPON, "sound/weapons/saber/saberoffquick.wav" );
+					G_SoundOnEnt(traceEnt, CHAN_WEAPON, "sound/weapons/saber/saberoffquick.wav");
 				}
 			}
 		}
@@ -11066,7 +11066,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
-		if ( !traceEnt->client || traceEnt->client->playerTeam != self->client->playerTeam || self->enemy == traceEnt || traceEnt->enemy == self )
+		if ( !traceEnt->client || traceEnt->client->playerTeam != self->client->playerTeam || self->enemy == traceEnt || traceEnt->enemy == self || traceEnt->client->playerTeam == TEAM_SOLO || self->client->playerTeam == TEAM_SOLO)
 		{//an enemy or object
 			int	dmg;
 			//FIXME: check for client using FP_ABSORB

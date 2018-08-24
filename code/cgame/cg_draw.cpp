@@ -2586,7 +2586,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 				ecolor[1] = 1.0f;//G
 				ecolor[2] = 1.0f;//B
 			}
-			else if ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_FREE )
+			else if ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_FREE || g_entities[0].client && g_entities[0].client->playerTeam == TEAM_SOLO)
 			{//evil player: everyone is red
 				//Enemies are red
 				ecolor[0] = 1.0f;//R
