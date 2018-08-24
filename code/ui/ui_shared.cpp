@@ -47,6 +47,8 @@ extern vmCvar_t	ui_char_color_red;
 extern vmCvar_t	ui_char_color_green;
 extern vmCvar_t	ui_char_color_blue;
 
+bool initialLoad = true;
+
 void *UI_Alloc( int size );
 
 void		Controls_GetConfig( void );
@@ -2910,11 +2912,23 @@ qboolean Script_Exec ( itemDef_t *item, const char **args)
 	const char *val;
 	try
 	{
+		
 		if (item->exec != NULL)
 		{
+			if (initialLoad)
+			{
+				item->exec = "music music/sp/menu.mp3";
+				initialLoad = false;
+			}
+
+			// Little shortcut for the npc buttons, otherwise perform as normal.
 			if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
 			{
 				DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
+			}
+			else
+			{
+				DC->executeText(EXEC_APPEND, va("%s; ", item->exec));
 			}
 		}
 		else if (String_Parse(args, &val))
