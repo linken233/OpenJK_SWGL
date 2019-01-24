@@ -2020,6 +2020,14 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		G_InitPlayerFromCvars( ent );
 		return;
 	}
+	if (Q_stricmp("Captain_Phasma", newModel) == 0)
+	{
+		ent->flags |= FL_SHIELDED;
+	}
+	else
+	{
+		ent->flags = NULL;
+	}
 
 	//attempt to free the string (currently can't since it's always "player" )
 	if( ent->NPC_type && gi.bIsFromZone(ent->NPC_type, TAG_G_ALLOC) ) {
