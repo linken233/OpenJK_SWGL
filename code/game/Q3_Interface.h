@@ -156,6 +156,7 @@ typedef enum //# setType_e
 	SET_ANIM_HOLDTIME_BOTH,//## %d="0" # Hold lower and upper anims for number of milliseconds
 	SET_HEALTH,//## %d="0" # Change health
 	SET_ARMOR,//## %d="0" # Change armor
+	SET_AMMO_BLASTER,// ## %d="0" # Change ammo for blaster weapons
 	SET_WALKSPEED,//## %d="0" # Change walkSpeed
 	SET_RUNSPEED,//## %d="0" # Change runSpeed
 	SET_YAWSPEED,//## %d="0" # Change yawSpeed

@@ -271,6 +271,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_BEHAVIOR_STATE),
 	ENUM2STRING(SET_HEALTH),
 	ENUM2STRING(SET_ARMOR),
+	ENUM2STRING(SET_AMMO_BLASTER),
 	ENUM2STRING(SET_DEFAULT_BSTATE),
 	ENUM2STRING(SET_CAPTURE),
 	ENUM2STRING(SET_DPITCH),
@@ -2367,6 +2368,35 @@ static void Q3_SetArmor( int entID, int data )
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 		}
 	}
+}
+
+/*
+============
+Q3_SetAmmo
+Description	:
+Return type	: static void
+Argument		:  int entID
+Argument		: int data
+============
+*/
+static void Q3_SetAmmoBlaster(int entID, int data)
+{
+	gentity_t	*ent = &g_entities[entID];
+
+	if (!ent)
+	{
+		Quake3Game()->DebugPrint(IGameInterface::WL_WARNING, "Q3_SetAmmo: invalid entID %d\n", entID);
+		return;
+	}
+
+	if (!ent->client)
+	{
+		return;
+	}
+	ent->client->ps.ammo[AMMO_BLASTER] = data != -1 ? data : ammoData[AMMO_BLASTER].max;
+	ent->client->ps.ammo[AMMO_METAL_BOLTS] = data != -1 ? data : ammoData[AMMO_METAL_BOLTS].max;
+	
+	return;
 }
 
 /*
@@ -8422,6 +8452,11 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	case SET_ARMOR:
 		int_data = atoi((char *) data);
 		Q3_SetArmor( entID, int_data );
+		break;
+
+	case SET_AMMO_BLASTER:
+		int_data = atoi((char *)data);
+		Q3_SetAmmoBlaster(entID, int_data);
 		break;
 
 	case SET_BEHAVIOR_STATE:
