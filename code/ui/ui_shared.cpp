@@ -2912,15 +2912,16 @@ qboolean Script_Exec ( itemDef_t *item, const char **args)
 	const char *val;
 	try
 	{
+		if (initialLoad)
+		{
+			item->exec = "music music/sp/menu.mp3";
+			initialLoad = false;				
+		}
+
 		
+
 		if (item->exec != NULL)
 		{
-			if (initialLoad)
-			{
-				item->exec = "music music/sp/menu.mp3";
-				initialLoad = false;
-			}
-
 			// Little shortcut for the npc buttons, otherwise perform as normal.
 			if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
 			{
