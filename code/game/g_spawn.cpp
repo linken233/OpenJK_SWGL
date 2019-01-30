@@ -531,8 +531,9 @@ void SP_NPC_Lannik_Racto( gentity_t *self );
 void SP_NPC_Kothos( gentity_t *self );
 void SP_NPC_Chewbacca( gentity_t *self );
 void SP_NPC_Bartender( gentity_t *self );
-void SP_NPC_MorganKatarn( gentity_t *self );
+void SP_NPC_MorganKatarn( gentity_t *	self );
 void SP_NPC_Jedi( gentity_t *self );
+void SP_NPC_KotF_Jedi(gentity_t *self);
 void SP_NPC_Prisoner( gentity_t *self );
 void SP_NPC_Merchant( gentity_t *self );
 void SP_NPC_Rebel( gentity_t *self );
@@ -829,6 +830,7 @@ spawn_t	spawns[] = {
 	{"NPC_Droid_Protocol", SP_NPC_Droid_Protocol },
 	{"NPC_Droid_Assassin", SP_NPC_Droid_Assassin },
 	{"NPC_Droid_Saber", SP_NPC_Droid_Saber },
+	{"NPC_KotF_Jedi", SP_NPC_KotF_Jedi },
 
 	//rwwFIXMEFIXME: Faked for testing NPCs (another other things) in RMG with sof2 assets
 	{"NPC_Colombian_Soldier", SP_NPC_Reborn },

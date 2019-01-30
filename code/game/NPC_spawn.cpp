@@ -2021,7 +2021,7 @@ extern qboolean	spawning;				// the G_Spawn*() functions are valid  (only turned
 extern void	NPC_PrecacheByClassName(const char*);
 
 void SP_NPC_spawner( gentity_t *self)
-{
+{ 
 	extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 	float	fDelay;
 
@@ -2638,16 +2638,18 @@ void SP_NPC_Jedi( gentity_t *self)
 	SP_NPC_spawner( self );
 }
 
-void SP_NPC_KOTOR_JEDI(gentity_t *self)
+extern cvar_t	*g_char_model;
+void SP_NPC_KotF_Jedi(gentity_t *self)
 {
 	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
+	{		
+		int jedi_pick = (Q_irand(0, 30) * Q_irand(0, 30)) % 30;
+		if (self->spawnflags & 0)
 		{//random!
 			int sanityCheck = 20;	//just in case
 			while (sanityCheck--)
 			{
-				switch (Q_irand(0, 30))
+				switch (jedi_pick)
 				{
 				case 0:
 					self->NPC_type = "kotor_jedi1";
@@ -2751,21 +2753,12 @@ void SP_NPC_KOTOR_JEDI(gentity_t *self)
 				break;	//get out of the while
 			}
 		}
-	}
-
-	SP_NPC_spawner(self);
-}
-
-void SP_NPC_PREQUEL_JEDI(gentity_t *self)
-{
-	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
+		else if (self->spawnflags & 1)
 		{//random!
 			int sanityCheck = 20;	//just in case
 			while (sanityCheck--)
 			{
-				switch (Q_irand(0, 30))
+				switch (jedi_pick)
 				{
 				case 0:
 					self->NPC_type = "prequel_jedi1";
@@ -2866,24 +2859,16 @@ void SP_NPC_PREQUEL_JEDI(gentity_t *self)
 				{//bah, we're using this one, try again
 					continue;
 				}
+				Com_Printf("NPC chosen: %s\n", self->NPC_type);
 				break;	//get out of the while
 			}
 		}
-	}
-
-	SP_NPC_spawner(self);
-}
-
-void SP_NPC_SWTOR_JEDI(gentity_t *self)
-{
-	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
+		else if (self->spawnflags & 2)
 		{//random!
 			int sanityCheck = 20;	//just in case
 			while (sanityCheck--)
 			{
-				switch (Q_irand(0, 30))
+				switch (jedi_pick)
 				{
 				case 0:
 					self->NPC_type = "swtor_jedi1";
@@ -2987,116 +2972,107 @@ void SP_NPC_SWTOR_JEDI(gentity_t *self)
 				break;	//get out of the while
 			}
 		}
-	}
-
-	SP_NPC_spawner(self);
-}
-
-void SP_NPC_SWTOR_SITH(gentity_t *self)
-{
-	if (!self->NPC_type)
-	{
-		if (self->spawnflags & 4)
+		else if (self->spawnflags & 4)
 		{//random!
 			int sanityCheck = 20;	//just in case
 			while (sanityCheck--)
 			{
-				switch (Q_irand(0, 30))
+				switch (jedi_pick)
 				{
 				case 0:
-					self->NPC_type = "swtor_sith1";
-					break;
-				case 1:
-					self->NPC_type = "swtor_sith2";
-					break;
-				case 2:
-					self->NPC_type = "swtor_sith3";
-					break;
-				case 3:
-					self->NPC_type = "swtor_sith4";
-					break;
-				case 4:
-					self->NPC_type = "swtor_sith5";
-					break;
-				case 5:
-					self->NPC_type = "swtor_sith6";
-					break;
-				case 6:
-					self->NPC_type = "swtor_sith7";
-					break;
-				case 7:
-					self->NPC_type = "swtor_sith8";
-					break;
-				case 8:
-					self->NPC_type = "swtor_sith9";
-					break;
-				case 9:
-					self->NPC_type = "swtor_sith10";
-					break;
-				case 10:
-					self->NPC_type = "swtor_sith11";
-					break;
-				case 11:
-					self->NPC_type = "swtor_sith12";
-					break;
-				case 12:
-					self->NPC_type = "swtor_sith13";
-					break;
-				case 13:
-					self->NPC_type = "swtor_sith14";
-					break;
-				case 14:
-					self->NPC_type = "swtor_sith15";
-					break;
-				case 15:
-					self->NPC_type = "swtor_sith16";
-					break;
-				case 16:
-					self->NPC_type = "swtor_sith17";
-					break;
-				case 17:
-					self->NPC_type = "swtor_sith18";
-					break;
-				case 18:
-					self->NPC_type = "swtor_sith19";
-					break;
-				case 19:
-					self->NPC_type = "swtor_sith20";
-					break;
-				case 20:
-					self->NPC_type = "swtor_sith21";
-					break;
-				case 21:
-					self->NPC_type = "swtor_sith22";
-					break;
-				case 22:
-					self->NPC_type = "swtor_sith23";
-					break;
-				case 23:
-					self->NPC_type = "swtor_sith24";
-					break;
-				case 24:
-					self->NPC_type = "swtor_sith25";
-					break;
-				case 25:
-					self->NPC_type = "swtor_sith26";
-					break;
-				case 26:
-					self->NPC_type = "swtor_sith27";
-					break;
-				case 27:
-					self->NPC_type = "swtor_sith28";
-					break;
-				case 28:
-					self->NPC_type = "swtor_sith29";
-					break;
-				case 29:
-					self->NPC_type = "swtor_sith30";
-					break;
-				case 30:
-				default://just in case
-					self->NPC_type = "swtor_sith1";
-					break;
+						self->NPC_type = "swtor_sith1";
+						break;
+					case 1:
+						self->NPC_type = "swtor_sith2";
+						break;
+					case 2:
+						self->NPC_type = "swtor_sith3";
+						break;
+					case 3:
+						self->NPC_type = "swtor_sith4";
+						break;
+					case 4:
+						self->NPC_type = "swtor_sith5";
+						break;
+					case 5:
+						self->NPC_type = "swtor_sith6";
+						break;
+					case 6:
+						self->NPC_type = "swtor_sith7";
+						break;
+					case 7:
+						self->NPC_type = "swtor_sith8";
+						break;
+					case 8:
+						self->NPC_type = "swtor_sith9";
+						break;
+					case 9:
+						self->NPC_type = "swtor_sith10";
+						break;
+					case 10:
+						self->NPC_type = "swtor_sith11";
+						break;
+					case 11:
+						self->NPC_type = "swtor_sith12";
+						break;
+					case 12:
+						self->NPC_type = "swtor_sith13";
+						break;
+					case 13:
+						self->NPC_type = "swtor_sith14";
+						break;
+					case 14:
+						self->NPC_type = "swtor_sith15";
+						break;
+					case 15:
+						self->NPC_type = "swtor_sith16";
+						break;
+					case 16:
+						self->NPC_type = "swtor_sith17";
+						break;
+					case 17:
+						self->NPC_type = "swtor_sith18";
+						break;
+					case 18:
+						self->NPC_type = "swtor_sith19";
+						break;
+					case 19:
+						self->NPC_type = "swtor_sith20";
+						break;
+					case 20:
+						self->NPC_type = "swtor_sith21";
+						break;
+					case 21:
+						self->NPC_type = "swtor_sith22";
+						break;
+					case 22:
+						self->NPC_type = "swtor_sith23";
+						break;
+					case 23:
+						self->NPC_type = "swtor_sith24";
+						break;
+					case 24:
+						self->NPC_type = "swtor_sith25";
+						break;
+					case 25:
+						self->NPC_type = "swtor_sith26";
+						break;
+					case 26:
+						self->NPC_type = "swtor_sith27";
+						break;
+					case 27:
+						self->NPC_type = "swtor_sith28";
+						break;
+					case 28:
+						self->NPC_type = "swtor_sith29";
+						break;
+					case 29:
+						self->NPC_type = "swtor_sith30";
+						break;
+					case 30:
+					default://just in case
+						self->NPC_type = "swtor_sith1";
+						break;
 				}
 				if (strstr(self->NPC_type, g_char_model->string) != NULL)
 				{//bah, we're using this one, try again
@@ -4756,7 +4732,9 @@ static void NPC_Spawn_f(void)
 	
 	NPCspawner->behaviorSet[BSET_SPAWN] =  G_NewString(gi.argv(3));
 
-	NPCspawner->NPC_targetname = G_NewString(gi.argv( 4 ));
+	NPCspawner->soundSet = G_NewString(gi.argv(4));
+
+	NPCspawner->NPC_targetname = G_NewString(gi.argv(5));
 
 	NPCspawner->count = 1;
 
@@ -4791,43 +4769,43 @@ static void NPC_Spawn_f(void)
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_Jedi( NPCspawner );
 	}
-	else if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 0;
+		SP_NPC_KotF_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 1;
+		SP_NPC_KotF_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 2;
+		SP_NPC_KotF_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
-		SP_NPC_KOTOR_JEDI(NPCspawner);
+		SP_NPC_KotF_Jedi(NPCspawner);
 	}
-	else if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
-	{//special case, for testing
-		NPCspawner->NPC_type = NULL;
-		NPCspawner->spawnflags |= 4;
-		SP_NPC_PREQUEL_JEDI(NPCspawner);
-	}
-	else if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
-	{//special case, for testing
-		NPCspawner->NPC_type = NULL;
-		NPCspawner->spawnflags |= 4;
-		SP_NPC_SWTOR_JEDI(NPCspawner);
-	}
-	else if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
-	{//special case, for testing
-		NPCspawner->NPC_type = NULL;
-		NPCspawner->spawnflags |= 4;
-		SP_NPC_SWTOR_SITH(NPCspawner);
-	}
-	else if (!Q_stricmp("imperial", NPCspawner->NPC_type))
+	if (!Q_stricmp("imperial", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
 		SP_NPC_Imperial(NPCspawner);
 	}
-	else if (!Q_stricmp("impofficer", NPCspawner->NPC_type))
+	if (!Q_stricmp("impofficer", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
 		SP_NPC_Imperial(NPCspawner);
 	}
-	else if (!Q_stricmp("impcommander", NPCspawner->NPC_type))
+	if (!Q_stricmp("impcommander", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
@@ -4841,6 +4819,7 @@ static void NPC_Spawn_f(void)
 	{
 		NPC_Spawn( NPCspawner, NPCspawner, NPCspawner );
 	}
+	
 }
 
 /*
