@@ -5640,6 +5640,9 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb )
 		default://SABER_RGB
 			VectorSet( rgb, ((color) & 0xff)/255.0f, ((color >> 8) & 0xff)/255.0f, ((color >> 16) & 0xff)/255.0f );
 			break;
+		case SABER_DARKSABER:
+			VectorSet(rgb, 1.0f, 1.0f, 1.0f );
+			break;
 	}
 }
 
@@ -5842,6 +5845,11 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
 			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
 			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_DARKSABER:
+			glow = cgs.media.darkSaberGlowShader;
+			cgs.media.SaberBladeShader		= cgi_R_RegisterShader("SFX_Sabers/darksaber_line");
+			cgs.media.SaberTrailShader		= cgi_R_RegisterShader("SFX_Sabers/darksabertrail");
 			break;
 	}
 
@@ -6212,6 +6220,10 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 		default://SABER_RGB
 			glow = cgs.media.rgbSaberGlowShader;
 			blade = cgs.media.rgbSaberCoreShader;
+			break;
+		case SABER_DARKSABER:
+			glow = cgs.media.darkSaberGlowShader;
+			blade = cgs.media.darkSaberCoreShader;
 			break;
 	}
 
@@ -7072,6 +7084,9 @@ if (cg_SFXSabers.integer == 0)
 							VectorSet( rgb1, ((client->ps.saber[saberNum].blade[bladeNum].color) & 0xff),
 									  ((client->ps.saber[saberNum].blade[bladeNum].color >> 8) & 0xff),
 									  ((client->ps.saber[saberNum].blade[bladeNum].color >> 16) & 0xff) );
+							break;
+						case SABER_DARKSABER:
+							VectorSet( rgb1, 255.0f, 255.0f, 255.0f );
 							break;
 
 					}

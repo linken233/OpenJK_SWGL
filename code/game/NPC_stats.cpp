@@ -271,29 +271,29 @@ static rank_t TranslateRankName( const char *name )
 	return RANK_CIVILIAN;
 }
 
-saber_colors_t TranslateSaberColor( const char *name )
+saber_colors_t TranslateSaberColor(const char *name)
 {
-	if ( !Q_stricmp( name, "red" ) )
+	if (!Q_stricmp(name, "red"))
 	{
 		return SABER_RED;
 	}
-	if ( !Q_stricmp( name, "orange" ) )
+	if (!Q_stricmp(name, "orange"))
 	{
 		return SABER_ORANGE;
 	}
-	if ( !Q_stricmp( name, "yellow" ) )
+	if (!Q_stricmp(name, "yellow"))
 	{
 		return SABER_YELLOW;
 	}
-	if ( !Q_stricmp( name, "green" ) )
+	if (!Q_stricmp(name, "green"))
 	{
 		return SABER_GREEN;
 	}
-	if ( !Q_stricmp( name, "blue" ) )
+	if (!Q_stricmp(name, "blue"))
 	{
 		return SABER_BLUE;
 	}
-	if ( !Q_stricmp( name, "purple" ) )
+	if (!Q_stricmp(name, "purple"))
 	{
 		return SABER_PURPLE;
 	}
@@ -301,17 +301,21 @@ saber_colors_t TranslateSaberColor( const char *name )
 	{
 		return SABER_UNSTABLE_RED;
 	}
-	if ( !Q_stricmp( name, "black" ) )
+	if (!Q_stricmp(name, "black"))
 	{
 		return SABER_BLACK;
 	}
-	if ( !Q_stricmp( name, "random" ) )
+	if (!Q_stricmp(name, "random"))
 	{
-		return ((saber_colors_t)(Q_irand( SABER_ORANGE, SABER_PURPLE )));
+		return ((saber_colors_t)(Q_irand(SABER_ORANGE, SABER_PURPLE)));
 	}
 	if (!Q_stricmp(name, "prequel_random"))
 	{
 		return ((saber_colors_t)(Q_irand(SABER_GREEN, SABER_BLUE)));
+	}
+	if (!Q_stricmp(name, "darksaber"))
+	{
+		return SABER_DARKSABER;
 	}
 	float colors[3];
 	Q_parseSaberColor(name, colors);
