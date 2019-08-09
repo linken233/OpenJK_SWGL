@@ -2750,7 +2750,6 @@ void SP_NPC_KotF_Jedi(gentity_t *self)
 				{//bah, we're using this one, try again
 					continue;
 				}
-				Com_Printf("NPC chosen: %s\n", self->NPC_type);
 				break;	//get out of the while
 			}
 		}
