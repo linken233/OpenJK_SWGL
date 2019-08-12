@@ -280,7 +280,7 @@ void R_Splash()
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 */	
-	int splashPick = rand() % 2;
+	int splashPick = rand() % 5;
 	switch (splashPick)
 	{
 	case 0:
