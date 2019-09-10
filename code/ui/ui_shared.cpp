@@ -2918,40 +2918,40 @@ qboolean Script_Exec ( itemDef_t *item, const char **args)
 			switch (music_pick)
 			{
 			case 0:
-				item->exec = "music music/sp/menu.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu.mp3";
 				break;
 			case 1:
-				item->exec = "music music/sp/menu1.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu1.mp3";
 				break;
 			case 2:
-				item->exec = "music music/order66/battle.mp3;g_debugmelee 1";
+				item->exec = "music music/order66/battle.mp3";
 				break;
 			case 3:
-				item->exec = "music music/sp/menu2.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu2.mp3";
 				break;
 			case 4:
-				item->exec = "music music/sp/menu3.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu3.mp3";
 				break;
 			case 5:
-				item->exec = "music music/sp/menu4.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu4.mp3";
 				break;
 			case 6:
-				item->exec = "music music/sp/menu5.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu5.mp3";
 				break;
 			case 7:
-				item->exec = "music music/sp/menu6.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu6.mp3";
 				break;
 			case 8:
-				item->exec = "music music/sp/menu7.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu7.mp3";
 				break;
 			case 9:
-				item->exec = "music music/sp/menu8.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu8.mp3";
 				break;
 			case 10:
-				item->exec = "music music/sp/menu9.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu9.mp3";
 				break;
 			case 11:
-				item->exec = "music music/sp/menu10.mp3;g_debugmelee 1";
+				item->exec = "music music/sp/menu10.mp3";
 				break;
 			}
 			initialLoad = false;				
