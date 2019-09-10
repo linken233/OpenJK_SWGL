@@ -69,6 +69,8 @@ static qhandle_t blackSaberCoreShader;
 static qhandle_t rgbSaberGlowShader;
 static qhandle_t rgbSaberCoreShader;
 static qhandle_t SaberBladeShader;
+static qhandle_t darksaberSaberGlowShader;
+static qhandle_t darksaberSaberCoreShader;
 
 void UI_CacheSaberGlowGraphics( void )
 {//FIXME: these get fucked by vid_restarts
@@ -90,6 +92,8 @@ void UI_CacheSaberGlowGraphics( void )
 	blackSaberCoreShader		= re.RegisterShader( "gfx/effects/sabers/black_line" );
 	rgbSaberGlowShader		= re.RegisterShader( "gfx/effects/sabers/rgb_glow" );
 	rgbSaberCoreShader		= re.RegisterShader( "gfx/effects/sabers/rgb_line" );
+	darksaberSaberGlowShader = re.RegisterShader("gfx/effects/sabers/darksaberglow");
+	darksaberSaberCoreShader = re.RegisterShader("gfx/effects/sabers/darksabercore");
 }
 
 qboolean UI_ParseLiteral( const char **data, const char *string )
@@ -423,6 +427,10 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 			blade = re.RegisterShader( "gfx/effects/sabers/black_line" );
 			SaberBladeShader = re.RegisterShader("SFX_Sabers/saber_blade_black");
 			break;
+		case SABER_DARKSABER:
+			glow = re.RegisterShader("gfx/effects/sabers/darksaberglow");
+			SaberBladeShader = re.RegisterShader("SFX_Sabers/darksaber_line");
+			break;
 		default://SABER_RGB
 			glow = re.RegisterShader( "gfx/effects/sabers/rgb_glow" );
 			blade = re.RegisterShader( "gfx/effects/sabers/rgb_line" );
@@ -557,6 +565,11 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			blade = blackSaberCoreShader;
 			VectorSet(rgb, 1.0f, 1.0f, 1.0f );
 			break;
+		case SABER_DARKSABER:
+			glow = darksaberSaberGlowShader;
+			blade = darksaberSaberCoreShader;
+			VectorSet(rgb, 1.0f, 1.0f, 1.0f);
+			break;
 		default:
 			glow = rgbSaberGlowShader;
 			blade = rgbSaberCoreShader;
@@ -657,6 +670,10 @@ saber_colors_t TranslateSaberColor( const char *name )
 	if ( !Q_stricmp( name, "black" ) )
 	{
 		return SABER_BLACK;
+	}
+	if (!Q_stricmp(name, "darksaber"))
+	{
+		return SABER_DARKSABER;
 	}
 	if ( !Q_stricmp( name, "random" ) )
 	{
