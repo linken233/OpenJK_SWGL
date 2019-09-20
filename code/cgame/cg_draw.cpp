@@ -252,6 +252,127 @@ static void CG_DrawForcePower(const centity_t *cent,const int xPos,const int yPo
 
 /*
 ================
+CG_DrawCloneCommandoForcePower
+================
+*/
+static void CG_DrawCloneCommandoForcePower(const centity_t *cent,const int xPos,const int yPos)
+{
+	int			i;
+	qboolean	flash=qfalse;
+	vec4_t		calcColor;
+	float		value,extra=0,inc,percent;
+
+	if ( !cent->gent->client->ps.forcePowersKnown )
+	{
+		return;
+	}
+
+	// Make the hud flash by setting forceHUDTotalFlashTime above cg.time
+	if (cg.forceHUDTotalFlashTime > cg.time )
+	{
+		flash = qtrue;
+		if (cg.forceHUDNextFlashTime < cg.time)
+		{
+			cg.forceHUDNextFlashTime = cg.time + 400;
+			cgi_S_StartSound( NULL, 0, CHAN_AUTO, cgs.media.noforceSound );
+			if (cg.forceHUDActive)
+			{
+				cg.forceHUDActive = qfalse;
+			}
+			else
+			{
+				cg.forceHUDActive = qtrue;
+			}
+
+		}
+	}
+	else	// turn HUD back on if it had just finished flashing time.
+	{
+		cg.forceHUDNextFlashTime = 0;
+		cg.forceHUDActive = qtrue;
+	}
+
+	inc = (float)  cent->gent->client->ps.forcePowerMax / MAX_HUD_TICS;
+	value = cent->gent->client->ps.forcePower;
+	if ( value > cent->gent->client->ps.forcePowerMax )
+	{//supercharged with force
+		extra = value - cent->gent->client->ps.forcePowerMax;
+		value = cent->gent->client->ps.forcePowerMax;
+	}
+
+	for (i=MAX_HUD_TICS-1;i>=0;i--)
+	{
+		if ( extra )
+		{//supercharged
+			memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
+			percent = 0.75f + (sin( cg.time * 0.005f )*((extra/cent->gent->client->ps.forcePowerMax)*0.25f));
+			calcColor[0] *= percent;
+			calcColor[1] *= percent;
+			calcColor[2] *= percent;
+		}
+		else if ( value <= 0 )	// no more
+		{
+			break;
+		}
+		else if (value < inc)	// partial tic
+		{
+			if (flash)
+			{
+				memcpy(calcColor,  colorTable[CT_RED], sizeof(vec4_t));
+			}
+			else
+			{
+				memcpy(calcColor,  colorTable[CT_WHITE], sizeof(vec4_t));
+			}
+
+			percent = value / inc;
+			calcColor[3] = percent;
+		}
+		else
+		{
+			if (flash)
+			{
+				memcpy(calcColor,  colorTable[CT_RED], sizeof(vec4_t));
+			}
+			else
+			{
+				memcpy(calcColor,  colorTable[CT_WHITE], sizeof(vec4_t));
+			}
+		}
+
+		cgi_R_SetColor( calcColor);
+		CG_DrawPic( cloneCommandoForceTics[i].xPos,
+			cloneCommandoForceTics[i].yPos,
+			cloneCommandoForceTics[i].width,
+			cloneCommandoForceTics[i].height,
+			cloneCommandoForceTics[i].background );
+
+		value -= inc;
+	}
+
+	if (flash)
+	{
+		cgi_R_SetColor( colorTable[CT_RED] );
+	}
+	else
+	{
+		cgi_R_SetColor( cloneCommandoHudBits[CCHB_FORCEAMOUNT].color );
+	}
+
+	// Print force numeric amount
+	CG_DrawNumField (
+		cloneCommandoHudBits[OHB_FORCEAMOUNT].xPos,
+		cloneCommandoHudBits[OHB_FORCEAMOUNT].yPos,
+		3,
+		cent->gent->client->ps.forcePower,
+		cloneCommandoHudBits[OHB_FORCEAMOUNT].width,
+		cloneCommandoHudBits[OHB_FORCEAMOUNT].height,
+		NUM_FONT_SMALL,
+		qfalse);
+}
+
+/*
+================
 CG_DrawSaberStyle
 
 If the weapon is a light saber (which needs no ammo) then draw a graphic showing
@@ -306,6 +427,60 @@ static void CG_DrawSaberStyle(const centity_t	*cent,const int xPos,const int yPo
 		otherHUDBits[index].background
 		);
 
+}
+
+/*
+================
+CG_DrawCloneCommandoSaberStyle
+================
+*/
+static void CG_DrawCloneCommandoSaberStyle(const centity_t	*cent,const int xPos,const int yPos)
+{
+	int index;
+
+	if (!cent->currentState.weapon ) // We don't have a weapon right now
+	{
+		return;
+	}
+
+	if ( cent->currentState.weapon != WP_SABER || !cent->gent )
+	{
+		return;
+	}
+
+	cgi_R_SetColor( colorTable[CT_WHITE] );
+
+	if ( !cg.saberAnimLevelPending && cent->gent->client )
+	{//uninitialized after a loadgame, cheat across and get it
+		cg.saberAnimLevelPending = cent->gent->client->ps.saberAnimLevel;
+	}
+
+	// don't need to draw ammo, but we will draw the current saber style in this window
+	if (cg.saberAnimLevelPending == SS_FAST
+		|| cg.saberAnimLevelPending == SS_TAVION )
+	{
+		index = CCHB_SABERSTYLE_FAST;
+	}
+	else if (cg.saberAnimLevelPending == SS_MEDIUM
+		|| cg.saberAnimLevelPending == SS_DUAL
+		|| cg.saberAnimLevelPending == SS_STAFF )
+	{
+		index = CCHB_SABERSTYLE_MEDIUM;
+	}
+	else
+	{
+		index = CCHB_SABERSTYLE_STRONG;
+	}
+
+	cgi_R_SetColor( cloneCommandoHudBits[index].color);
+
+	CG_DrawPic(
+		cloneCommandoHudBits[index].xPos,
+		cloneCommandoHudBits[index].yPos,
+		cloneCommandoHudBits[index].width,
+		cloneCommandoHudBits[index].height,
+		cloneCommandoHudBits[index].background
+		);
 }
 
 /*
@@ -426,6 +601,120 @@ static void CG_DrawAmmo(const centity_t	*cent,const int xPos,const int yPos)
 
 }
 
+/*
+================
+CG_DrawCloneCommandoAmmo
+================
+*/
+static void CG_DrawCloneCommandoAmmo(const centity_t *cent,const int xPos,const int yPos)
+{
+	playerState_t	*ps;
+	int			i;
+	vec4_t		calcColor;
+	float		currValue=0,inc;
+
+	if (!cent->currentState.weapon ) // We don't have a weapon right now
+	{
+		return;
+	}
+
+	if ( cent->currentState.weapon == WP_STUN_BATON )
+	{
+		return;
+	}
+
+	ps = &cg.snap->ps;
+
+	currValue = ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
+
+	if (currValue < 0)	// No ammo
+	{
+		return;
+	}
+
+
+	//
+	// ammo
+	//
+	if (cg.oldammo < currValue)
+	{
+		cg.oldAmmoTime = cg.time + 200;
+	}
+
+	cg.oldammo = currValue;
+
+
+	// Determine the color of the numeric field
+
+	// Firing or reloading?
+	if (( cg.predicted_player_state.weaponstate == WEAPON_FIRING
+		&& cg.predicted_player_state.weaponTime > 100 ))
+	{
+		memcpy(calcColor, colorTable[CT_LTGREY], sizeof(vec4_t));
+	}
+	else
+	{
+		if ( currValue > 0 )
+		{
+			if (cg.oldAmmoTime > cg.time)
+			{
+				memcpy(calcColor, colorTable[CT_YELLOW], sizeof(vec4_t));
+			}
+			else
+			{
+				memcpy(calcColor, otherHUDBits[CCHB_AMMOAMOUNT].color, sizeof(vec4_t));
+			}
+		}
+		else
+		{
+			memcpy(calcColor, colorTable[CT_RED], sizeof(vec4_t));
+		}
+	}
+
+	// Print number amount
+	cgi_R_SetColor( calcColor );
+
+	CG_DrawNumField (
+		cloneCommandoHudBits[CCHB_AMMOAMOUNT].xPos,
+		cloneCommandoHudBits[CCHB_AMMOAMOUNT].yPos,
+		3,
+		ps->ammo[weaponData[cent->currentState.weapon].ammoIndex],
+		cloneCommandoHudBits[CCHB_AMMOAMOUNT].width,
+		cloneCommandoHudBits[CCHB_AMMOAMOUNT].height,
+		NUM_FONT_SMALL,
+		qfalse);
+
+
+
+	inc = (float) ammoData[weaponData[cent->currentState.weapon].ammoIndex].max / MAX_HUD_TICS;
+	currValue =ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
+	memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
+
+	for (i=MAX_HUD_TICS-1;i>=0;i--)
+	{
+
+		if (currValue <= 0)	// don't show tic
+		{
+			break;
+		}
+		else if (currValue < inc)	// partial tic (alpha it out)
+		{
+			memcpy(calcColor, cloneCommandoAmmoTics[i].color, sizeof(vec4_t));
+			float percent = currValue / inc;
+			calcColor[3] *= percent;
+		}
+
+		cgi_R_SetColor( calcColor);
+		CG_DrawPic( cloneCommandoAmmoTics[i].xPos,
+			cloneCommandoAmmoTics[i].yPos,
+			cloneCommandoAmmoTics[i].width,
+			cloneCommandoAmmoTics[i].height,
+			cloneCommandoAmmoTics[i].background );
+
+		currValue -= inc;
+	}
+
+}
 
 /*
 ================
@@ -485,6 +774,65 @@ static void CG_DrawHealth(const int x,const int y,const int w,const int h)
 		NUM_FONT_SMALL,
 		qfalse);
 
+}
+
+/*
+================
+CG_DrawCloneCommandoHealth
+================
+*/
+static void CG_DrawCloneCommandoHealth(const int x,const int y,const int w,const int h)
+{
+	vec4_t			calcColor;
+	playerState_t	*ps = &cg.snap->ps;
+
+	// Print all the tics of the health graphic
+	// Look at the amount of health left and show only as much of the graphic as there is health.
+	// Use alpha to fade out partial section of health
+	float inc = (float) ps->stats[STAT_MAX_HEALTH] / MAX_HUD_TICS;
+	float currValue = ps->stats[STAT_HEALTH];
+	memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
+	int i;
+	for (i=(MAX_HUD_TICS-1);i>=0;i--)
+	{
+
+		if (currValue <= 0)	// don't show tic
+		{
+			break;
+		}
+		else if (currValue < inc)	// partial tic (alpha it out)
+		{
+			memcpy(calcColor, cloneCommandoHealthTics[i].color, sizeof(vec4_t));
+			float percent = currValue / inc;
+			calcColor[3] *= percent;		// Fade it out
+		}
+
+		cgi_R_SetColor( calcColor);
+
+		CG_DrawPic(
+			cloneCommandoHealthTics[i].xPos,
+			cloneCommandoHealthTics[i].yPos,
+			cloneCommandoHealthTics[i].width,
+			cloneCommandoHealthTics[i].height,
+			cloneCommandoHealthTics[i].background
+			);
+
+		currValue -= inc;
+	}
+
+
+	// Print force health amount
+	cgi_R_SetColor( cloneCommandoHudBits[CCHB_HEALTHAMOUNT].color );
+
+	CG_DrawNumField (
+		cloneCommandoHudBits[CCHB_HEALTHAMOUNT].xPos,
+		cloneCommandoHudBits[CCHB_HEALTHAMOUNT].yPos,
+		3,
+		ps->stats[STAT_HEALTH],
+		cloneCommandoHudBits[CCHB_HEALTHAMOUNT].width,
+		cloneCommandoHudBits[CCHB_HEALTHAMOUNT].height,
+		NUM_FONT_SMALL,
+		qfalse);
 }
 
 /*
@@ -597,6 +945,114 @@ static void CG_DrawArmor(const int x,const int y,const int w,const int h)
 		cg.HUDArmorFlag=qfalse;
 	}
 
+}
+
+/*
+================
+CG_DrawCloneCommandoArmor
+================
+*/
+static void CG_DrawCloneCommandoArmor(const int x,const int y,const int w,const int h)
+{
+	vec4_t			calcColor;
+	playerState_t	*ps = &cg.snap->ps;
+
+	// Print all the tics of the armor graphic
+	// Look at the amount of armor left and show only as much of the graphic as there is armor.
+	// Use alpha to fade out partial section of armor
+	// MAX_HEALTH is the same thing as max armor
+	float inc = (float) ps->stats[STAT_MAX_HEALTH] / MAX_HUD_TICS;
+	float currValue = ps->stats[STAT_ARMOR];
+
+	memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
+	int i;
+	for (i=(MAX_HUD_TICS-1);i>=0;i--)
+	{
+
+		if (currValue <= 0)	// don't show tic
+		{
+			break;
+		}
+		else if (currValue < inc)	// partial tic (alpha it out)
+		{
+			memcpy(calcColor, cloneCommandoArmorTics[i].color, sizeof(vec4_t));
+			float percent = currValue / inc;
+			calcColor[3] *= percent;
+		}
+
+		cgi_R_SetColor( calcColor);
+
+		if ((i==(MAX_HUD_TICS-1)) && (currValue < inc))
+		{
+			if (cg.HUDArmorFlag)
+			{
+				CG_DrawPic(
+					cloneCommandoArmorTics[i].xPos,
+					cloneCommandoArmorTics[i].yPos,
+					cloneCommandoArmorTics[i].width,
+					cloneCommandoArmorTics[i].height,
+					cloneCommandoArmorTics[i].background
+					);
+			}
+		}
+		else
+		{
+			CG_DrawPic(
+				cloneCommandoArmorTics[i].xPos,
+				cloneCommandoArmorTics[i].yPos,
+				cloneCommandoArmorTics[i].width,
+				cloneCommandoArmorTics[i].height,
+				cloneCommandoArmorTics[i].background
+				);
+		}
+
+		currValue -= inc;
+	}
+
+	// Print armor amount
+	cgi_R_SetColor( cloneCommandoHudBits[CCHB_ARMORAMOUNT].color );
+
+	CG_DrawNumField (
+		cloneCommandoHudBits[CCHB_ARMORAMOUNT].xPos,
+		cloneCommandoHudBits[CCHB_ARMORAMOUNT].yPos,
+		3,
+		ps->stats[STAT_ARMOR],
+		cloneCommandoHudBits[CCHB_ARMORAMOUNT].width,
+		cloneCommandoHudBits[CCHB_ARMORAMOUNT].height,
+		NUM_FONT_SMALL,
+		qfalse);
+
+
+	// If armor is low, flash a graphic to warn the player
+	if (ps->stats[STAT_ARMOR])	// Is there armor? Draw the HUD Armor TIC
+	{
+		float quarterArmor = (float) (ps->stats[STAT_MAX_HEALTH] / 4.0f);
+
+		// Make tic flash if armor is at 25% of full armor
+		if (ps->stats[STAT_ARMOR] < quarterArmor)		// Do whatever the flash timer says
+		{
+			if (cg.HUDTickFlashTime < cg.time)			// Flip at the same time
+			{
+				cg.HUDTickFlashTime = cg.time + 400;
+				if (cg.HUDArmorFlag)
+				{
+					cg.HUDArmorFlag = qfalse;
+				}
+				else
+				{
+					cg.HUDArmorFlag = qtrue;
+				}
+			}
+		}
+		else
+		{
+			cg.HUDArmorFlag=qtrue;
+		}
+	}
+	else						// No armor? Don't show it.
+	{
+		cg.HUDArmorFlag=qfalse;
+	}
 }
 
 #define MAX_VHUD_SHIELD_TICS 12
@@ -1942,6 +2398,125 @@ static void CG_DrawHUD( centity_t *cent )
 
 /*
 ================
+CG_DrawCloneCommandoHud
+================
+*/
+static void CG_DrawCloneCommandoHud( centity_t *cent )
+{
+	int value;
+	int	sectionXPos,sectionYPos,sectionWidth,sectionHeight;
+
+	if ( cg_hudFiles.integer )
+	{
+		int x = 0;
+		int y = SCREEN_HEIGHT - 80;
+
+		SimpleHud_DrawString( x + 16, y + 40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ), colorTable[CT_HUD_RED] );
+
+		SimpleHud_DrawString( x + 18 + 14, y + 40 + 14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ), colorTable[CT_HUD_GREEN] );
+
+		CG_DrawSimpleForcePower( cent );
+
+		if ( cent->currentState.weapon == WP_SABER )
+			CG_DrawSimpleSaberStyle( cent );
+		else
+			CG_DrawSimpleAmmo( cent );
+
+		return;
+	}
+
+	// Draw the lower left section of the HUD
+	if (cgi_UI_GetMenuInfo("clonecommandolefthud",&sectionXPos,&sectionYPos,&sectionWidth,&sectionHeight))
+	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "clonecommandolefthud" ), qtrue );
+
+		// Draw armor & health values
+		if ( cg_drawStatus.integer == 2 )
+		{
+			CG_DrawSmallStringColor(sectionXPos+5, sectionYPos - 60,va("Armor:%d",cg.snap->ps.stats[STAT_ARMOR]), colorTable[CT_HUD_GREEN] );
+			CG_DrawSmallStringColor(sectionXPos+5, sectionYPos - 40,va("Health:%d",cg.snap->ps.stats[STAT_HEALTH]), colorTable[CT_HUD_GREEN] );
+		}
+
+		// Print scanline
+		cgi_R_SetColor( cloneCommandoHudBits[CCHB_SCANLINE_LEFT].color);
+
+		CG_DrawPic(
+			cloneCommandoHudBits[CCHB_SCANLINE_LEFT].xPos,
+			cloneCommandoHudBits[CCHB_SCANLINE_LEFT].yPos,
+			cloneCommandoHudBits[CCHB_SCANLINE_LEFT].width,
+			cloneCommandoHudBits[CCHB_SCANLINE_LEFT].height,
+			cloneCommandoHudBits[CCHB_SCANLINE_LEFT].background
+			);
+
+		// Print frame
+		cgi_R_SetColor( cloneCommandoHudBits[CCHB_FRAME_LEFT].color);
+		CG_DrawPic(
+			cloneCommandoHudBits[CCHB_FRAME_LEFT].xPos,
+			cloneCommandoHudBits[CCHB_FRAME_LEFT].yPos,
+			cloneCommandoHudBits[CCHB_FRAME_LEFT].width,
+			cloneCommandoHudBits[CCHB_FRAME_LEFT].height,
+			cloneCommandoHudBits[CCHB_FRAME_LEFT].background
+			);
+
+		CG_DrawCloneCommandoArmor(sectionXPos,sectionYPos,sectionWidth,sectionHeight);
+
+		CG_DrawCloneCommandoHealth(sectionXPos,sectionYPos,sectionWidth,sectionHeight);
+	}
+
+	if (cgi_UI_GetMenuInfo("clonecommandorighthud",&sectionXPos,&sectionYPos,&sectionWidth,&sectionHeight))
+	{
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "clonecommandorighthud" ), qtrue );
+
+		// Draw armor & health values
+		if ( cg_drawStatus.integer == 2 )
+		{
+			if ( cent->currentState.weapon != WP_SABER && cent->currentState.weapon != WP_STUN_BATON && cent->gent )
+			{
+				value = cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex];
+				CG_DrawSmallStringColor(sectionXPos, sectionYPos - 60,va("Ammo:%d",value), colorTable[CT_HUD_GREEN] );
+			}
+			CG_DrawSmallStringColor(sectionXPos, sectionYPos - 40,va("Force:%d",cent->gent->client->ps.forcePower), colorTable[CT_HUD_GREEN] );
+		}
+
+		// Print scanline
+		cgi_R_SetColor( cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].color);
+
+		CG_DrawPic(
+			cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].xPos,
+			cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].yPos,
+			cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].width,
+			cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].height,
+			cloneCommandoHudBits[CCHB_SCANLINE_RIGHT].background
+			);
+
+
+		// Print frame
+		cgi_R_SetColor( cloneCommandoHudBits[CCHB_FRAME_RIGHT].color);
+		CG_DrawPic(
+			cloneCommandoHudBits[CCHB_FRAME_RIGHT].xPos,
+			cloneCommandoHudBits[CCHB_FRAME_RIGHT].yPos,
+			cloneCommandoHudBits[CCHB_FRAME_RIGHT].width,
+			cloneCommandoHudBits[CCHB_FRAME_RIGHT].height,
+			cloneCommandoHudBits[CCHB_FRAME_RIGHT].background
+			);
+
+		CG_DrawCloneCommandoForcePower(cent,sectionXPos,sectionYPos);
+
+		// Draw ammo tics or saber style
+		if ( cent->currentState.weapon == WP_SABER )
+		{
+			CG_DrawCloneCommandoSaberStyle(cent,sectionXPos,sectionYPos);
+		}
+		else
+		{
+			CG_DrawCloneCommandoAmmo(cent,sectionXPos,sectionYPos);
+		}
+	}
+}
+
+/*
+================
 CG_ClearDataPadCvars
 ================
 */
@@ -2371,7 +2946,11 @@ static void CG_DrawStats( void )
 		drawHud = CG_DrawCustomHealthHud( cent );
 	}
 
-	if (( drawHud ) && ( cg_drawHUD.integer ))
+	if (cg_drawHUD.integer == 2)
+	{
+		CG_DrawCloneCommandoHud(cent);
+	}
+	else if (( drawHud ) && ( cg_drawHUD.integer ))
 	{
 		CG_DrawHUD( cent );
 	}

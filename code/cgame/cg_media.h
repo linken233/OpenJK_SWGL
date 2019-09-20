@@ -85,6 +85,12 @@ extern HUDMenuItem_t ammoTics[];
 extern HUDMenuItem_t forceTics[];
 extern HUDMenuItem_t otherHUDBits[];
 
+extern HUDMenuItem_t cloneCommandoHealthTics[];
+extern HUDMenuItem_t cloneCommandoArmorTics[];
+extern HUDMenuItem_t cloneCommandoAmmoTics[];
+extern HUDMenuItem_t cloneCommandoForceTics[];
+extern HUDMenuItem_t cloneCommandoHudBits[];
+
 
 typedef enum
 {
@@ -101,6 +107,23 @@ typedef enum
 	OHB_FRAME_RIGHT,
 	OHB_MAX
 } otherhudbits_t;
+
+
+typedef enum
+{
+	CCHB_HEALTHAMOUNT = 0,
+	CCHB_ARMORAMOUNT,
+	CCHB_FORCEAMOUNT,
+	CCHB_AMMOAMOUNT,
+	CCHB_SABERSTYLE_STRONG,
+	CCHB_SABERSTYLE_MEDIUM,
+	CCHB_SABERSTYLE_FAST,
+	CCHB_SCANLINE_LEFT,
+	CCHB_SCANLINE_RIGHT,
+	CCHB_FRAME_LEFT,
+	CCHB_FRAME_RIGHT,
+	CCHB_MAX
+} clonecommandohudbits_t;
 
 #define NUM_CHUNK_MODELS	4
 
