@@ -2051,15 +2051,6 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 	}
 	else
 	{
-		if (Q_stricmp (ent->NPC_type, "boss") == 0)
-		{
-			cg_checkModelChange.integer = 1;
-		}
-		else
-		{
-			cg_checkModelChange.integer = 0;
-		}
-
 		//FIXME: everything but force powers gets reset, those should, too...
 		//		currently leaves them as is except where otherwise noted in the NPCs.cfg?
 		//FIXME: remove all weapons?
