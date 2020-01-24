@@ -2252,16 +2252,19 @@ extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 				{
 					if( Q_flrand(0.0f, 1.0f) > 0.5 )
 					{
-						G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk015.wav" ));
+						if(!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+							G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk015.wav" ));
 					}
 					else
 					{
-						G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk016.wav" ));
+						if (!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+							G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk016.wav" ));
 					}
 				}
 				else
 				{
-					G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/16kyk007.wav" ));
+					if (!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+						G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/16kyk007.wav" ));
 				}
 				speechDebounceTime = cg.time + 3000;
 			}
