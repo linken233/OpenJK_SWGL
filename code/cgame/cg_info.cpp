@@ -436,11 +436,11 @@ int CG_WeaponCheck( int weaponIndex );
 
 // For printing load screen icons
 const int	MAXLOADICONSPERROW = 8;		// Max icons displayed per row
-const int	MAXLOADWEAPONS = WP_NUM_WEAPONS;
+const int	MAXLOADWEAPONS = 16;
 const int	MAXLOAD_FORCEICONSIZE = 40;	// Size of force power icons
 const int	MAXLOAD_FORCEICONPAD = 12;	// Padding space between icons
 
-static int CG_DrawLoadWeaponsPrintRow( const char *itemName, char *weapons,int rowIconCnt, int startIndex)
+static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int rowIconCnt, int startIndex)
 {
 	int		i,endIndex=0, printedIconCnt=0;
 	int		iconSize;
@@ -473,7 +473,7 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, char *weapons,int r
 
 	for (i=startIndex;i<MAXLOADWEAPONS;i++)
 	{
-		if ( !(weapons[i]))	// Does he have this weapon?
+		if ( !(weaponsBits & ( 1 << i )))	// Does he have this weapon?
 		{
 			continue;
 		}
@@ -510,7 +510,7 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, char *weapons,int r
 
 // Print weapons the player is carrying
 // Two rows print if there are too many
-static void CG_DrawLoadWeapons( char *weapons )
+static void CG_DrawLoadWeapons( int weaponBits )
 {
 	int		i,endIndex=0;
 	int		iconCnt,rowIconCnt;
@@ -519,7 +519,7 @@ static void CG_DrawLoadWeapons( char *weapons )
 	iconCnt = 0;
 	for ( i = 1 ; i < MAXLOADWEAPONS ; i++ )
 	{
-		if ( weapons[i] )
+		if ( weaponBits & ( 1 << i ) )
 		{
 			iconCnt++;
 		}
@@ -530,21 +530,20 @@ static void CG_DrawLoadWeapons( char *weapons )
 		return;
 	}
 
-	//TODO: allow for more rows of icons??
 	// Single line of icons
 	if (iconCnt<=MAXLOADICONSPERROW)
 	{
-		CG_DrawLoadWeaponsPrintRow("weaponicons_singlerow", weapons, iconCnt,0);
+		CG_DrawLoadWeaponsPrintRow("weaponicons_singlerow", weaponBits, iconCnt,0);
 	}
 	// Two lines of icons
 	else
 	{
 		// Print top row
-		endIndex = CG_DrawLoadWeaponsPrintRow("weaponicons_row1", weapons, MAXLOADICONSPERROW,0);
+		endIndex = CG_DrawLoadWeaponsPrintRow("weaponicons_row1", weaponBits, MAXLOADICONSPERROW,0);
 
 		// Print second row
 		rowIconCnt = iconCnt - MAXLOADICONSPERROW;
-		CG_DrawLoadWeaponsPrintRow("weaponicons_row2", weapons, rowIconCnt,endIndex+1);
+		CG_DrawLoadWeaponsPrintRow("weaponicons_row2", weaponBits, rowIconCnt,endIndex+1);
 	}
 
 	cgi_R_SetColor( NULL );
@@ -662,8 +661,8 @@ static void CG_DrawLoadForcePowers( int forceBits )
 	cgi_R_SetColor( NULL );
 }
 
-// Get the player weapons and force power info 
-static void CG_GetLoadScreenInfo(char *weapons,int *forceBits)
+// Get the player weapons and force power info
+static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 {
 	char	s[MAX_STRING_CHARS];
 	int		iDummy,i;
@@ -675,10 +674,11 @@ static void CG_GetLoadScreenInfo(char *weapons,int *forceBits)
 	// Get player weapons and force powers known
 	if (s[0])
 	{
-	//				|general info				  |-force powers 
-		sscanf( s, "%i %i %i %i %i %i %f %f %f %i %i",
+	//				|general info				  |-force powers
+		sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i",
 				&iDummy,	//	&client->ps.stats[STAT_HEALTH],
 				&iDummy,	//	&client->ps.stats[STAT_ARMOR],
+				&*weaponBits,//	&client->ps.stats[STAT_WEAPONS],
 				&iDummy,	//	&client->ps.stats[STAT_ITEMS],
 				&iDummy,	//	&client->ps.weapon,
 				&iDummy,	//	&client->ps.weaponstate,
@@ -692,26 +692,6 @@ static void CG_GetLoadScreenInfo(char *weapons,int *forceBits)
 
 				);
 	}
-	
-	gi.Cvar_VariableStringBuffer( "playerweaps", s, sizeof(s) );
-	i=0;
-	if (s[0])
-	{
-		var = strtok( s, " " );
-		while( var != NULL )
-		{
-			/* While there are tokens in "s" */
-			weapons[i++] = atoi(var);
-			/* Get next token: */
-			var = strtok( NULL, " " );
-		}
-		assert (i==WP_NUM_WEAPONS);
-	}
-	else
-	{
-		weapons[0] = -1;
-	}
-
 
 	// the new JK2 stuff - force powers, etc...
 	//
@@ -739,8 +719,7 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
 	int xPos,yPos,width,height;
 	vec4_t	color;
 	qhandle_t	background;
-	int forcepowers=0;
-	char weapons[WP_NUM_WEAPONS];
+	int weapons=0, forcepowers=0;
 
 	// Get mission briefing for load screen
 	if (cgi_SP_GetStringTextString( va("BRIEFINGS_%s",mapName), NULL, 0 ) == 0)
@@ -791,10 +770,10 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
 	}
 
 	// Get player weapons and force power info
-	CG_GetLoadScreenInfo(weapons,&forcepowers);
+	CG_GetLoadScreenInfo(&weapons,&forcepowers);
 
 	// Print weapon icons
-	if (weapons[0] > -1)
+	if (weapons)
 	{
 		CG_DrawLoadWeapons(weapons);
 	}
