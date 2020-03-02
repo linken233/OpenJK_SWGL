@@ -3165,26 +3165,28 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 				ecolor[1] = 1.0f;//G
 				ecolor[2] = 1.0f;//B
 			}
-			else if ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_FREE || g_entities[0].client && g_entities[0].client->playerTeam == TEAM_SOLO)
-			{//evil player: everyone is red
-				//Enemies are red
+			else if (( g_entities[0].client && ( g_entities[0].client->playerTeam == TEAM_FREE || g_entities[0].client->playerTeam == TEAM_SOLO ) ||
+			crossEnt->client->playerTeam == TEAM_FREE ||
+			crossEnt->client->playerTeam == TEAM_SOLO ))
+			{
+				//evil player or target: everyone is red
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 0.1f;//G
 				ecolor[2] = 0.1f;//B
 			}
-			else if ( crossEnt->client->playerTeam == TEAM_PLAYER )
+			else if ( g_entities[0].client && g_entities[0].client->playerTeam == crossEnt->client->playerTeam )
 			{
-				//Allies are green
+				//Allies are green unless we are on Free or Solo
 				ecolor[0] = 0.0f;//R
 				ecolor[1] = 1.0f;//G
 				ecolor[2] = 0.0f;//B
 			}
-			else if ( crossEnt->client->playerTeam == TEAM_NEUTRAL )
+			else if ( crossEnt->client->playerTeam == TEAM_NEUTRAL || ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_NEUTRAL ))
 			{
-				// NOTE: was yellow, but making it white unless they really decide they want to see colors
+				//Neutrals are yellow unless they are on our team or we are on Free or Solo. If we are Neutral everyone is yellow.
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 1.0f;//G
-				ecolor[2] = 1.0f;//B
+				ecolor[2] = 0.1f;//B
 			}
 			else
 			{
