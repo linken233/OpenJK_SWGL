@@ -53,6 +53,7 @@ extern void InitMoverTrData( gentity_t *ent );
 extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
+extern cvar_t *g_allowSaberLocking;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 static void Q3_SetWeapon (int entID, const char *wp_name);
 static void Q3_SetItem (int entID, const char *item_name);
@@ -452,6 +453,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_NO_GROUPS),
 	ENUM2STRING(SET_FIRE_WEAPON),
 	ENUM2STRING(SET_FIRE_WEAPON_NO_ANIM),
+	ENUM2STRING(SET_SABERLOCKING),
 	ENUM2STRING(SET_SAFE_REMOVE),
 	ENUM2STRING(SET_BOBA_JET_PACK),
 	ENUM2STRING(SET_INACTIVE),
@@ -4938,6 +4940,18 @@ static void Q3_SetWalking( int entID, qboolean add)
 	}
 }
 
+static void Q3_SetSaberLocking(qboolean add)
+{
+	if (!add)
+	{
+		g_allowSaberLocking->integer = 0;
+	}
+	else
+	{
+		g_allowSaberLocking->integer = 1;
+	}
+}
+
 /*
 ============
 Q3_SetRunning
@@ -8449,6 +8463,14 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		Q3_SetHealth( entID, int_data );
 		break;
 
+	case SET_SABERLOCKING:
+		int_data = atoi((char *)data);
+		if(int_data < 1)
+			gi.cvar_set("g_allowSaberLocking", "0");
+		else
+			gi.cvar_set("g_allowSaberLocking", "1");
+		break;
+
 	case SET_ARMOR:
 		int_data = atoi((char *) data);
 		Q3_SetArmor( entID, int_data );
@@ -10067,6 +10089,10 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 		{
 			*value = g_gravity->value;
 		}
+		break;
+
+	case SET_SABERLOCKING:
+		*value = g_allowSaberLocking->value;
 		break;
 
 	case SET_FACEEYESCLOSED:

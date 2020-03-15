@@ -54,6 +54,7 @@ extern cvar_t	*g_timescale;
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_debugSaberLock;
 extern cvar_t	*g_saberLockRandomNess;
+extern cvar_t	*g_allowSaberLocking;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_cheats;
 extern cvar_t	*g_debugMelee;
@@ -5262,7 +5263,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				}
 				else if ( entAttacking
 					&& hitOwnerAttacking
-					&& !Q_irand( 0, g_saberLockRandomNess->integer )
+					&& (!Q_irand( 0, g_saberLockRandomNess->integer ) && g_allowSaberLocking->integer)
 					&& ( g_debugSaberLock->integer || forceLock
 						|| entPowerLevel == hitOwnerPowerLevel
 						|| (entPowerLevel > FORCE_LEVEL_2 && hitOwnerPowerLevel > FORCE_LEVEL_2 )
@@ -5276,7 +5277,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				}
 				else if ( hitOwnerAttacking
 					&& entDefending
-					&& !Q_irand( 0, g_saberLockRandomNess->integer*3 )
+					&& (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && g_allowSaberLocking->integer)
 					&& (g_debugSaberLock->integer || forceLock ||
 						((ent->client->ps.saberMove != LS_READY || (hitOwnerPowerLevel-ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand( -6, 0 ) )
 							&& ((hitOwnerPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2 )||
@@ -5289,7 +5290,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				else if ( entAttacking && hitOwnerDefending )
 				{//I'm attacking hit, they're parrying
 					qboolean activeDefense = (qboolean)(hitOwner->s.number||g_saberAutoBlocking->integer||hitOwner->client->ps.saberBlockingTime > level.time);
-					if ( !Q_irand( 0, g_saberLockRandomNess->integer*3 )
+					if ( (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && g_allowSaberLocking->integer)
 						&& activeDefense
 						&& (g_debugSaberLock->integer || forceLock ||
 							((hitOwner->client->ps.saberMove != LS_READY || (entPowerLevel-hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand( -6, 0 ) )

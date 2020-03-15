@@ -181,6 +181,7 @@ typedef enum //# setType_e
 	SET_SABER2BLADEON,//## %d="0.0" # Activate a specific blade of Saber 2 (0 - (MAX_BLADES - 1)).
 	SET_SABER2BLADEOFF,//## %d="0.0" # Deactivate a specific blade of Saber 2 (0 - (MAX_BLADES - 1)).
 	SET_DAMAGEENTITY,	//## %d="5" # Damage this entity with set amount.
+	SET_SABERLOCKING, //## %d="1" # Allow Saber Locking. 0 = Turn it off, 1 = Turn it on.
 
 	//# #sep booleans
 	SET_IGNOREPAIN,//## %t="BOOL_TYPES" # Do not react to pain
@@ -265,7 +266,7 @@ typedef enum //# setType_e
 	SET_FORCE_DRAIN,//## %t="BOOL_TYPES" # Causes this ent to start force draining their enemy at whatever level of force drain they have (will drain until scripted to stop)
 	SET_WINTER_GEAR, //## %t="BOOL_TYPES" # Set the player to wear his/her winter gear (skins torso_g1 and lower_e1), or restore the default skins.
 	SET_NO_ANGLES, //## %t="BOOL_TYPES" # This NPC/player will not have any bone angle overrides or pitch or roll (should only be used in cinematics)
-
+				   
 	//# #sep calls
 	SET_SKILL,//## %r%d="0" # Cannot set this, only get it - valid values are 0 through 3
 
