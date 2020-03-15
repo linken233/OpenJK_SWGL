@@ -2726,10 +2726,6 @@ qboolean PM_CanDoRollStab( void )
 			return qfalse;
 		}
 	}
-	else
-	{
-		return qfalse;
-	}
 	return qtrue;
 }
 /*

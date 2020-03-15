@@ -663,7 +663,7 @@ void G_InitCvars( void ) {
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
 	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_ARCHIVE );//makes collision more precise, increases damage
-	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
+	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_ARCHIVE );//debug for dismemberment
 	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_ARCHIVE );//0 = ignore probabilities, 1 = use probabilities
 	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
 	g_saberMoveSpeed = gi.cvar( "g_saberMoveSpeed", "1", CVAR_CHEAT );//how fast you run while attacking with a saber
@@ -689,7 +689,7 @@ void G_InitCvars( void ) {
 
 	g_speederControlScheme = gi.cvar( "g_speederControlScheme", "2", CVAR_ARCHIVE );//2 is default, 1 is alternate
 
-	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART);
+	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_skin_head = gi.cvar( "g_char_skin_head", "head_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_skin_torso = gi.cvar( "g_char_skin_torso", "torso_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_skin_legs = gi.cvar( "g_char_skin_legs", "lower_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );

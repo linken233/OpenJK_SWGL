@@ -1611,13 +1611,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	{ //hack, don't do while moving
 		return;
 	}
-//	if ( taunt != TAUNT_TAUNT )
-//	{//normal taunt always allowed
-//		if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
-//		{//no taunts unless in Duel
-//			return;
-//		}
-//	}
 
 	// fix: rocket lock bug
 	BG_ClearRocketLock(&ent->client->ps);
@@ -1881,6 +1874,7 @@ void ClientThink_real( gentity_t *ent ) {
 	qboolean	isNPC = qfalse;
 	qboolean	controlledByPlayer = qfalse;
 	qboolean	killJetFlags = qtrue;
+	qboolean	isFollowing;
 
 	client = ent->client;
 
@@ -1918,7 +1912,9 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-	if (!(client->ps.pm_flags & PMF_FOLLOW))
+	isFollowing = (client->ps.pm_flags & PMF_FOLLOW) ? qtrue : qfalse;
+
+	if (!isFollowing)
 	{
 		if (level.gametype == GT_SIEGE &&
 			client->siegeClass != -1 &&
@@ -2002,7 +1998,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// mark the time, so the connection sprite can be removed
 	ucmd = &ent->client->pers.cmd;
 
-	if ( client && (client->ps.eFlags2&EF2_HELD_BY_MONSTER) )
+	if ( client && !isFollowing && (client->ps.eFlags2&EF2_HELD_BY_MONSTER) )
 	{
 		G_HeldByMonster( ent, ucmd );
 	}
