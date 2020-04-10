@@ -27,16 +27,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#define PRODUCT_NAME			"KotFMPconfig"
+#define PRODUCT_NAME			"SWGLMPconfig"
 
 #define CLIENT_WINDOW_TITLE "Knights of the Force 2.1 MP"
 #define CLIENT_CONSOLE_TITLE "Knights of the Force 2.1 MP Console"
-#define HOMEPATH_NAME_UNIX "KotF"
-#define HOMEPATH_NAME_WIN "KotF 2.1"
+#define HOMEPATH_NAME_UNIX "SWGL"
+#define HOMEPATH_NAME_WIN "SWGL"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
-#define OPENJKGAME "KotF"
+#define OPENJKGAME "SWGL"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"

@@ -2639,7 +2639,7 @@ void SP_NPC_Jedi( gentity_t *self)
 }
 
 extern cvar_t	*g_char_model;
-void SP_NPC_KotF_Jedi(gentity_t *self)
+void SP_NPC_SWGL_Jedi(gentity_t *self)
 {
 	if (!self->NPC_type)
 	{		
@@ -4772,25 +4772,25 @@ static void NPC_Spawn_f(void)
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
-		SP_NPC_KotF_Jedi(NPCspawner);
+		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
-		SP_NPC_KotF_Jedi(NPCspawner);
+		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
-		SP_NPC_KotF_Jedi(NPCspawner);
+		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
-		SP_NPC_KotF_Jedi(NPCspawner);
+		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	if (!Q_stricmp("imperial", NPCspawner->NPC_type))
 	{//special case, for testing

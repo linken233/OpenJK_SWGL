@@ -217,33 +217,33 @@ endif()
 if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/KotF"
+		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/SWGL"
 		COMPONENT ${JKAMPCoreComponent})
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/KotF"
+		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/SWGL"
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 	install(TARGETS ${MPGame}
 		RUNTIME
-		DESTINATION "${JKAInstallDir}/KotF"
+		DESTINATION "${JKAInstallDir}/SWGL"
 		COMPONENT ${JKAMPCoreComponent})
 	if (WIN64)
 		# Don't do this on 32-bit Windows to avoid overwriting
 		# vanilla JKA's DLLs
 		install(TARGETS ${MPGame}
 			RUNTIME
-			DESTINATION "${JKAInstallDir}/KotF"
+			DESTINATION "${JKAInstallDir}/SWGL"
 			COMPONENT ${JKAMPCoreComponent})
 	endif()
 else()
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/KotF"
+		DESTINATION "${JKAInstallDir}/SWGL"
 		COMPONENT ${JKAMPCoreComponent})
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/KotF"
+		DESTINATION "${JKAInstallDir}/SWGL"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
 

@@ -981,10 +981,10 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 		nChkSum1 = nChkSum2 = 0;
 		// we run the game, so determine which cgame and ui the client "should" be running
 		//dlls are valid too now -rww
-		bGood = (qboolean)(FS_FileIsInPAK("cgamex86.dll", &nChkSum1) == 1);
+		bGood = (qboolean)(FS_FileIsInPAK("swglcgamex86.dll", &nChkSum1) == 1);
 
 		if (bGood)
-			bGood = (qboolean)(FS_FileIsInPAK("uix86.dll", &nChkSum2) == 1);
+			bGood = (qboolean)(FS_FileIsInPAK("swgluix86.dll", &nChkSum2) == 1);
 
 		nClientPaks = Cmd_Argc();
 
