@@ -46,6 +46,8 @@ static void S_Music_f(void);
 static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
 
+static void S_MenuMusic_f(void);
+
 void S_Update_();
 void S_StopAllSounds(void);
 static void S_UpdateBackgroundTrack( void );
@@ -485,6 +487,8 @@ void S_Init( void ) {
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
 	Cmd_AddCommand("mp3_calcvols", S_MP3_CalcVols_f);
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
+
+	Cmd_AddCommand("menumusic", S_MenuMusic_f);
 
 #ifdef USE_OPENAL
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
@@ -3715,6 +3719,53 @@ static void S_Music_f( void ) {
 		Com_Printf ("music <musicfile> [loopfile]\n");
 		return;
 	}
+}
+
+static void S_MenuMusic_f(void) {
+	
+	int music_pick = rand() % 11;
+	switch (music_pick)
+	{
+		case 0:
+			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
+			break;
+		case 1:
+			S_StartBackgroundTrack("music/sp/menu1.mp3", "music/sp/menu1.mp3", qfalse);
+			break;
+		case 2:
+			S_StartBackgroundTrack("music/sp/menu2.mp3", "music/sp/menu2.mp3", qfalse);
+			break;
+		case 3:
+			S_StartBackgroundTrack("music/sp/menu3.mp3", "music/sp/menu3.mp3", qfalse);
+			break;
+		case 4:
+			S_StartBackgroundTrack("music/sp/menu4.mp3", "music/sp/menu4.mp3", qfalse);
+			break;
+		case 5:
+			S_StartBackgroundTrack("music/sp/menu5.mp3", "music/sp/menu5.mp3", qfalse);
+			break;
+		case 6:
+			S_StartBackgroundTrack("music/sp/menu6.mp3", "music/sp/menu6.mp3", qfalse);
+			break;
+		case 7:
+			S_StartBackgroundTrack("music/sp/menu7.mp3", "music/sp/menu7.mp3", qfalse);
+			break;
+		case 8:
+			S_StartBackgroundTrack("music/sp/menu8.mp3", "music/sp/menu8.mp3", qfalse);
+			break;
+		case 9:
+			S_StartBackgroundTrack("music/sp/menu9.mp3", "music/sp/menu9.mp3", qfalse);
+			break;
+		case 10:
+			S_StartBackgroundTrack("music/sp/menu10.mp3", "music/sp/menu10.mp3", qfalse);
+			break;
+		default:
+			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
+			break;
+	}
+
+	return;
+		
 }
 
 static void S_StopMusic_f( void ) {
