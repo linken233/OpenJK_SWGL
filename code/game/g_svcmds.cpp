@@ -783,6 +783,36 @@ static void Svcmd_PlayerModel_f(void)
 	}
 }
 
+static void Svcmd_Scale_f(void)
+{
+	if (gi.argc() == 1)
+	{
+		gi.Printf(S_COLOR_RED "USAGE: scale <30-150>" S_COLOR_WHITE "\n");
+	}
+	else if (gi.argc() == 2)
+	{
+		try
+		{
+			int value = std::stoi(gi.argv(1));
+
+			if (value < 30 || value > 150)
+			{
+				gi.Printf(S_COLOR_RED "ERROR: Scale must be between 30 and 150. You put %i." S_COLOR_WHITE "\n", value);
+			}
+			else
+			{
+				player->s.modelScale[0] = player->s.modelScale[1] = player->s.modelScale[2] = value / 100.0f;
+			}
+		}
+		catch (...)
+		{
+			gi.Printf(S_COLOR_RED "ERROR: You just tried to crash the game! Shame on you!" S_COLOR_WHITE "\n");
+		}
+
+		
+	}
+}
+
 static void Svcmd_PlayerTint_f(void)
 {
 	if ( gi.argc() == 4 )
@@ -948,6 +978,7 @@ static svcmd_t svcmds[] = {
 	
 	{ "secrets",					Svcmd_Secrets_f,							CMD_NONE },
 	{ "difficulty",					Svcmd_Difficulty_f,							CMD_NONE },
+	{ "scale",						Svcmd_Scale_f,							CMD_NONE },
 	
 	//{ "say",						Svcmd_Say_f,						qtrue },
 	//{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },
