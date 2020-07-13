@@ -1979,8 +1979,21 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	
 	qboolean forcedRGBSaberColours[MAX_SABERS][MAX_BLADES] = {{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse},
 																{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse}};
-	
-	strcpy(customSkin,"default");
+	try
+	{
+		if (!NPC->NPC_skin)
+			strcpy(customSkin, "default");
+		else
+			strcpy(customSkin, NPC->NPC_skin);
+	}
+	catch (...)
+	{
+		strcpy(customSkin, "default");
+	}
+
+
+
+
 	if ( !NPCName || !NPCName[0])
 	{
 		NPCName = "Player";
@@ -3139,6 +3152,45 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				continue;
 			}
 
+			try
+			{
+				if (NPC->NPC_team)
+				{
+					if (!Q_stricmp("player", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
+					}
+					else if (!Q_stricmp("enemy", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
+					}
+					else if (!Q_stricmp("neutral", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_NEUTRAL");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_NEUTRAL");
+					}
+					else if (!Q_stricmp("free", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_FREE");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_FREE");
+					}
+					else if (!Q_stricmp("solo", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
+					}
+					else
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
+					}
+				}
+			}
+			catch(...){}
+
+
 			// class
 			if ( !Q_stricmp( token, "class" ) )
 			{
@@ -4220,7 +4272,6 @@ void NPC_LoadParms( void )
 
 	//now load in the .npc definitions
 	fileCnt = gi.FS_GetFileList("ext_data/npcs", ".npc", npcExtensionListBuf, sizeof(npcExtensionListBuf) );
-
 	holdChar = npcExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 )
 	{
@@ -4253,5 +4304,7 @@ void NPC_LoadParms( void )
 			totallen += len;
 			marker += len;
 		}
+
 	}
+	
 }

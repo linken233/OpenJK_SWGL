@@ -1228,7 +1228,8 @@ Ghoul2 Insert End
 	char		*NPC_type;
 	char		*NPC_targetname;
 	char		*NPC_target;
-
+	char		*NPC_skin;
+	char		*NPC_team;
 //Variables used by movers (most likely exclusively by them)
 	moverState_t moverState;
 	int			soundPos1;
@@ -1442,6 +1443,8 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(NPC_type);
 		saved_game.write<int32_t>(NPC_targetname);
 		saved_game.write<int32_t>(NPC_target);
+		saved_game.write<int32_t>(NPC_skin);
+		saved_game.write<int32_t>(NPC_team);
 		saved_game.write<int32_t>(moverState);
 		saved_game.write<int32_t>(soundPos1);
 		saved_game.write<int32_t>(sound1to2);
@@ -1631,6 +1634,8 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(NPC_type);
 		saved_game.read<int32_t>(NPC_targetname);
 		saved_game.read<int32_t>(NPC_target);
+		saved_game.read<int32_t>(NPC_skin);
+		saved_game.read<int32_t>(NPC_team);
 		saved_game.read<int32_t>(moverState);
 		saved_game.read<int32_t>(soundPos1);
 		saved_game.read<int32_t>(sound1to2);

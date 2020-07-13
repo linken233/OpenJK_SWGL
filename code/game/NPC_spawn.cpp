@@ -374,8 +374,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
 	}
 	if (!Q_stricmp("Valkorion", ent->NPC_type) ||
-		!Q_stricmp("Ep7_Snoke", ent->NPC_type) || 
-		!Q_stricmp("Ep8_Snoke", ent->NPC_type) || 
+		!Q_stricmp("Snoke", ent->NPC_type) || 
 		!Q_stricmp("Emperor_Palpatine", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
@@ -1688,6 +1687,8 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 	}
 
 	newent->classname = "NPC";
+	newent->NPC_skin = G_NewString(ent->NPC_skin);
+	newent->NPC_team = G_NewString(ent->NPC_team);
 	VectorCopy(ent->s.origin, newent->s.origin);
 	VectorCopy(ent->s.origin, newent->client->ps.origin);
 	VectorCopy(ent->s.origin, newent->currentOrigin);
@@ -1741,6 +1742,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 	newent->paintarget = G_NewString(ent->paintarget);
 	newent->opentarget = G_NewString(ent->opentarget);
 	newent->radius = ent->radius;
+	newent->NPC_skin = G_NewString(ent->NPC_skin);
 
 	newent->NPC->eventualGoal = ent->enemy;
 
@@ -4728,12 +4730,58 @@ static void NPC_Spawn_f(void)
 	gi.linkentity(NPCspawner);
 	
 	NPCspawner->NPC_type = Q_strlwr( G_NewString( npc_type ) );
+
+	// Default values to prevent crashing
+	char* skin = "default";
+
+	char* team = "enemy";
 	
-	NPCspawner->behaviorSet[BSET_SPAWN] =  G_NewString(gi.argv(3));
+	// Variable to start arg checking
+	int spawnCommand = 0;
 
-	NPCspawner->NPC_targetname = G_NewString(gi.argv(4));
 
-	NPCspawner->soundSet = G_NewString(gi.argv(5));
+	while (spawnCommand < gi.argc())
+	{
+		if (!Q_stricmp("spawnscript", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->behaviorSet[BSET_SPAWN] = "spawnscript/" + gi.argv(++spawnCommand);
+			
+		}
+		else if (!Q_stricmp("fleescript", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->behaviorSet[BSET_FLEE] = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("deathscript", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->behaviorSet[BSET_DEATH] = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("skin", gi.argv(spawnCommand)) && gi.argv(spawnCommand+1) )
+		{
+			skin = gi.argv(++spawnCommand);			
+		}
+		else if (!Q_stricmp("targetname", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_targetname = gi.argv(++spawnCommand);
+			
+		}
+		else if (!Q_stricmp("team", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			team = gi.argv(++spawnCommand);
+			
+		}
+		else if (!Q_stricmp("snd", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->soundSet = gi.argv(++spawnCommand);
+			
+		}
+
+		spawnCommand++;
+		
+	} 
+
+	NPCspawner->NPC_skin = G_NewString(skin);
+
+	NPCspawner->NPC_team = G_NewString(team);
 
 	NPCspawner->count = 1;
 
@@ -4985,11 +5033,18 @@ void Svcmd_NPC_f( void )
 {
 	char	*cmd;
 
+	char *customCmd;
+
 	cmd = gi.argv( 1 );
+
+	customCmd = gi.argv(2);
+
+
 
 	if ( !*cmd )
 	{
 		gi.Printf( "Valid NPC commands are:\n" );
+		gi.Printf( " help (shows all customization commands for npc spawning)\n");
 		gi.Printf( " spawn [NPC type (from *.npc files)]\n" );
 		gi.Printf( " spawn vehicle [NPC type (from *.npc files, only for NPCs that are CLASS_VEHICLE and have a .veh file)]\n" );
 		gi.Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
@@ -4999,6 +5054,45 @@ void Svcmd_NPC_f( void )
 	else if ( Q_stricmp( cmd, "spawn" ) == 0 )
 	{
 		NPC_Spawn_f();
+	}
+	else if (Q_stricmp(cmd, "help") == 0)
+	{
+		if (!*customCmd)
+		{
+			gi.Printf(S_COLOR_GREEN"Valid NPC customization commands are:\n");
+			gi.Printf(S_COLOR_YELLOW"Skin: Choose the appearance of the NPC. Ex: Npc Spawn reborn_new skin blue\n");
+			gi.Printf(S_COLOR_GREEN"Team: Choose the team or alignment of the NPC. Ex: Npc Spawn reborn_new team player\n");
+			gi.Printf(S_COLOR_YELLOW"Spawnscript: Choose a script to fire once the NPC spawns. Recommended for cinematics. Ex: Npc spawn reborn_new spawnscript sit\n");
+			gi.Printf(S_COLOR_GREEN"Fleescript: Choose a script to fire when an NPC is gravely injured. Ex: Npc spawn reborn_new fleescript surrender\n");
+			gi.Printf(S_COLOR_YELLOW"Deathscript: Choose a script to fire when an NPC is killed. Ex: Npc spawn reborn_new deathscript disappear\n");
+			gi.Printf(S_COLOR_GREEN"Targetname: Choose the name for an NPC as whatever you'd like, useful for scripts. Ex: Npc spawn reborn_new targetname bobthereborn\n");
+			gi.Printf(S_COLOR_YELLOW"Snd: Choose the sounds for an NPC to use. Ex: Npc Spawn reborn_new snd rosh\n");
+			gi.Printf(S_COLOR_RED"Keep in mind that all commands can be used for any NPC in any order. Ex: Npc spawn reborn_new skin blue team solo targetname bobthereborn spawnscript sit\n");
+			gi.Printf(S_COLOR_RED"For further details, type npc help followed by a customization command in the console. Ex: npc help skin.\n");
+		}
+		else if (Q_stricmp(customCmd, "skin") == 0)
+		{
+			gi.Printf(S_COLOR_GREEN"Most NPCs can be customized to your liking to be any appearance you want.\n");
+			gi.Printf(S_COLOR_YELLOW"You can select either a pre-set skin or a custom skin (provided the model has one.\n");
+			gi.Printf(S_COLOR_GREEN"To use a pre-set skin, simply type the name of the skin. Ex: Npc Spawn reborn_new skin blue.\n");
+			gi.Printf(S_COLOR_YELLOW"To use a custom skin, type of the name of the head, torso, and lower sections separated by the | key. Ex: Npc Spawn Darth_Vader head_a1|torso_d1|lower_a4\n");
+			gi.Printf(S_COLOR_GREEN"If you leave out this command, the NPC will spawn with its default appearance.\n");
+
+		}
+		else if (Q_stricmp(customCmd, "team") == 0)
+		{
+			gi.Printf(S_COLOR_GREEN"All NPCs can be assigned their own team to fight for.\n");
+			gi.Printf(S_COLOR_YELLOW"Available teams are player, enemy, neutral, free, and solo.\n");
+			gi.Printf(S_COLOR_GREEN"To use the team command, type 'team' followed by your preferred alignment. Ex: Npc Spawn Reborn_New team player\n");
+			gi.Printf(S_COLOR_YELLOW"If this is left blank, the NPC will spawn as an enemy by default.\n");
+		}
+		else if (Q_stricmp(customCmd, "spawnscript") == 0)
+		{
+			gi.Printf(S_COLOR_GREEN"Use this command to assign a script to run when the NPC is spawned.\n");
+			gi.Printf(S_COLOR_YELLOW"Available spawnscripts can be seen with the 'dir spawnscripts' command.\n");
+			gi.Printf(S_COLOR_GREEN"To use a spawnscript with an NPC, type spawnscript followed by your preferred spawnscript, no need to add in any folders. Ex: Npc Spawn Reborn_New spawnscript meditate.");
+		}
+
 	}
 	else if ( Q_stricmp( cmd, "kill" ) == 0 )
 	{

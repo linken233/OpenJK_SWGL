@@ -939,6 +939,14 @@ void G_FreeEntity( gentity_t *ed ) {
 	if (ed->NPC_type && gi.bIsFromZone(ed->NPC_type, TAG_G_ALLOC)) {
 		gi.Free(ed->NPC_type);
 	}
+	if (ed->NPC_skin && gi.bIsFromZone(ed->NPC_skin, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_skin);
+	}
+	if (ed->NPC_skin && gi.bIsFromZone(ed->NPC_team, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_team);
+	}
 	if (ed->classname && gi.bIsFromZone(ed->classname, TAG_G_ALLOC)) {
 		gi.Free(ed->classname );
 	}
