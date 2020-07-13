@@ -63,9 +63,9 @@ Debugging command to print the current position
 =============
 */
 static void CG_Viewpos_f (void) {
-	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
-		(int)cg.refdefViewAngles[YAW]);
+	CG_Printf ("%s (%i %i %i) : %i %i %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[PITCH],
+		(int)cg.refdefViewAngles[YAW], (int)cg.refdefViewAngles[ROLL]);
 }
 
 void CG_WriteCam_f (void)
@@ -307,6 +307,7 @@ static const char *gcmds[] = {
 	"saberAttackCycle",
 	"saberColor",
 	"saberblade",
+	"scale",
 	"secrets",
 	"setForceAll",
 	"setSaberAll",
