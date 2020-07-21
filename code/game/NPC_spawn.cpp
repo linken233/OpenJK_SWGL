@@ -360,8 +360,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->NPC->scriptFlags |= SCF_NO_GROUPS;//don't use combat points or group AI
 		ent->flags |= (FL_SHIELDED|FL_NO_KNOCKBACK);//low-level shots bounce off, no knockback
 	}
-	if ( !Q_stricmp( "Yoda", ent->NPC_type ) || !Q_stricmp("Ep1_Yoda", ent->NPC_type) || 
-		!Q_stricmp("Ep2_Yoda", ent->NPC_type) || !Q_stricmp("Ep3_Yoda", ent->NPC_type))
+	if ( !Q_stricmp( "Yoda", ent->NPC_type ))
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_NO_FORCE;//force powers don't work on him
 		ent->NPC->aiFlags |= NPCAI_BOSS_CHARACTER;
@@ -374,7 +373,8 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
 	}
 	if (!Q_stricmp("Valkorion", ent->NPC_type) ||
-		!Q_stricmp("Snoke", ent->NPC_type) || 
+		!Q_stricmp("Snoke", ent->NPC_type) ||
+		!Q_stricmp("Vitiate", ent->NPC_type) ||
 		!Q_stricmp("Emperor_Palpatine", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
@@ -4744,7 +4744,7 @@ static void NPC_Spawn_f(void)
 	{
 		if (!Q_stricmp("spawnscript", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
 		{
-			NPCspawner->behaviorSet[BSET_SPAWN] = "spawnscript/" + gi.argv(++spawnCommand);
+			NPCspawner->behaviorSet[BSET_SPAWN] = gi.argv(++spawnCommand);
 			
 		}
 		else if (!Q_stricmp("fleescript", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
