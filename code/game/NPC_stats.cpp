@@ -313,6 +313,27 @@ saber_colors_t TranslateSaberColor(const char *name)
 	{
 		return ((saber_colors_t)(Q_irand(SABER_GREEN, SABER_BLUE)));
 	}
+	if (!Q_stricmp(name, "swtor_sith_random"))
+	{
+		switch (Q_irand(0, 2))
+		{
+		case 0:
+			return SABER_RED;
+			break;
+		
+		case 1:
+			return SABER_ORANGE;
+			break;
+
+		case 2:
+			return SABER_PURPLE;
+			break;
+
+		default:
+			return SABER_RED;
+			break;
+		}
+	}
 	if (!Q_stricmp(name, "darksaber"))
 	{
 		return SABER_DARKSABER;
