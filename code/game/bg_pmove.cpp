@@ -14632,15 +14632,6 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	}
 
-	if (cg.renderingThirdPerson == false && cg_checkModelChange.integer == 1)
-	{
-		cg_drawHUD.integer = 2;
-	}
-	else
-	{
-		cg_drawHUD.integer = 1;
-	}
-
 	// Check for binocular specific mode
 	if ( cg.zoomMode == 1 && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) ) //
 	{

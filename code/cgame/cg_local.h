@@ -655,8 +655,6 @@ extern	vmCvar_t		cg_fovViewmodelAdjust;
 
 extern	vmCvar_t		cg_scaleVehicleSensitivity;
 
-extern	vmCvar_t		cg_checkModelChange;
-
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c

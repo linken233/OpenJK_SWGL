@@ -345,8 +345,6 @@ vmCvar_t	cg_SFXSabers;
 vmCvar_t	cg_SFXSabersGlowSize;
 vmCvar_t	cg_SFXSabersCoreSize;
 
-vmCvar_t	cg_checkModelChange;
-
 typedef struct {
 	vmCvar_t	*vmCvar;
 	const char	*cvarName;
@@ -471,7 +469,6 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", CVAR_ARCHIVE },
 
 
-	{ &cg_checkModelChange, "cg_checkModelChange", "0", CVAR_ARCHIVE },
 };
 
 static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
@@ -1258,54 +1255,6 @@ HUDMenuItem_t otherHUDBits[] =
 	{ "righthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_FRAME_RIGHT
 };
 
-
-HUDMenuItem_t cloneCommandoForceTics[] =
-{
-	 { "clonecommandorighthud", "force_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	 { "clonecommandorighthud", "force_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	 { "clonecommandorighthud", "force_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	 { "clonecommandorighthud", "force_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-};
-
-HUDMenuItem_t cloneCommandoAmmoTics[] =
-{
-	{ "clonecommandorighthud", "ammo_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	{ "clonecommandorighthud", "ammo_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	{ "clonecommandorighthud", "ammo_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-	{ "clonecommandorighthud", "ammo_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top
-};
-
-HUDMenuItem_t cloneCommandoArmorTics[] =
-{
-	{ "clonecommandolefthud", "armor_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "armor_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "armor_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "armor_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-};
-
-HUDMenuItem_t cloneCommandoHealthTics[] =
-{
-	{ "clonecommandolefthud", "health_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "health_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "health_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "health_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-};
-
-HUDMenuItem_t cloneCommandoHudBits[] =
-{
-	{ "clonecommandolefthud", "healthamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud", "armoramount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud", "forceamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud", "ammoamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud", "saberstyle_strong",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud", "saberstyle_medium",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud", "saberstyle_fast",		0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandolefthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-	{ "clonecommandorighthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },
-};
-
 /*const char *HolocronIcons[] = {
 	"gfx/mp/f_icon_lt_heal",		//FP_HEAL,
 	"gfx/mp/f_icon_levitation",		//FP_LEVITATION,
@@ -1513,20 +1462,6 @@ static void CG_RegisterGraphics( void ) {
 			&otherHUDBits[i].background);
 	}
 
-
-	for (i = 0; i < CCHB_MAX; i++)
-	{
-		cgi_UI_GetMenuItemInfo(
-			cloneCommandoHudBits[i].menuName,
-			cloneCommandoHudBits[i].itemName,
-			&cloneCommandoHudBits[i].xPos,
-			&cloneCommandoHudBits[i].yPos,
-			&cloneCommandoHudBits[i].width,
-			&cloneCommandoHudBits[i].height,
-			cloneCommandoHudBits[i].color,
-			&cloneCommandoHudBits[i].background);
-	}
-
 	// Get all the info for each HUD piece
 	for (i=0;i<MAX_HUD_TICS;i++)
 	{
@@ -1570,46 +1505,6 @@ static void CG_RegisterGraphics( void ) {
 			ammoTics[i].color,
 			&ammoTics[i].background);
 
-
-		cgi_UI_GetMenuItemInfo(
-			cloneCommandoHealthTics[i].menuName,
-			cloneCommandoHealthTics[i].itemName,
-			&cloneCommandoHealthTics[i].xPos,
-			&cloneCommandoHealthTics[i].yPos,
-			&cloneCommandoHealthTics[i].width,
-			&cloneCommandoHealthTics[i].height,
-			cloneCommandoHealthTics[i].color,
-			&cloneCommandoHealthTics[i].background);
-
-		cgi_UI_GetMenuItemInfo(
-			cloneCommandoArmorTics[i].menuName,
-			cloneCommandoArmorTics[i].itemName,
-			&cloneCommandoArmorTics[i].xPos,
-			&cloneCommandoArmorTics[i].yPos,
-			&cloneCommandoArmorTics[i].width,
-			&cloneCommandoArmorTics[i].height,
-			cloneCommandoArmorTics[i].color,
-			&cloneCommandoArmorTics[i].background);
-
-		cgi_UI_GetMenuItemInfo(
-			cloneCommandoForceTics[i].menuName,
-			cloneCommandoForceTics[i].itemName,
-			&cloneCommandoForceTics[i].xPos,
-			&cloneCommandoForceTics[i].yPos,
-			&cloneCommandoForceTics[i].width,
-			&cloneCommandoForceTics[i].height,
-			cloneCommandoForceTics[i].color,
-			&cloneCommandoForceTics[i].background);
-
-		cgi_UI_GetMenuItemInfo(
-			cloneCommandoAmmoTics[i].menuName,
-			cloneCommandoAmmoTics[i].itemName,
-			&cloneCommandoAmmoTics[i].xPos,
-			&cloneCommandoAmmoTics[i].yPos,
-			&cloneCommandoAmmoTics[i].width,
-			&cloneCommandoAmmoTics[i].height,
-			cloneCommandoAmmoTics[i].color,
-			&cloneCommandoAmmoTics[i].background);
 	}
 
 
