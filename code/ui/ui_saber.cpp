@@ -429,6 +429,7 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 			break;
 		case SABER_DARKSABER:
 			glow = re.RegisterShader("gfx/effects/sabers/darksaberglow");
+			blade = re.RegisterShader("gfx/effects/sabers/darksabercore");
 			SaberBladeShader = re.RegisterShader("SFX_Sabers/darksaber_line");
 			break;
 		default://SABER_RGB
