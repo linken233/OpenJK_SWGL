@@ -12947,25 +12947,7 @@ static bool PM_DoChargedWeapons( void )
 	//------------------
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
-
-		// alt-fire charges the weapon
-		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
-		{
-			charging = qtrue;
-			altFire = qtrue;
-		}
-		break;
-
 	case WP_REY:
-
-		// alt-fire charges the weapon
-		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
-		{
-			charging = qtrue;
-			altFire = qtrue;
-		}
-		break;
-
 	case WP_CLONEPISTOL:
 
 		// alt-fire charges the weapon
@@ -13540,44 +13522,8 @@ static void PM_Weapon( void )
 			{
 			case WP_BRYAR_PISTOL:
 			case WP_BLASTER_PISTOL:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_REY:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_JANGO:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_CLONEPISTOL:
 				if ( pm->gent
 					&& pm->gent->weaponModel[1] > 0 )
@@ -13775,40 +13721,8 @@ static void PM_Weapon( void )
 	*/
 			case WP_BRYAR_PISTOL://1-handed
 			case WP_BLASTER_PISTOL://1-handed
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
-
 			case WP_REY:
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
-
 			case WP_JANGO:
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
 			case WP_CLONEPISTOL:
 				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
 				{//dual pistols

@@ -288,6 +288,7 @@ const int defaultDamage[] = {
 	0,							// WP_TUSKEN_STAFF
 	0,							// WP_SCEPTER
 	0,							// WP_NOGHRI_STICK
+
 	BLASTER_DAMAGE,				// WP_BATTLEDROID
 	BLASTER_DAMAGE,				// WP_THEFIRSTORDER
 	BLASTER_DAMAGE,				// WP_CLONECARBINE
@@ -400,6 +401,7 @@ const int defaultSplashDamage[] = {
 	0,								// WP_TUSKEN_STAFF
 	0,								// WP_SCEPTER
 	0,								// WP_NOGHRI_STICK
+
 	0,								// WP_BATTLEDROID
 	0,				   				// WP_THEFIRSTORDER
 	0,				   				// WP_CLONECARBINE
@@ -448,6 +450,7 @@ const float defaultSplashRadius[] = {
 	0.0f,							// WP_TUSKEN_STAFF
 	0.0f,							// WP_SCEPTER
 	0.0f,							// WP_NOGHRI_STICK
+
 	0.0f,							// WP_BATTLEDROID
 	0.0f,							// WP_THEFIRSTORDER
 	0.0f,							// WP_CLONECARBINE
@@ -496,6 +499,7 @@ const int defaultAltSplashDamage[] = {
 	0,								// WP_TUSKEN_STAFF
 	0,								// WP_SCEPTER
 	0,								// WP_NOGHRI_STICK
+
 	0,								// WP_BATTLEDROID
 	0,								// WP_THEFIRSTORDER
 	0,								// WP_CLONECARBINE
@@ -544,6 +548,7 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_TUSKEN_STAFF
 	0.0f,							// WP_SCEPTER
 	0.0f,							// WP_NOGHRI_STICK
+
 	0.0f,							// WP_BATTLEDROID
 	0.0f,							// WP_THEFIRSTORDER
 	0.0f,							// WP_CLONECARBINE
