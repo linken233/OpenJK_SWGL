@@ -1693,6 +1693,9 @@ void WPN_ScopeType(const char **holdBuf)
         return;
     }
 
+	// This is for cg.zoommode.
+	tokenInt += 3;
+
     if ((tokenInt < ST_A280) || (tokenInt > ST_DLT_20A ))
     {
         gi.Printf(S_COLOR_YELLOW"WARNING: bad scopeType in external weapon data '%d'\n", tokenInt);

@@ -1726,19 +1726,8 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		break;
 
 	case WP_BOBA:
-		if (alt_fire)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				WP_FireBobaRifle(ent, alt_fire);
-			}
-			break;
-		}
-		else
-		{
-			WP_FireBobaRifle(ent, alt_fire);
-			break;
-		}
+		WP_FireBobaRifle(ent, alt_fire);
+		break;
 
 	case WP_CLONEPISTOL:
 		WP_FireClonePistol(ent, alt_fire);

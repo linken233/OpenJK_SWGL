@@ -14919,34 +14919,53 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	
 	if (pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
 	{
+		// If you try and switch between firingMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch. 
 		if (pm->cmd.buttons & BUTTON_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->firingMode == 0)
 		{
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 		}
 
+		// If you have a scope.
 		if (weaponData[pm->ps->weapon].scopeType >= ST_A280)
 		{
+			// If scoped, convert the main fire to the alt-fire.
 			if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
 			{
+				if (pm->ps->firingMode == 0)
+				{
+					pm->cmd.buttons |= BUTTON_ALT_ATTACK;
+					pm->ps->eFlags |= EF_ALT_FIRING;
+				}
 			}
+			// If you have a scope and you have the firing type of high powered, you can not use main click. 
 			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
 			{
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
 			}
+			// Don't let an alt-fire through.
 			else
 			{
 				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			}
 		}
+		// If you don't have a scope, but a firing type.
 		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC)
 		{
-			if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
+			if (pm->ps->firingMode == 1)
 			{
-				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				// If you have the firing type of high powered, you can not use main click. High powered firing type is useless without a scope.
+				if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
+				{
+					pm->cmd.buttons &= ~BUTTON_ATTACK;
+				}
+				// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
+				else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+				{
+					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
 			}
-
-			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 		}
 	}
 }
