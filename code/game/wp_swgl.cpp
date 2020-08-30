@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "w_local.h"
+#include "../cgame/cg_local.h"
 
 //---------------
 //	E-5 Carbine
@@ -165,7 +166,7 @@ void WP_FireBattleDroid(gentity_t *ent, qboolean alt_fire)
 void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
 {
-	int velocity = BLASTER_VELOCITY;
+	int velocity = F_11D_VELOCITY;
 	int	damage = altFire ? weaponData[WP_THEFIRSTORDER].altDamage : weaponData[WP_THEFIRSTORDER].damage;
 
 	if (ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE)
@@ -180,11 +181,11 @@ void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 		{
 			if (g_spskill->integer < 2)
 			{
-				velocity *= BLASTER_NPC_VEL_CUT;
+				velocity *= F_11D_NPC_VEL_CUT;
 			}
 			else
 			{
-				velocity *= BLASTER_NPC_HARD_VEL_CUT;
+				velocity *= F_11D_NPC_HARD_VEL_CUT;
 			}
 		}
 	}
@@ -203,15 +204,15 @@ void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 	{
 		if (g_spskill->integer == 0)
 		{
-			damage = BLASTER_NPC_DAMAGE_EASY;
+			damage = F_11D_NPC_DAMAGE_EASY;
 		}
 		else if (g_spskill->integer == 1)
 		{
-			damage = BLASTER_NPC_DAMAGE_NORMAL;
+			damage = F_11D_NPC_DAMAGE_NORMAL;
 		}
 		else
 		{
-			damage = BLASTER_NPC_DAMAGE_HARD;
+			damage = F_11D_NPC_DAMAGE_HARD;
 		}
 	}
 
@@ -252,40 +253,50 @@ void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
+	else if (cg.zoomMode >= ST_A280)
+	{
+		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
+		// angs[YAW]   += Q_flrand(-0.25f, 0.25f) * 0.01;
+
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * F_11D_ALT_SPREAD;
+		angs[YAW]   += Q_flrand(-1.0f, 1.0f) * F_11D_ALT_SPREAD;
+	} 
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
 	{//force sight 2+ gives perfect aim
 		//FIXME: maybe force sight level 3 autoaims some?
-		if (alt_fire)
+			// Troopers use their aim values as well as the gun's inherent inaccuracy
+			// so check for all classes of stormtroopers and anyone else that has aim error
+		if (ent->client && ent->NPC &&
+			(ent->client->NPC_class == CLASS_STORMTROOPER ||
+			ent->client->NPC_class == CLASS_SWAMPTROOPER))
 		{
-			// add some slop to the alt-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
-			angs[YAW] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
+			angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (F_11D_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+			angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (F_11D_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
 		}
 		else
 		{
-			// Troopers use their aim values as well as the gun's inherent inaccuracy
-			// so check for all classes of stormtroopers and anyone else that has aim error
-			if (ent->client && ent->NPC &&
-				(ent->client->NPC_class == CLASS_STORMTROOPER ||
-				ent->client->NPC_class == CLASS_SWAMPTROOPER))
-			{
-				angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-			}
-			else
-			{
-				// add some slop to the main-fire direction
-				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
-				angs[YAW] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
-			}
+			// add some slop to the main-fire direction
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * F_11D_MAIN_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * F_11D_MAIN_SPREAD;
 		}
 	}
 
-	AngleVectors(angs, dir, NULL, NULL);
+	if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireFirstOrderMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+	}
+	else
+	{
+		AngleVectors(angs, dir, NULL, NULL);
 
-	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireFirstOrderMissile(ent, muzzle, dir, alt_fire);
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireFirstOrderMissile(ent, muzzle, dir, alt_fire);
+	}
 }
 
 //---------------

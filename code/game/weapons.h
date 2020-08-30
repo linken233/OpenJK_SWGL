@@ -222,6 +222,20 @@ enum ScopeType
 #define	BLASTER_NPC_DAMAGE_NORMAL	12 // 14
 #define	BLASTER_NPC_DAMAGE_HARD		16 // 18
 
+
+// F-11D Blaster
+//---------
+#define F_11D_MAIN_SPREAD			1.5f
+#define F_11D_ALT_SPREAD			0.1f
+#define F_11D_NPC_SPREAD			0.4f
+#define F_11D_VELOCITY				2300
+#define F_11D_NPC_VEL_CUT			0.5f
+#define F_11D_NPC_HARD_VEL_CUT		0.7f
+#define F_11D_DAMAGE				20
+#define	F_11D_NPC_DAMAGE_EASY		6
+#define	F_11D_NPC_DAMAGE_NORMAL		12 // 14
+#define	F_11D_NPC_DAMAGE_HARD		16 // 18
+
 // DC-15
 //---------
 #define CLONERIFLE_MAIN_SPREAD			0.1f
