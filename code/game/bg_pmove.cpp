@@ -14000,6 +14000,14 @@ static void PM_Weapon( void )
 		{
 			amount = weaponData[pm->ps->weapon].energyPerShot;
 		}
+
+		if (weaponData[pm->ps->weapon].firingType == FT_SEMI && pm->ps->firingMode == 1)
+		{
+			if (pm->ps->weapon == WP_CLONERIFLE)
+			{
+				amount = CLONERIFLE_SEMI_AMOUNT;
+			}
+		}
 	}
 
 	if ( (pm->ps->weaponstate == WEAPON_CHARGING) || (pm->ps->weaponstate == WEAPON_CHARGING_ALT) )
@@ -14131,6 +14139,10 @@ static void PM_Weapon( void )
 					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					break;
 				case FT_SEMI:
+					if (pm->ps->weapon == WP_CLONERIFLE)
+					{
+						weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
+					}
 					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 					break;
@@ -14152,7 +14164,7 @@ static void PM_Weapon( void )
 			}
 		}
 	}
-	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
+	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
 	{
 		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
 	}
