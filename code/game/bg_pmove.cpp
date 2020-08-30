@@ -14147,20 +14147,14 @@ static void PM_Weapon( void )
 					}
 					break;
 				case FT_HIGH_POWERED:
-					for (int i = 0; i < WP_NUM_WEAPONS; i++)
-					{
-						weaponData[i].damage = HIGH_POWERED_DAMAGE;
-					}
+					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
 					break;
 			}
 		}
 	}
-	else
+	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
 	{
-		for (int i = 0; i < WP_NUM_WEAPONS; i++)
-		{
-			weaponData[i].damage = defaultDamageCopy[i];
-		}
+		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
 	}
 
 	if ( g_timescale != NULL )
