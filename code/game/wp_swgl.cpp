@@ -525,6 +525,17 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
+	else if (cg.zoomMode >= ST_A280)
+	{
+		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
+		// angs[YAW]   += Q_flrand(-0.25f, 0.25f) * 0.01;
+
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * F_11D_ALT_SPREAD;
+		angs[YAW]   += Q_flrand(-1.0f, 1.0f) * F_11D_ALT_SPREAD;
+	}
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
 	{//force sight 2+ gives perfect aim
@@ -535,30 +546,35 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_ALT_SPREAD;
 			angs[YAW] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_ALT_SPREAD;
 		}
+		// Troopers use their aim values as well as the gun's inherent inaccuracy
+		// so check for all classes of stormtroopers and anyone else that has aim error
+		if (ent->client && ent->NPC &&
+			(ent->client->NPC_class == CLASS_STORMTROOPER ||
+			ent->client->NPC_class == CLASS_SWAMPTROOPER))
+		{
+			angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (REBELBLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+			angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (REBELBLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+		}
 		else
 		{
-			// Troopers use their aim values as well as the gun's inherent inaccuracy
-			// so check for all classes of stormtroopers and anyone else that has aim error
-			if (ent->client && ent->NPC &&
-				(ent->client->NPC_class == CLASS_STORMTROOPER ||
-				ent->client->NPC_class == CLASS_SWAMPTROOPER))
-			{
-				angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (REBELBLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (REBELBLASTER_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-			}
-			else
-			{
-				// add some slop to the main-fire direction
-				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_MAIN_SPREAD;
-				angs[YAW] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_MAIN_SPREAD;
-			}
+			// add some slop to the main-fire direction
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_MAIN_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * REBELBLASTER_MAIN_SPREAD;
 		}
 	}
 
-	AngleVectors(angs, dir, NULL, NULL);
+	if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireRebelBlasterMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+	}
+	else
+	{
+		AngleVectors(angs, dir, NULL, NULL);
 
-	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireRebelBlasterMissile(ent, muzzle, dir, alt_fire);
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireRebelBlasterMissile(ent, muzzle, dir, alt_fire);
+	}
 }
 
 //---------------
