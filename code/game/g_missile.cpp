@@ -669,6 +669,16 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 					ent->owner->client->sess.missionStats.hits++;
 				}
 			}
+
+			// if (!(strcmp("stormtrooper", other->NPC_type)))
+			// {
+			// 	weaponData[ent->s.weapon].damage += a_lot_of_extra_damage;
+			// }
+			// else
+			// {
+			// 	weaponData[ent->s.weapon].damage = defaultDamageCopy[ent->s.weapon];
+			// }
+			
 		}
 	}
 	// check for bounce
