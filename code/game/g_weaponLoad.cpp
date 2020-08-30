@@ -238,6 +238,7 @@ void WPN_AltSplashRadius(const char **holdBuf);
 void WPN_FiringType(const char **holdBuf);
 void WPN_ShotsPerBurst(const char **holdBuf);
 void WPN_BurstFireDelay(const char **holdBuf);
+void WPN_FTFireTime(const char **holdBuf);
 
 void WPN_ScopeType(const char **holdBuf);
 
@@ -613,6 +614,7 @@ wpnParms_t WpnParms[] =
 	{ "firingType",			WPN_FiringType },
 	{ "shotsPerBurst",		WPN_ShotsPerBurst },
 	{ "burstFireDelay",		WPN_BurstFireDelay },
+	{ "FTFireTime",			WPN_FTFireTime },
 
 	{ "scopeType",			WPN_ScopeType },
 
@@ -1686,6 +1688,27 @@ void WPN_BurstFireDelay(const char **holdBuf)
     }
     weaponData[wpnParms.weaponNum].burstFireDelay = tokenInt;
 }
+
+
+//--------------------------------------------
+void WPN_FTFireTime(const char **holdBuf)
+{
+    int        tokenInt;
+
+    if ( COM_ParseInt(holdBuf,&tokenInt))
+    {
+        SkipRestOfLine(holdBuf);
+        return;
+    }
+
+    if ((tokenInt < 0) || (tokenInt > 10000 ))
+    {
+        gi.Printf(S_COLOR_YELLOW"WARNING: bad burstFireDelay in external weapon data '%d'\n", tokenInt);
+        return;
+    }
+    weaponData[wpnParms.weaponNum].FTFireTime = tokenInt;
+}
+
 
 //--------------------------------------------
 void WPN_ScopeType(const char **holdBuf)

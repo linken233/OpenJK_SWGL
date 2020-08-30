@@ -173,6 +173,7 @@ typedef struct weaponData_s
 	int		firingType;
 	int		shotsPerBurst;
 	int		burstFireDelay;
+	int 	FTFireTime;
 
 	int 	scopeType;
 

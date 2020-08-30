@@ -14128,16 +14128,16 @@ static void PM_Weapon( void )
 			switch (weaponData[pm->ps->weapon].firingType)
 			{
 				case FT_AUTOMATIC:
-					addTime = weaponData[pm->ps->weapon].fireTime;
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					break;
 				case FT_SEMI:
-					addTime = weaponData[pm->ps->weapon].fireTime;
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 					break;
 				case FT_BURST:
 					if ((pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) == 1)
 					{	
-						addTime = weaponData[pm->ps->weapon].altFireTime;
+						addTime = weaponData[pm->ps->weapon].FTFireTime;
 						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 					}
 					else
