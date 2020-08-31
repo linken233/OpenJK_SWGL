@@ -537,6 +537,15 @@ void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3
 				}
 			}
 
+			// if (!(strcmp("stormtrooper", other->NPC_type)))
+			// {
+			// 	damage += a_lot_of_extra_damage;
+			// }
+			// else
+			// {
+			// 	damage = defaultDamageCopy[ent->s.weapon];
+			// }
+			
 			G_Damage( other, ent, ent->owner, velocity,
 					impactPos, damage,
 					ent->dflags, ent->methodOfDeath, hitLoc);
@@ -669,16 +678,6 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 					ent->owner->client->sess.missionStats.hits++;
 				}
 			}
-
-			// if (!(strcmp("stormtrooper", other->NPC_type)))
-			// {
-			// 	weaponData[ent->s.weapon].damage += a_lot_of_extra_damage;
-			// }
-			// else
-			// {
-			// 	weaponData[ent->s.weapon].damage = defaultDamageCopy[ent->s.weapon];
-			// }
-			
 		}
 	}
 	// check for bounce
