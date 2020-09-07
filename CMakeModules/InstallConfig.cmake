@@ -17,7 +17,7 @@
 #============================================================================
 
 # Subdirectories to package JK2 and JKA into
-set(JKAInstallDir "KotF")
+set(JKAInstallDir "SWGL")
 set(JK2InstallDir "JediOutcast")
 
 # Install components
