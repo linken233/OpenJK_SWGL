@@ -6,7 +6,6 @@ Knight of the Force is a modification for Jedi Academy built on the OpenJK frame
 
 ## Significant Contributors
 
-* Fire Phoenix
 * Linken
 * The New Order
 * Awec
