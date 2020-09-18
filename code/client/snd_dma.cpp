@@ -3723,7 +3723,7 @@ static void S_Music_f( void ) {
 
 static void S_MenuMusic_f(void) {
 	
-	int music_pick = rand() % 11;
+	int music_pick = rand() % 16;
 	switch (music_pick)
 	{
 		case 0:
@@ -3758,6 +3758,21 @@ static void S_MenuMusic_f(void) {
 			break;
 		case 10:
 			S_StartBackgroundTrack("music/sp/menu10.mp3", "music/sp/menu10.mp3", qfalse);
+			break;
+		case 11:
+			S_StartBackgroundTrack("music/sp/menu11.mp3", "music/sp/menu11.mp3", qfalse);
+			break;
+		case 12:
+			S_StartBackgroundTrack("music/sp/menu12.mp3", "music/sp/menu12.mp3", qfalse);
+			break;
+		case 13:
+			S_StartBackgroundTrack("music/sp/menu13.mp3", "music/sp/menu13.mp3", qfalse);
+			break;
+		case 14:
+			S_StartBackgroundTrack("music/sp/menu14.mp3", "music/sp/menu14.mp3", qfalse);
+			break;
+		case 15:
+			S_StartBackgroundTrack("music/sp/menu15.mp3", "music/sp/menu15.mp3", qfalse);
 			break;
 		default:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
