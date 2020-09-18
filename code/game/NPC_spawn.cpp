@@ -3611,114 +3611,15 @@ void SP_NPC_Imperial( gentity_t *self)
 	{
 		if ( self->spawnflags & 1 )
 		{
-			int sanityCheck = 20;	//just in case
-			while (sanityCheck--)
-			{
-				switch (Q_irand(0, 6))
-				{
-				case 0:
-					self->NPC_type = "impofficer1";
-					break;
-				case 1:
-					self->NPC_type = "impofficer2";
-					break;
-				case 2:
-					self->NPC_type = "impofficer3";
-					break;
-				case 3:
-					self->NPC_type = "impofficer4";
-					break;
-				case 4:
-					self->NPC_type = "impofficer5";
-					break;
-				case 5:
-					self->NPC_type = "impofficer6";
-					break;
-				case 6:
-				default://just in case
-					self->NPC_type = "impofficer1";
-					break;
-				}
-				if (strstr(self->NPC_type, g_char_model->string) != NULL)
-				{//bah, we're using this one, try again
-					continue;
-				}
-				break;	//get out of the while
-			}
+			self->NPC_type = "impofficer";
 		}
 		else if ( self->spawnflags & 2 )
 		{
-			int sanityCheck = 20;	//just in case
-			while (sanityCheck--)
-			{
-				switch (Q_irand(0, 6))
-				{
-				case 0:
-					self->NPC_type = "impcommander1";
-					break;
-				case 1:
-					self->NPC_type = "impcommander2";
-					break;
-				case 2:
-					self->NPC_type = "impcommander3";
-					break;
-				case 3:
-					self->NPC_type = "impcommander4";
-					break;
-				case 4:
-					self->NPC_type = "impcommander5";
-					break;
-				case 5:
-					self->NPC_type = "impcommander6";
-					break;
-				case 6:
-				default://just in case
-					self->NPC_type = "impofficer1";
-					break;
-				}
-				if (strstr(self->NPC_type, g_char_model->string) != NULL)
-				{//bah, we're using this one, try again
-					continue;
-				}
-				break;	//get out of the while
-			}
+			self->NPC_type = "impcommander";					
 		}
 		else
 		{
-			int sanityCheck = 20;	//just in case
-			while (sanityCheck--)
-			{
-				switch (Q_irand(0, 6))
-				{
-				case 0:
-					self->NPC_type = "imperial1";
-					break;
-				case 1:
-					self->NPC_type = "imperial2";
-					break;
-				case 2:
-					self->NPC_type = "imperial3";
-					break;
-				case 3:
-					self->NPC_type = "imperial4";
-					break;
-				case 4:
-					self->NPC_type = "imperial5";
-					break;
-				case 5:
-					self->NPC_type = "imperial6";
-					break;
-				case 6:
-				default://just in case
-					self->NPC_type = "imperial1";
-					break;
-				}
-				if (strstr(self->NPC_type, g_char_model->string) != NULL)
-				{//bah, we're using this one, try again
-					continue;
-				}
-				break;	//get out of the while
-			}
+			self->NPC_type = "imperial";					
 		}
 	}
 
@@ -4768,6 +4669,11 @@ static void NPC_Spawn_f(void)
 		{
 			team = gi.argv(++spawnCommand);
 			
+		}
+		else if (!Q_stricmp("health", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->health = atoi(gi.argv(++spawnCommand));
+
 		}
 		else if (!Q_stricmp("snd", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
 		{
