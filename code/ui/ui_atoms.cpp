@@ -281,6 +281,9 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "g_char_color_red",		"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_color_green",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_color_blue",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	ui.Cvar_Create(	"g_npc_color_red",		"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	ui.Cvar_Create(	"g_npc_color_green",	"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	ui.Cvar_Create(	"g_npc_color_blue",		"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	ui.Cvar_Create( "g_saber_type",			"single",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber",				"single_1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber2",				"",			CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );

@@ -51,10 +51,25 @@ extern cvar_t	*g_char_skin_legs;
 extern cvar_t	*g_char_color_red;
 extern cvar_t	*g_char_color_green;
 extern cvar_t	*g_char_color_blue;
+extern cvar_t	*g_npc_color_red;
+extern cvar_t	*g_npc_color_green;
+extern cvar_t	*g_npc_color_blue;
 extern cvar_t	*g_saber;
 extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
 extern cvar_t	*g_saber2_color;
+extern cvar_t	*g_NPChead;
+extern cvar_t	*g_NPCtorso;
+extern cvar_t	*g_NPClegs;
+
+// NPC attributes
+extern cvar_t *g_NPCtype;
+extern cvar_t *g_NPCskin;
+extern cvar_t *g_NPCteam;
+extern cvar_t *g_NPChealth;
+extern cvar_t *g_NPCspawnscript;
+extern cvar_t *g_NPCfleescript;
+extern cvar_t *g_NPCdeathscript;
 
 /*
 ===================
@@ -783,6 +798,93 @@ static void Svcmd_PlayerModel_f(void)
 	}
 }
 
+extern qboolean NPC_ParseParms(const char *NPCName, gentity_t *NPC);
+extern void NPC_PrecacheByClassName(const char*);
+static void Svcmd_Spawn_f(void)
+{
+	gentity_t		*NPCspawner = G_Spawn();
+
+	vec3_t			forward, end;
+	trace_t			trace;
+	qboolean		isVehicle = qfalse;
+	
+
+	if (!NPCspawner)
+	{
+		gi.Printf(S_COLOR_RED"NPC_Spawn Error: Out of entities!\n");
+		return;
+	}
+
+	NPCspawner->e_ThinkFunc = thinkF_G_FreeEntity;
+	NPCspawner->nextthink = level.time + FRAMETIME;
+	
+	
+
+	//Spawn it at spot of first player
+	//FIXME: will gib them!
+	AngleVectors(g_entities[0].client->ps.viewangles, forward, NULL, NULL);
+	VectorNormalize(forward);
+	VectorMA(g_entities[0].currentOrigin, 64, forward, end);
+	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
+	VectorCopy(trace.endpos, end);
+	end[2] -= 24;
+	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
+	VectorCopy(trace.endpos, end);
+	end[2] += 24;
+	G_SetOrigin(NPCspawner, end);
+	VectorCopy(NPCspawner->currentOrigin, NPCspawner->s.origin);
+	NPCspawner->s.angles[1] = g_entities[0].client->ps.viewangles[1];
+
+	gi.linkentity(NPCspawner);
+
+	
+
+	NPCspawner->NPC_type = g_NPCtype->string;
+	NPCspawner->NPC_skin = "default";
+
+	if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
+	{
+		std::string newSkin;
+
+		newSkin.append(g_NPChead->string);
+		newSkin.append("|");
+		newSkin.append(g_NPCtorso->string);
+		newSkin.append("|");
+		newSkin.append(g_NPClegs->string);
+
+		char *skinstr = new char[newSkin.length() + 1];
+		strcpy(skinstr, newSkin.c_str());
+		
+
+		NPCspawner->NPC_skin = skinstr;
+	}
+	else
+	{
+		NPCspawner->NPC_skin = g_NPCskin->string;
+	}
+
+	NPCspawner->NPC_team = g_NPCteam->string;
+
+	NPCspawner->health = g_NPChealth->integer;
+
+	NPCspawner->behaviorSet[BSET_SPAWN] = g_NPCspawnscript->string;
+
+	NPCspawner->behaviorSet[BSET_FLEE] = g_NPCfleescript->string;
+
+	NPCspawner->behaviorSet[BSET_DEATH] = g_NPCdeathscript->string;
+
+	NPCspawner->count = 1;
+
+	NPCspawner->delay = 0;
+
+	NPCspawner->wait = 500;	
+
+	NPC_PrecacheByClassName(NPCspawner->NPC_type);
+	
+	NPC_Spawn(NPCspawner, NPCspawner, NPCspawner);
+	
+}
+
 static void Svcmd_Scale_f(void)
 {
 	if (gi.argc() == 1)
@@ -979,6 +1081,7 @@ static svcmd_t svcmds[] = {
 	{ "secrets",					Svcmd_Secrets_f,							CMD_NONE },
 	{ "difficulty",					Svcmd_Difficulty_f,							CMD_NONE },
 	{ "scale",						Svcmd_Scale_f,							CMD_NONE },
+	{ "spawnNPC",					Svcmd_Spawn_f,							CMD_NONE},
 	
 	//{ "say",						Svcmd_Say_f,						qtrue },
 	//{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },

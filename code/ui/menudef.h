@@ -98,6 +98,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FEEDER_MOVES						0x15			// moves for the data pad moves screen
 #define FEEDER_MOVES_TITLES					0x16			// move titles for the data pad moves screen
 #define FEEDER_LANGUAGES					0x17			// the list of languages
+#define FEEDER_NPC_SKIN_HEAD				0x18			// head*.skin files in species folder
+#define FEEDER_NPC_SKIN_TORSO				0x19			// torso*.skin files in species folder
+#define FEEDER_NPC_SKIN_LEGS				0x1a			// lower*.skin files in species folder
 
 
 #define UI_VERSION				200

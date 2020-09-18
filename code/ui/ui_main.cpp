@@ -109,6 +109,7 @@ void			UI_GetVideoSetup ( void );
 void			UI_UpdateVideoSetup ( void );
 static void		UI_UpdateCharacterCvars ( void );
 static void		UI_GetCharacterCvars ( void );
+static void		UI_GetNPCCvars(void);
 static void		UI_UpdateSaberCvars ( void );
 static void		UI_GetSaberCvars ( void );
 static void		UI_ResetSaberCvars ( void );
@@ -405,6 +406,8 @@ vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
 vmCvar_t	ui_screenshotType;
+vmCvar_t	ui_npc_faction;
+vmCvar_t	ui_npc_custom;
 
 static void UI_UpdateScreenshot( void )
 {
@@ -487,6 +490,8 @@ static cvarTable_t cvarTable[] =
 	{ &ui_rgb_saber2_red,		"ui_rgb_saber2_red",	"", 0},
 	{ &ui_rgb_saber2_blue,		"ui_rgb_saber2_blue",	"", 0},
 	{ &ui_rgb_saber2_green,		"ui_rgb_saber2_green",	"", 0},
+	{ &ui_npc_faction,			"ui_npc_faction",		"tor", NULL, 0},
+	{ &ui_npc_custom,			"ui_npc_custom",		"variants", NULL, 0},
 
 	{ &ui_SFXSabers,	"cg_SFXSabers",	"1", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", NULL, CVAR_ARCHIVE },
@@ -703,7 +708,6 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *handle)
 {
 	*handle = -1;
-
 	if (feederID == FEEDER_SAVEGAMES)
 	{
 		if (column==0)
@@ -739,15 +743,18 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 		return SE_GetLanguageName( index );
 #endif
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
+	
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD || feederID == FEEDER_NPC_SKIN_HEAD)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
+			
 			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name));
 			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name;
 		}
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
+
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO || feederID == FEEDER_NPC_SKIN_TORSO)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
 		{
@@ -755,7 +762,7 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name;
 		}
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS || feederID == FEEDER_NPC_SKIN_LEGS)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
 		{
@@ -791,7 +798,7 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 
 qhandle_t UI_FeederItemImage(float feederID, int index)
 {
-	if (feederID == FEEDER_PLAYER_SKIN_HEAD)
+	if (feederID == FEEDER_PLAYER_SKIN_HEAD || feederID == FEEDER_NPC_SKIN_HEAD)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
@@ -799,7 +806,8 @@ qhandle_t UI_FeederItemImage(float feederID, int index)
 			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name));
 		}
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
+	
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO || feederID == FEEDER_NPC_SKIN_TORSO)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
 		{
@@ -807,7 +815,7 @@ qhandle_t UI_FeederItemImage(float feederID, int index)
 			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name));
 		}
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS || feederID == FEEDER_NPC_SKIN_LEGS)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
 		{
@@ -1205,7 +1213,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			itemDef_t *item;
 			menuDef_t *menu;
 			modelDef_t *modelPtr;
-			char skin[MAX_QPATH];
+			char skin[128];
 
 			UI_GetCharacterCvars();
 			UI_GetSaberCvars();
@@ -1283,6 +1291,10 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "getcharcvars") == 0)
 		{
 			UI_GetCharacterCvars();
+		}
+		else if (Q_stricmp(name, "getnpccvars") == 0)
+		{
+			UI_GetNPCCvars();
 		}
 		else if (Q_stricmp(name, "updatesabercvars") == 0)
 		{
@@ -1877,18 +1889,20 @@ static int UI_FeederCount(float feederID)
 	{
 		return uiInfo.playerSpeciesCount;
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
+	
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD || feederID == FEEDER_NPC_SKIN_HEAD)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO || feederID == FEEDER_NPC_SKIN_TORSO)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
 	}
-	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS || feederID == FEEDER_NPC_SKIN_LEGS)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
 	}
+	
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount;
@@ -2037,6 +2051,16 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
 		}
 	}
+
+	else if (feederID == FEEDER_NPC_SKIN_HEAD)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
+		{
+			Cvar_Set("g_NPChead", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
+			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
+		}
+	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
@@ -2044,6 +2068,16 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
 		}
 	}
+
+	else if (feederID == FEEDER_NPC_SKIN_TORSO)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
+		{
+			Cvar_Set("g_NPCtorso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
+			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
+		}
+	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
@@ -2051,6 +2085,16 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
 		}
 	}
+
+	else if (feederID == FEEDER_NPC_SKIN_LEGS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
+		{
+			Cvar_Set("g_NPClegs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
+			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
+		}
+	}
+
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
 extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
@@ -2445,6 +2489,7 @@ static void UI_FreeSpecies( playerSpeciesInfo_t *species )
 	free(species->SkinTorso);
 	free(species->SkinLeg);
 	free(species->Color);
+	free(species->Skin);
 	memset(species, 0, sizeof(playerSpeciesInfo_t));
 }
 
@@ -2501,7 +2546,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[MAX_QPATH];
+		char fpath[128];
 
 		dirlen = strlen(dirptr);
 
@@ -2550,10 +2595,12 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			species->SkinHeadMax = 8;
 			species->SkinTorsoMax = 8;
 			species->SkinLegMax = 8;
+			species->SkinMax = 8;
 
 			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
 			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
 			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
+			species->Skin = (skinName_t *)malloc(species->SkinMax * sizeof(skinName_t));
 
 			int		j;
 			char	skinname[64];
@@ -2609,7 +2656,6 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<2;
 					}
-
 				}
 			}
 			if (iSkinParts != 7)
@@ -4373,6 +4419,27 @@ static void UI_GetCharacterCvars ( void )
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
 		if ( !Q_stricmp(model, uiInfo.playerSpecies[i].Name) )
+		{
+			uiInfo.playerSpeciesIndex = i;
+		}
+	}
+}
+
+static void UI_GetNPCCvars(void)
+{
+	Cvar_Set("ui_char_skin_head", Cvar_VariableString("g_NPChead"));
+	Cvar_Set("ui_char_skin_torso", Cvar_VariableString("g_NPCtorso"));
+	Cvar_Set("ui_char_skin_legs", Cvar_VariableString("g_NPClegs"));
+	Cvar_Set("ui_char_color_red", Cvar_VariableString("g_npc_color_red"));
+	Cvar_Set("ui_char_color_green", Cvar_VariableString("g_npc_color_green"));
+	Cvar_Set("ui_char_color_blue", Cvar_VariableString("g_npc_color_blue"));
+
+	const char* model = Cvar_VariableString("ui_char_model");
+	Cvar_Set("ui_char_model", model);
+
+	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
+	{
+		if (!Q_stricmp(model, uiInfo.playerSpecies[i].Name))
 		{
 			uiInfo.playerSpeciesIndex = i;
 		}
@@ -6333,6 +6400,9 @@ static void UI_UpdateCharacter( qboolean changedModel )
 		UI_FeederSelection(FEEDER_PLAYER_SKIN_HEAD, 0, item);	//fixme, this is not really the right item!!
 		UI_FeederSelection(FEEDER_PLAYER_SKIN_TORSO, 0, item);
 		UI_FeederSelection(FEEDER_PLAYER_SKIN_LEGS, 0, item);
+		UI_FeederSelection(FEEDER_NPC_SKIN_HEAD, 0, item);	//fixme, this is not really the right item!!
+		UI_FeederSelection(FEEDER_NPC_SKIN_TORSO, 0, item);
+		UI_FeederSelection(FEEDER_NPC_SKIN_LEGS, 0, item);
 		UI_FeederSelection(FEEDER_COLORCHOICES, 0, item);
 	}
 	UI_UpdateCharacterSkin();
