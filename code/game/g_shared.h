@@ -505,7 +505,7 @@ public:
 }; // objectives_t
 // NOTE: This is an arbitrary number greater than our current number of objectives with
 // some fluff just in case we add more in the future.
-#define MAX_MISSION_OBJ 100
+#define MAX_MISSION_OBJ 400
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 class missionStats_t

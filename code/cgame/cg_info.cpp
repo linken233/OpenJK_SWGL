@@ -32,6 +32,7 @@ static const short objectiveStartingYpos = 75;		// Y starting position for objec
 static const short objectiveStartingXpos = 60;		// X starting position for objective text
 static const int objectiveTextBoxWidth = 500;		// Width (in pixels) of text box
 static const int objectiveTextBoxHeight = 300;		// Height (in pixels) of text box
+static const short missionYpos = 79;
 
 const char *showLoadPowersName[] =
 {
@@ -236,6 +237,47 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 		}
 		graphic = cgi_R_RegisterShaderNoMip("textures/system/viewscreen1");
 		CG_DrawPic( 355, 50, OBJ_GRAPHIC_SIZE, OBJ_GRAPHIC_SIZE, graphic );
+		obj_graphics[3] = qtrue;
+	}
+	//// Special case hack
+	else if (objectIndex == DOOM_COMM_OBJ4)
+	{
+		y = missionYpos + (iYPixelsPerLine * missionYcnt);
+		graphic = cgi_R_RegisterShaderNoMip("textures/system/securitycode");
+		CG_DrawPic(320 - (128 / 2), y + 8, 128, 32, graphic);
+		obj_graphics[0] = qtrue;
+	}
+	else if (objectIndex == KEJIM_POST_OBJ3)
+	{
+		y = missionYpos + (iYPixelsPerLine * missionYcnt);
+		graphic = cgi_R_RegisterShaderNoMip("textures/system/securitycode_red");
+		CG_DrawPic(320 - (32 / 2), y + 8, 32, 32, graphic);
+		obj_graphics[1] = qtrue;
+	}
+	else if (objectIndex == KEJIM_POST_OBJ4)
+	{
+		y = missionYpos + (iYPixelsPerLine * missionYcnt);
+		if (obj_graphics[1])
+		{
+			y += 32 + 4;
+		}
+		graphic = cgi_R_RegisterShaderNoMip("textures/system/securitycode_green");
+		CG_DrawPic(320 - (32 / 2), y + 8, 32, 32, graphic);
+		obj_graphics[2] = qtrue;
+	}
+	else if (objectIndex == KEJIM_POST_OBJ5)
+	{
+		y = missionYpos + (iYPixelsPerLine * missionYcnt);
+		if (obj_graphics[1])
+		{
+			y += 32 + 4;
+		}
+		if (obj_graphics[2])
+		{
+			y += 32 + 4;
+		}
+		graphic = cgi_R_RegisterShaderNoMip("textures/system/securitycode_blue");
+		CG_DrawPic(320 - (32 / 2), y + 8, 32, 32, graphic);
 		obj_graphics[3] = qtrue;
 	}
 
