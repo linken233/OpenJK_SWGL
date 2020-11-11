@@ -92,6 +92,25 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		}
 			
 	}
+
+	if (g_validJKO->integer)
+	{
+		for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+		{
+			if (strcmp(map, jk2maps[i]) == 0)
+			{
+				Cvar_Set("g_char_model", "kyle");
+				Cvar_Set("g_char_skin_head", "model_default");
+				Cvar_Set("g_char_skin_torso", "model_default");
+				Cvar_Set("g_char_skin_lower", "model_default");
+				Cvar_Set("g_saber", "kyle");
+				Cvar_Set("g_saber_color", "blue");
+				Cvar_Set("snd", "kyle");
+
+			}
+		}
+
+	}
 		
 	
 
