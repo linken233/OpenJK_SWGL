@@ -73,6 +73,13 @@ typedef enum //# setType_e
 	SET_RAILCENTERTRACKUNLOCKED, //## %s="targetname"  # Turn on the centered movers on the given track
 	SET_SKIN,//## %s="models/players/???/model_default.skin" # just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
 
+	//# #Player scripts
+	SET_MODEL,//## %s="NULL" # Set Player's model
+	SET_PLAYERSKIN,//## %s="model_" # Set Player's skin
+	SET_PLAYERSCALE,//## %d="100" # Set Player's size
+	SET_SOUNDSET,//## %s="NULL" # Set Player's soundset
+	SET_GENDER,//## %s="m/f" # Set Player's gender
+
 	//# #sep Standard strings
 	SET_ENEMY,//## %s="NULL" # Set enemy by targetname
 	SET_LEADER,//## %s="NULL" # Set for BS_FOLLOW_LEADER

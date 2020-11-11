@@ -2010,6 +2010,29 @@ void G_InitPlayerFromCvars( gentity_t *ent )
 	}
 }
 
+void G_ChangeModel(gentity_t *ent, const char *newModel)
+{
+	gi.cvar_set("g_char_model", newModel);
+	gi.cvar_set("g_char_skin_head", "model_default");
+	gi.cvar_set("g_char_skin_torso", "model_default");
+	gi.cvar_set("g_char_skin_legs", "model_default");
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeSkin(gentity_t *ent, const char *newSkin)
+{
+	gi.cvar_set("g_char_skin_head", newSkin);
+	gi.cvar_set("g_char_skin_torso", newSkin);
+	gi.cvar_set("g_char_skin_legs", newSkin);
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeScale(const char* data)
+{
+	int value = std::stoi(data);
+	player->s.modelScale[0] = player->s.modelScale[1] = player->s.modelScale[2] = value / 100.0f;
+}
+
 void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 {
 	if ( !ent || !ent->client || !newModel )
