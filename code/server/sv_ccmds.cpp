@@ -106,6 +106,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 				Cvar_Set("g_saber", "kyle");
 				Cvar_Set("g_saber_color", "blue");
 				Cvar_Set("snd", "kyle");
+				Cvar_Set("sex", "m");
 
 			}
 		}
