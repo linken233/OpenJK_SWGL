@@ -69,6 +69,8 @@ extern void UI_MainMenu(void);
 extern void UI_InGameMenu(const char*holoFlag);
 extern void AssetCache(void);
 extern void UI_DataPadMenu(void);
+extern void UI_SystemMenu(void);
+extern void UI_SpawnerMenu(void);
 
 //
 // ui_connect.c

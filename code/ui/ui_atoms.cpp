@@ -104,6 +104,21 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		UI_DataPadMenu();
 		return;
 	}
+
+	if (Q_stricmp(menuname, "ingameswglnpcspawner") == 0)
+	{
+		ui.Cvar_Set("cl_paused", "1");
+		UI_SpawnerMenu();
+		return;
+	}
+
+	if (Q_stricmp(menuname, "ingameswglsystem") == 0)
+	{
+		ui.Cvar_Set("cl_paused", "1");
+		UI_SystemMenu();
+		return;
+	}
+
 #ifndef JK2_MODE
 	if ( Q_stricmp (menuname, "missionfailed_menu") == 0 )
 	{

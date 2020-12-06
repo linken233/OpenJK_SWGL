@@ -4184,6 +4184,28 @@ void UI_DataPadMenu(void)
 
 }
 
+void UI_SystemMenu(void)
+{
+
+	Menus_CloseByName("mainhud");
+
+	Menus_ActivateByName("ingameswglsystem");
+	
+	ui.Key_SetCatcher(KEYCATCH_UI);
+
+}
+
+void UI_SpawnerMenu(void)
+{
+
+	Menus_CloseByName("mainhud");
+
+	Menus_ActivateByName("ingameswglnpcspawner");
+
+	ui.Key_SetCatcher(KEYCATCH_UI);
+
+}
+
 /*
 =================
 UI_InGameMenu

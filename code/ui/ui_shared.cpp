@@ -5604,6 +5604,9 @@ static const char *g_bindCommands[] = {
 #else
 	"save quick",
 #endif
+	"spawnnpc",
+	"swglspawner",
+	"swglsystem",
 	"taunt",
 	"uimenu ingameloadmenu",
 	"uimenu ingamesavemenu",
@@ -11474,6 +11477,36 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 			}
 		}
 	}
+
+	// Special SwglSystem key handling
+	if (!(key & K_CHAR_FLAG))
+	{	//only check keys not chars
+		char	b[256];
+		DC->getBindingBuf(key, b, 256);
+		if (Q_stricmp(b, "swglsystem") == 0)	// They hit the datapad key again.
+		{
+			if ((Q_stricmp(menu->window.name, "ingameSWGLChars") == 0) ||
+				(Q_stricmp(menu->window.name, "ingameSWGLMaps") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLMissions") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSpawner") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSaber") == 0) ||
+				(Q_stricmp(menu->window.name, "bhModels") == 0) ||
+				(Q_stricmp(menu->window.name, "cisModels") == 0) ||
+				(Q_stricmp(menu->window.name, "civiliansModels") == 0) ||
+				(Q_stricmp(menu->window.name, "first_orderModels") == 0) ||
+				(Q_stricmp(menu->window.name, "infinitiesModels") == 0) ||
+				(Q_stricmp(menu->window.name, "mandalorianModels") == 0) ||
+				(Q_stricmp(menu->window.name, "rebellionModels") == 0) ||
+				(Q_stricmp(menu->window.name, "republicModels") == 0) ||
+				(Q_stricmp(menu->window.name, "resistanceModels") == 0) ||
+				(Q_stricmp(menu->window.name, "torModels") == 0) ||
+				(Q_stricmp(menu->window.name, "tseModels") == 0))
+			{
+				key = A_ESCAPE;	//pop on outta here
+			}
+		}
+	}
+
 	// default handling
 	switch ( key )
 	{
