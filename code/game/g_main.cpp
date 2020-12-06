@@ -203,6 +203,8 @@ cvar_t	*g_allowSaberLocking;
 
 cvar_t	*g_validJKO;
 
+cvar_t	*g_charKey;
+
 cvar_t	*g_speederControlScheme;
 
 cvar_t	*g_char_model;
@@ -695,6 +697,8 @@ void G_InitCvars( void ) {
 	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//lets you pick up sabers that are dropped
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
+
+	g_charKey = gi.cvar("g_charKey", "stormtrooper", CVAR_ARCHIVE);
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
