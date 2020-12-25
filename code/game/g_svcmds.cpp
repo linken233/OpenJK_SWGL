@@ -35,6 +35,9 @@ extern void Q3_SetViewEntity(int entID, const char *name);
 extern qboolean G_ClearViewEntity( gentity_t *ent );
 extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 
+extern void SP_NPC_Jedi(gentity_t *self);
+extern void SP_NPC_SWGL_Jedi(gentity_t *self);
+
 extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern saber_colors_t TranslateSaberColor( const char *name );
@@ -43,6 +46,9 @@ extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel 
 
 extern void G_SetWeapon( gentity_t *self, int wp );
 extern stringID_table_t WPTable[];
+
+
+extern void SP_NPC_spawner(gentity_t *self);
 
 extern cvar_t	*g_char_model;
 extern cvar_t	*g_char_skin_head;
@@ -842,6 +848,9 @@ static void Svcmd_Spawn_f(void)
 	NPCspawner->NPC_type = g_NPCtype->string;
 	NPCspawner->NPC_skin = "default";
 
+
+	
+
 	if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
 	{
 		std::string newSkin;
@@ -880,8 +889,41 @@ static void Svcmd_Spawn_f(void)
 	NPCspawner->wait = 500;	
 
 	NPC_PrecacheByClassName(NPCspawner->NPC_type);
-	
-	NPC_Spawn(NPCspawner, NPCspawner, NPCspawner);
+
+	if (!Q_stricmp("jedi_random", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 4;
+		SP_NPC_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 0;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 1;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 2;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 4;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else
+	{
+		NPC_Spawn(NPCspawner, NPCspawner, NPCspawner);
+	}
 	
 }
 

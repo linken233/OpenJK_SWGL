@@ -277,6 +277,9 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
 		ent->client->ps.forcePower	= 100;
 		ent->NPC->scriptFlags		|= (SCF_NAV_CAN_FLY|SCF_FLY_WITH_JET|SCF_NAV_CAN_JUMP);
+
+		ent->behaviorSet[BSET_FLEE] = NULL;
+		ent->behaviorSet[BSET_DEATH] = NULL;
 		
 		if (!Q_stricmp("bobafett", ent->targetname) || !Q_stricmp("bobafett1", ent->targetname))
 		{			
@@ -291,6 +294,9 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
 		ent->client->ps.forcePower = 100;
 		ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY | SCF_FLY_WITH_JET | SCF_NAV_CAN_JUMP);
+
+		ent->behaviorSet[BSET_FLEE] = NULL;
+		ent->behaviorSet[BSET_DEATH] = NULL;
 	}
 	else if (NPC->client->ps.weapon == WP_CLONECARBINE || NPC->client->ps.weapon == WP_CLONERIFLE ||
 		NPC->client->ps.weapon == WP_CLONECOMMANDO || NPC->client->ps.weapon == WP_REBELRIFLE)
@@ -303,6 +309,12 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
 		ent->client->ps.forcePower = 100;
 		ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY|SCF_FLY_WITH_JET|SCF_NAV_CAN_JUMP);//no groups, no combat points!
+
+
+		ent->behaviorSet[BSET_SPAWN] = NULL;
+		ent->behaviorSet[BSET_FLEE] = NULL;
+		ent->behaviorSet[BSET_DEATH] = NULL;
+
 		if ( Q_stricmp( "rockettrooper2Officer", ent->NPC_type ) == 0 )
 		{//start in the air, use spotlight
 			//ent->NPC->scriptFlags |= SCF_NO_GROUPS;
