@@ -55,6 +55,12 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		"cairn_reactor", "cairn_dock1", "doom_comm", "doom_detention", "doom_shields", "yavin_swamp",
 		"yavin_canyon", "yavin_courtyard", "yavin_final" };
 
+	char* jkamaps[] = { "academy1", "academy2", "academy3", "academy4", "academy5", "academy6", 
+						"hoth2", "hoth3", "kor1", "kor2", "t1_danger", "t1_fatal", "t1_inter", 
+						"t1_rail", "t1_sour", "t1_surprise", "t2_dpred", "t2_rancor", "t2_rogue", "t2_trip", 
+						"t2_wedge", "t3_bounty", "t3_byss", "t3_hevil", "t3_rift", "t3_stamp", "taspir1", "taspir2", 
+						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2"};
+
 	map = Cmd_Argv(1);
 	if ( !*map ) {
 		Com_Printf ("no map specified\n");
@@ -102,7 +108,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 				Cvar_Set("g_char_model", "kyle");
 				Cvar_Set("g_char_skin_head", "model_default");
 				Cvar_Set("g_char_skin_torso", "model_default");
-				Cvar_Set("g_char_skin_lower", "model_default");
+				Cvar_Set("g_char_skin_legs", "model_default");
 				Cvar_Set("g_saber", "kyle");
 				Cvar_Set("g_saber_color", "blue");
 				Cvar_Set("snd", "kyle");
@@ -112,7 +118,29 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		}
 
 	}
-		
+
+	bool notJKMap = true;
+
+	for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+	{
+		if (strcmp(map, jk2maps[i]) == 0)
+		{
+			notJKMap = false;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(jkamaps) / sizeof(jkamaps[0])); i++)
+	{
+		if (strcmp(map, jkamaps[i]) == 0)
+		{
+			notJKMap = false;
+		}
+	}
+
+	if (notJKMap)
+	{
+		Cvar_Set("g_newgameplus", "0");
+	}
 	
 
 	if (map[0]!='_')

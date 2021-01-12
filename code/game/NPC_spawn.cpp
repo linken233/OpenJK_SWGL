@@ -3248,25 +3248,134 @@ void SP_NPC_Stormtrooper( gentity_t *self)
 	}
 	else if ( self->spawnflags & 4 )
 	{//alt-officer
-		self->NPC_type = "stofficeralt";
-	}
-	else if ( self->spawnflags & 2 )
-	{//commander
-		self->NPC_type = "stcommander";
-	}
-	else if ( self->spawnflags & 1 )
-	{//officer
-		self->NPC_type = "stofficer";
-	}
-	else
-	{//regular trooper
-		if ( Q_irand( 0, 1 ) )
+		if (!g_newgameplus->integer)
 		{
-			self->NPC_type = "StormTrooper";
+			self->NPC_type = "stofficeralt";
 		}
 		else
 		{
-			self->NPC_type = "StormTrooper2";
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 2))
+				{
+				case 0:
+					self->NPC_type = "stofficeralt";
+					break;
+				case 1:
+					self->NPC_type = "purge_trooper";
+					break;
+				case 2:
+					self->NPC_type = "death_trooper";
+					break;
+
+				default:
+					self->NPC_type = "stofficeralt";
+					break;
+				}
+			}
+		}
+		
+	}
+	else if ( self->spawnflags & 2 )
+	{//commander
+		if(!g_newgameplus->integer)
+			self->NPC_type = "stcommander";
+		else
+		{
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 2))
+				{
+				case 0:
+					self->NPC_type = "stcommander";
+					break;
+				case 1:
+					self->NPC_type = "purge_trooper";
+					break;
+				case 2:
+					self->NPC_type = "death_trooper";
+					break;
+
+				default:
+					self->NPC_type = "stcommander";
+					break;
+				}
+			}
+		}
+	}
+	else if ( self->spawnflags & 1 )
+	{//officer
+		if (!g_newgameplus)
+		{
+			self->NPC_type = "stofficer";
+		}
+		else
+		{
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 2))
+				{
+				case 0:
+					self->NPC_type = "stofficer";
+					break;
+				case 1:
+					self->NPC_type = "stofficeralt";
+					break;
+				case 2:
+					self->NPC_type = "death_trooper";
+					break;
+
+				default:
+					self->NPC_type = "stofficer";
+					break;
+				}
+			}
+		}
+	}
+	else
+	{//regular trooper
+		if (!g_newgameplus)
+		{
+			if (Q_irand(0, 1))
+			{
+				self->NPC_type = "StormTrooper";
+			}
+			else
+			{
+				self->NPC_type = "StormTrooper2";
+			}
+		}
+		else
+		{
+		
+		
+		int sanityCheck = 20;	//just in case
+		while (sanityCheck--)
+		{
+			switch (Q_irand(0, 3))
+			{
+			case 0:
+				self->NPC_type = "stormtrooper";
+				break;
+			case 1:
+				self->NPC_type = "stormtrooper2";
+				break;
+			case 2:
+				self->NPC_type = "st_shadowtrooper";
+				break;
+			case 3:
+				self->NPC_type = "Imperial_Shock_Trooper";
+				break;
+
+			default:
+				self->NPC_type = "stofficeralt";
+				break;
+			}
+		
+		}
 		}
 	}
 
@@ -3288,7 +3397,28 @@ SHY - Spawner is shy
 */
 void SP_NPC_Snowtrooper( gentity_t *self)
 {
-	self->NPC_type = "snowtrooper";
+	if (!g_newgameplus)
+	{
+		self->NPC_type = "snowtrooper";
+	}
+	else
+	{
+		if (!Q_irand(0, 1))
+		{
+			self->NPC_type = "snowtrooper";
+		}
+		else
+		{
+			if (!Q_irand(0, 1))
+			{
+				self->NPC_type = "cultist_saber_all";
+			}
+			else
+			{
+				self->NPC_type = "rebornfencer";
+			}
+		}
+	}
 
 	SP_NPC_spawner( self );
 }
@@ -3623,15 +3753,83 @@ void SP_NPC_Imperial( gentity_t *self)
 	{
 		if ( self->spawnflags & 1 )
 		{
-			self->NPC_type = "impofficer";
+			if (!g_newgameplus->integer)
+				self->NPC_type = "impofficer";
+			else
+			{
+				int sanityCheck = 20;	//just in case
+				while (sanityCheck--)
+				{
+					switch (Q_irand(0, 2))
+					{
+					case 0:
+						self->NPC_type = "impofficer";
+						break;
+					case 1:
+						self->NPC_type = "reborn";
+						break;
+					case 2:
+						self->NPC_type = "death_trooper";
+						break;
+
+					default:
+						self->NPC_type = "impofficer";
+						break;
+					}
+				}
+			}
+
 		}
 		else if ( self->spawnflags & 2 )
 		{
-			self->NPC_type = "impcommander";					
+			if (!g_newgameplus->integer)
+				self->NPC_type = "impcommander";
+			else
+			{
+				int sanityCheck = 20;	//just in case
+				while (sanityCheck--)
+				{
+					switch (Q_irand(0, 2))
+					{
+					case 0:
+						self->NPC_type = "impcommander";
+						break;
+					case 1:
+						self->NPC_type = "rebornacrobat";
+						break;
+					case 2:
+						self->NPC_type = "rebornforceuser";
+						break;
+					default:
+						self->NPC_type = "impcommander";
+						break;
+					}
+				}
+			}
 		}
 		else
 		{
-			self->NPC_type = "imperial";					
+			if (!g_newgameplus->integer)
+				self->NPC_type = "imperial";
+			else
+			{
+				int sanityCheck = 20;	//just in case
+				while (sanityCheck--)
+				{
+					switch (Q_irand(0, 1))
+					{
+					case 0:
+						self->NPC_type = "imperial";
+						break;
+					case 1:
+						self->NPC_type = "reborn";
+						break;
+					default:
+						self->NPC_type = "imperial";
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -3646,7 +3844,31 @@ SHY - Spawner is shy
 */
 void SP_NPC_ImpWorker( gentity_t *self)
 {
-	self->NPC_type = "ImpWorker";
+	if(!g_newgameplus->integer)
+		self->NPC_type = "ImpWorker";
+
+	else
+	{
+		int sanityCheck = 20;	//just in case
+		while (sanityCheck--)
+		{
+			switch (Q_irand(0, 2))
+			{
+			case 0:
+				self->NPC_type = "impworker";
+				break;
+			case 1:
+				self->NPC_type = "reborn";
+				break;
+			case 2:
+				self->NPC_type = "death_trooper";
+				break;
+			default:
+				self->NPC_type = "impworker";
+				break;
+			}
+		}
+	}
 
 	SP_NPC_spawner( self );
 }
@@ -3696,25 +3918,56 @@ void SP_NPC_Reborn( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( self->spawnflags & 1 )
+		if (!g_newgameplus->integer)
 		{
-			self->NPC_type = "rebornforceuser";
-		}
-		else if ( self->spawnflags & 2 )
-		{
-			self->NPC_type = "rebornfencer";
-		}
-		else if ( self->spawnflags & 4 )
-		{
-			self->NPC_type = "rebornacrobat";
-		}
-		else if ( self->spawnflags & 8 )
-		{
-			self->NPC_type = "rebornboss";
+			if (self->spawnflags & 1)
+			{
+				self->NPC_type = "rebornforceuser";
+			}
+			else if (self->spawnflags & 2)
+			{
+				self->NPC_type = "rebornfencer";
+			}
+			else if (self->spawnflags & 4)
+			{
+				self->NPC_type = "rebornacrobat";
+			}
+			else if (self->spawnflags & 8)
+			{
+				self->NPC_type = "rebornboss";
+			}
+			else
+			{
+				self->NPC_type = "reborn";
+			}
 		}
 		else
 		{
-			self->NPC_type = "reborn";
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 4))
+				{
+				case 0:
+					self->NPC_type = "reborn";
+					break;
+				case 1:
+					self->NPC_type = "rebornboss";
+					break;
+				case 2:
+					self->NPC_type = "rebornfencer";
+					break;
+				case 3:
+					self->NPC_type = "rebornforceuser";
+					break;
+				case 4:
+					self->NPC_type = "rebornacrobat";
+					break;
+				default:
+					self->NPC_type = "rebornfencer";
+					break;
+				}
+			}
 		}
 	}
 
@@ -3741,50 +3994,95 @@ void SP_NPC_Reborn_New( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( (self->spawnflags&8) )
-		{//tougher guys
-			if ( (self->spawnflags&1) )
-			{
-				self->NPC_type = "RebornMasterDual";
+		if (!g_newgameplus->integer)
+		{
+			if ((self->spawnflags & 8))
+			{//tougher guys
+				if ((self->spawnflags & 1))
+				{
+					self->NPC_type = "RebornMasterDual";
+				}
+				else if ((self->spawnflags & 2))
+				{
+					self->NPC_type = "RebornMasterStaff";
+				}
+				else
+				{
+					self->NPC_type = "RebornMaster";
+				}
 			}
-			else if ( (self->spawnflags&2) )
-			{
-				self->NPC_type = "RebornMasterStaff";
+			else if ((self->spawnflags & 4))
+			{//weaker guys
+				if ((self->spawnflags & 1))
+				{
+					self->NPC_type = "reborn_dual2";
+				}
+				else if ((self->spawnflags & 2))
+				{
+					self->NPC_type = "reborn_staff2";
+				}
+				else
+				{
+					self->NPC_type = "reborn_new2";
+				}
 			}
 			else
 			{
-				self->NPC_type = "RebornMaster";
-			}
-		}
-		else if ( (self->spawnflags&4) )
-		{//weaker guys
-			if ( (self->spawnflags&1) )
-			{
-				self->NPC_type = "reborn_dual2";
-			}
-			else if ( (self->spawnflags&2) )
-			{
-				self->NPC_type = "reborn_staff2";
-			}
-			else
-			{
-				self->NPC_type = "reborn_new2";
+				if ((self->spawnflags & 1))
+				{
+					self->NPC_type = "reborn_dual";
+				}
+				else if ((self->spawnflags & 2))
+				{
+					self->NPC_type = "reborn_staff";
+				}
+				else
+				{
+					self->NPC_type = "reborn_new";
+				}
 			}
 		}
 		else
 		{
-			if ( (self->spawnflags&1) )
+	
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
 			{
-				self->NPC_type = "reborn_dual";
+				switch (Q_irand(0, 8))
+				{
+				case 0:
+					self->NPC_type = "reborn_new";
+					break;
+				case 1:
+					self->NPC_type = "reborn_dual";
+					break;
+				case 2:
+					self->NPC_type = "reborn_staff";
+					break;
+				case 3:
+					self->NPC_type = "reborn_new2";
+					break;
+				case 4:
+					self->NPC_type = "reborn_dual2";
+					break;
+				case 5:
+					self->NPC_type = "reborn_staff2";
+					break;
+				case 6:
+					self->NPC_type = "rebornmaster";
+					break;
+				case 7:
+					self->NPC_type = "rebornmasterdual";
+					break;
+				case 8:
+					self->NPC_type = "rebornmasterstaff";
+					break;
+				default:
+					self->NPC_type = "reborn_new";
+					break;
+				}
 			}
-			else if ( (self->spawnflags&2) )
-			{
-				self->NPC_type = "reborn_staff";
-			}
-			else
-			{
-				self->NPC_type = "reborn_new";
-			}
+	
 		}
 	}
 
@@ -3813,50 +4111,77 @@ void SP_NPC_Cultist_Saber( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( (self->spawnflags&1) )
+		if (!g_newgameplus->integer)
 		{
-			if ( (self->spawnflags&8) )
+			if ((self->spawnflags & 1))
 			{
-				self->NPC_type = "cultist_saber_med_throw";
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_med_throw";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_med";
+				}
+			}
+			else if ((self->spawnflags & 2))
+			{
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_strong_throw";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_strong";
+				}
+			}
+			else if ((self->spawnflags & 2))
+			{
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_all_throw";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_all";
+				}
 			}
 			else
 			{
-				self->NPC_type = "cultist_saber_med";
-			}
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			if ( (self->spawnflags&8) )
-			{
-				self->NPC_type = "cultist_saber_strong_throw";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber_strong";
-			}
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			if ( (self->spawnflags&8) )
-			{
-				self->NPC_type = "cultist_saber_all_throw";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber_all";
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_throw";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber";
+				}
 			}
 		}
 		else
 		{
-			if ( (self->spawnflags&8) )
+		int sanityCheck = 20;	//just in case
+		while (sanityCheck--)
+		{
+			switch (Q_irand(0, 2))
 			{
-				self->NPC_type = "cultist_saber_throw";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber";
+			case 0:
+				self->NPC_type = "cultist_saber_all_throw";
+				break;
+			case 1:
+				self->NPC_type = "rebornboss";
+				break;
+			case 2:
+				self->NPC_type = "purge_trooper";
+				break;
+			default:
+				self->NPC_type = "cultist_saber_all_throw";
+				break;
 			}
 		}
+
+		}
+		
 	}
 
 	SP_NPC_spawner( self );
@@ -3884,48 +4209,73 @@ void SP_NPC_Cultist_Saber_Powers( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( (self->spawnflags&1) )
+		if (!g_newgameplus->integer)
 		{
-			if ( (self->spawnflags&8) )
+			if ((self->spawnflags & 1))
 			{
-				self->NPC_type = "cultist_saber_med_throw2";
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_med_throw2";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_med2";
+				}
+			}
+			else if ((self->spawnflags & 2))
+			{
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_strong_throw2";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_strong2";
+				}
+			}
+			else if ((self->spawnflags & 2))
+			{
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_all_throw2";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber_all2";
+				}
 			}
 			else
 			{
-				self->NPC_type = "cultist_saber_med2";
-			}
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			if ( (self->spawnflags&8) )
-			{
-				self->NPC_type = "cultist_saber_strong_throw2";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber_strong2";
-			}
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			if ( (self->spawnflags&8) )
-			{
-				self->NPC_type = "cultist_saber_all_throw2";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber_all2";
+				if ((self->spawnflags & 8))
+				{
+					self->NPC_type = "cultist_saber_throw";
+				}
+				else
+				{
+					self->NPC_type = "cultist_saber2";
+				}
 			}
 		}
 		else
 		{
-			if ( (self->spawnflags&8) )
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
 			{
-				self->NPC_type = "cultist_saber_throw";
-			}
-			else
-			{
-				self->NPC_type = "cultist_saber2";
+				switch (Q_irand(0, 2))
+				{
+				case 0:
+					self->NPC_type = "cultist_saber_all_throw2";
+					break;
+				case 1:
+					self->NPC_type = "rebornboss";
+					break;
+				case 2:
+					self->NPC_type = "purge_trooper";
+					break;
+				default:
+					self->NPC_type = "cultist_saber_all_throw2";
+					break;
+				}
 			}
 		}
 	}
@@ -3954,44 +4304,74 @@ void SP_NPC_Cultist( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( (self->spawnflags&1) )
+		if (!g_newgameplus->integer)
 		{
-			self->NPC_type = NULL;
-			self->spawnflags = 0;//fast, no throw
-			switch ( Q_irand( 0, 2 ) )
+			if ((self->spawnflags & 1))
 			{
-			case 0://medium
-				self->spawnflags |= 1;
-				break;
-			case 1://strong
-				self->spawnflags |= 2;
-				break;
-			case 2://all
-				self->spawnflags |= 4;
-				break;
+				self->NPC_type = NULL;
+				self->spawnflags = 0;//fast, no throw
+				switch (Q_irand(0, 2))
+				{
+				case 0://medium
+					self->spawnflags |= 1;
+					break;
+				case 1://strong
+					self->spawnflags |= 2;
+					break;
+				case 2://all
+					self->spawnflags |= 4;
+					break;
+				}
+				if (Q_irand(0, 1))
+				{//throw
+					self->spawnflags |= 8;
+				}
+				SP_NPC_Cultist_Saber(self);
+				return;
 			}
-			if ( Q_irand( 0, 1 ) )
-			{//throw
-				self->spawnflags |= 8;
+			else if ((self->spawnflags & 2))
+			{
+				self->NPC_type = "cultist_grip";
 			}
-			SP_NPC_Cultist_Saber( self );
-			return;
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			self->NPC_type = "cultist_grip";
-		}
-		else if ( (self->spawnflags&4) )
-		{
-			self->NPC_type = "cultist_lightning";
-		}
-		else if ( (self->spawnflags&8) )
-		{
-			self->NPC_type = "cultist_drain";
+			else if ((self->spawnflags & 4))
+			{
+				self->NPC_type = "cultist_lightning";
+			}
+			else if ((self->spawnflags & 8))
+			{
+				self->NPC_type = "cultist_drain";
+			}
+			else
+			{
+				self->NPC_type = "cultist";
+			}
 		}
 		else
 		{
-			self->NPC_type = "cultist";
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 4))
+				{
+				case 0:
+					self->NPC_type = "cultistcommando";
+					break;
+				case 1:
+					self->NPC_type = "cultist_drain";
+					break;
+				case 2:
+					self->NPC_type = "cultist_grip";
+					break;
+				case 3:
+					self->NPC_type = "cultist_lightning";
+					break;
+				case 4:
+					self->NPC_type = "cultist";
+				default:
+					self->NPC_type = "cultistcommando";
+					break;
+				}
+			}
 		}
 	}
 
@@ -4076,22 +4456,51 @@ void SP_NPC_Saboteur( gentity_t *self)
 {
 	if ( !self->NPC_type )
 	{
-		if ( (self->spawnflags&1) )
+		if (!g_newgameplus->integer)
 		{
-			self->NPC_type = "saboteursniper";
-		}
-		else if ( (self->spawnflags&2) )
-		{
-			self->NPC_type = "saboteurpistol";
-		}
-		else if ( (self->spawnflags&4) )
-		{
-			self->NPC_type = "saboteurcommando";
+			if ((self->spawnflags & 1))
+			{
+				self->NPC_type = "saboteursniper";
+			}
+			else if ((self->spawnflags & 2))
+			{
+				self->NPC_type = "saboteurpistol";
+			}
+			else if ((self->spawnflags & 4))
+			{
+				self->NPC_type = "saboteurcommando";
+			}
+			else
+			{
+				self->NPC_type = "saboteur";
+			}
 		}
 		else
 		{
-			self->NPC_type = "saboteur";
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (Q_irand(0, 4))
+				{
+				case 0:
+					self->NPC_type = "saboteur";
+					break;
+				case 1:
+					self->NPC_type = "saboteurcommando";
+					break;
+				case 2:
+					self->NPC_type = "saboteurpistol";
+					break;
+				case 3:
+					self->NPC_type = "saboteursniper";
+					break;
+				default:
+					self->NPC_type = "saboteur";
+					break;
+				}
+			}
 		}
+		
 	}
 	SP_NPC_spawner( self );
 }

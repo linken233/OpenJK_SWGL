@@ -336,6 +336,7 @@ extern qboolean NPC_FaceEnemy( qboolean doPitch = qtrue );
 
 //Skill level cvar
 extern cvar_t	*g_spskill;
+extern cvar_t	*g_newgameplus;
 
 #define	NIF_NONE		0x00000000
 #define	NIF_FAILED		0x00000001	//failed to find a way to the goal
