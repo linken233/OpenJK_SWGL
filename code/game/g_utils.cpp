@@ -769,87 +769,143 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_t *G_Spawn( void )
+
+extern qboolean PM_InDeathAnim(void);
+gentity_t* FindRemoveAbleGent(void)
+{//returns an entity that we can remove to prevent the game from overloading 
+ //on map entities.  
+ //We first search for stuff that's immediately safe to remove
+ //and then start searching for things that aren't mission critical to remove.
+	int i;
+	gentity_t* e = NULL;
+
+	e = &g_entities[MAX_CLIENTS];
+	for (i = MAX_CLIENTS; i < globals.num_entities; i++)
+	{
+		if (!stricmp(e->classname, "item_shield")
+			|| !stricmp(e->classname, "item_seeker")
+			|| !stricmp(e->classname, "misc_model_gun_rack")
+			|| !stricmp(e->classname, "misc_model_ammo_rack")
+			|| !stricmp(e->classname, "ammo_blaster")
+			|| !stricmp(e->classname, "ammo_powercell")
+			|| !stricmp(e->classname, "item_binoculars")
+			|| !stricmp(e->classname, "item_shield_lrg_instant")
+			|| !stricmp(e->classname, "item_medpak_instant"))
+		{
+			return e;
+		}
+	}
+
+	//dead NPCs can be removed as well
+	e = &g_entities[MAX_CLIENTS];
+	for (i = MAX_CLIENTS; i < globals.num_entities; i++, e++)
+	{
+		if (e->NPC
+			&& e->health <= 0
+			&& e->NPC->timeOfDeath + 1000 < level.time) //NPC has been dead long enough for all the death related code to run.
+		{//found one
+			return e;
+		}
+	}
+
+	//try looking for scripted NPCs that are acting like dead bodies next.
+	e = &g_entities[MAX_CLIENTS];
+	for (i = MAX_CLIENTS; i < globals.num_entities; i++, e++)
+	{
+		if (e->NPC && e->client && e->health > 0
+			&& PM_InDeathAnim())
+		{//found one
+			return e;
+		}
+	}
+	//light entities?
+	e = &g_entities[MAX_CLIENTS];
+	for (i = MAX_CLIENTS; i < globals.num_entities; i++, e++)
+	{
+		if (!strcmp(e->classname, "light"))
+		{//found one
+			return e;
+		}
+	}
+	//crap!  we couldn't find anything.  Ideally, this function should have enough things
+	//to be able to remove to have this never happen.
+	return NULL;
+}
+
+
+gentity_t* G_Spawn(void)
 {
 	int			i, force;
-	gentity_t	*e;
+	gentity_t* e;
 
 	e = NULL;	// shut up warning
 	i = 0;		// shut up warning
-	for ( force = 0 ; force < 2 ; force++ )
+	for (force = 0; force < 2; force++)
 	{
 		// if we go through all entities and can't find one to free,
 		// override the normal minimum times before use
 		e = &g_entities[MAX_CLIENTS];
-//		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++, e++)
-//		{
-//			if ( e->inuse )
-//			{
-//				continue;
-//			}
-		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++)
+
+		for (i = MAX_CLIENTS; i < globals.num_entities; i++)
 		{
-			if(PInUse(i))
+			if (PInUse(i))
 			{
 				continue;
 			}
-			e=&g_entities[i];
+			e = &g_entities[i];
 
 			// the first couple seconds of server time can involve a lot of
 			// freeing and allocating, so relax the replacement policy
-			if ( !force && e->freetime > 2000 && level.time - e->freetime < 1000 ) {
+			if (!force && e->freetime > 2000 && level.time - e->freetime < 1000)
+			{
 				continue;
 			}
 
 			// reuse this slot
-			G_InitGentity( e, qtrue );
+			G_InitGentity(e, qtrue);
 			return e;
 		}
-		e=&g_entities[i];
-		if ( i != ENTITYNUM_MAX_NORMAL )
+		e = &g_entities[i];
+		if (i != ENTITYNUM_MAX_NORMAL)
 		{
 			break;
 		}
 	}
-	if ( i == ENTITYNUM_MAX_NORMAL )
+	if (i == ENTITYNUM_MAX_NORMAL)
 	{
-
-//#ifndef FINAL_BUILD
 		e = &g_entities[0];
 
-//--------------Use this to dump directly to a file
-		char buff[256];
-		FILE *fp;
+		//--------------Use this to dump directly to a file
+		char buff[512];
+		FILE* fp;
 
-		fp = fopen( "c:/nofreeentities.txt", "w" );
-		for ( i = 0 ; i<globals.num_entities ; i++, e++)
+		fp = fopen("c:/nofreeentities.txt", "w");
+		for (i = 0; i < globals.num_entities; i++, e++)
 		{
-			if ( e->classname )
+			if (e->classname)
 			{
-				sprintf( buff, "%d: %s\n", i, e->classname );
+				sprintf(buff, "%d: %s\n", i, e->classname);
 			}
 
-			fputs( buff, fp );
+			fputs(buff, fp);
 		}
-		fclose( fp );
-/*
-//---------------Or use this to dump to the console -- beware though, the console will fill quickly and you probably won't see the full list
-		for ( i = 0 ; i<globals.num_entities ; i++, e++)
-		{
-			if ( e->classname )
-			{
-				Com_Printf( "%d: %s\n", i, e->classname );
-
-			}
+		fclose(fp);
+		//in case we can't find an open entity, search for something we can safely replace
+		//to keep the game running.  This isn't the best solution but it's better than
+		//having the game shut down.
+		e = FindRemoveAbleGent();
+		if (e)
+		{//found something we can replace
+			G_FreeEntity(e);
+			G_InitGentity(e, qtrue);
+			return e;
 		}
-*/
-//FINAL_BUILD
-		G_Error( "G_Spawn: no free entities" );
+		G_Error("G_Spawn: no free entities");
 	}
 
 	// open up a new slot
 	globals.num_entities++;
-	G_InitGentity( e, qtrue );
+	G_InitGentity(e, qtrue);
 	return e;
 }
 
