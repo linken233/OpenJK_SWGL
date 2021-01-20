@@ -112,7 +112,7 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		return;
 	}
 
-	if (Q_stricmp(menuname, "ingameswglsystem") == 0)
+	if (Q_stricmp(menuname, "GameSelectionMenu") == 0)
 	{
 		ui.Cvar_Set("cl_paused", "1");
 		UI_SystemMenu();

@@ -357,7 +357,7 @@ void CL_Spawner_f(void)
 void CL_System_f(void)
 {
 	if (cls.uiStarted && cls.cgameStarted && (cls.state == CA_ACTIVE)) {
-		UI_SetActiveMenu("IngameSWGLSystem", NULL);
+		UI_SetActiveMenu("GameSelectionMenu", NULL);
 	}
 }
 

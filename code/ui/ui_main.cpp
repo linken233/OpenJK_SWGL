@@ -4189,7 +4189,7 @@ void UI_SystemMenu(void)
 
 	Menus_CloseByName("mainhud");
 
-	Menus_ActivateByName("ingameswglsystem");
+	Menus_ActivateByName("GameSelectionMenu");
 	
 	ui.Key_SetCatcher(KEYCATCH_UI);
 

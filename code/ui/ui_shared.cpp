@@ -11486,8 +11486,8 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 		if (Q_stricmp(b, "swglsystem") == 0)	// They hit the datapad key again.
 		{
 			if ((Q_stricmp(menu->window.name, "ingameSWGLChars") == 0) ||
-				(Q_stricmp(menu->window.name, "ingameSWGLMaps") == 0) ||
-				(Q_stricmp(menu->window.name, "IngameSWGLMissions") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMaps") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMissions") == 0) ||
 				(Q_stricmp(menu->window.name, "IngameSWGLNpcSpawner") == 0) ||
 				(Q_stricmp(menu->window.name, "IngameSWGLNpcSaber") == 0) ||
 				(Q_stricmp(menu->window.name, "bhModels") == 0) ||
