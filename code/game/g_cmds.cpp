@@ -174,8 +174,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "health") )
 	{
-		if ( argc == 3 )
-			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_MAX_HEALTH] = atoi(args);
+
+			ent->health = Com_Clampi(1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 		if ( !give_all )
@@ -184,8 +188,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_ARMOR] = atoi(args);
+
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi(0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 
@@ -195,8 +203,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "force" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.forcePower = Com_Clampi( 0, ent->client->ps.forcePowerMax, atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.forcePowerMax = atoi(args);
+
+			ent->client->ps.forcePower = Com_Clampi(0, ent->client->ps.forcePowerMax, atoi(args));
+		}
 		else
 			ent->client->ps.forcePower = ent->client->ps.forcePowerMax;
 
