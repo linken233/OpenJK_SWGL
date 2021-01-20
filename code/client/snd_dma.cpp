@@ -3723,9 +3723,11 @@ static void S_Music_f( void ) {
 
 static void S_MenuMusic_f(void) {
 	
-	int music_pick = rand() % 16;
-	switch (music_pick)
-	{
+	if (atoi(Cvar_VariableString("disableMusicRepeat")) != 1) {
+
+		int music_pick = rand() % 16;
+		switch (music_pick)
+		{
 		case 0:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
 			break;
@@ -3777,6 +3779,7 @@ static void S_MenuMusic_f(void) {
 		default:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
 			break;
+		}
 	}
 
 	return;
