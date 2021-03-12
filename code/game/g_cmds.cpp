@@ -463,6 +463,33 @@ void Cmd_God_f (gentity_t *ent)
 
 /*
 ==================
+Cmd_Noforce_f
+
+Sets client to be immune to the force
+
+argv(0) noforce
+==================
+*/
+void Cmd_Noforce_f(gentity_t *ent)
+{
+	const char	*msg;
+
+	if (!CheatsOk(ent)) {
+		return;
+	}
+
+	ent->flags ^= FL_NOFORCE;
+	if (!(ent->flags & FL_NOFORCE))
+		msg = "No Force OFF\n";
+	else
+		msg = "No Force ON\n";
+
+	gi.SendServerCommand(ent - g_entities, "print \"%s\"", msg);
+}
+
+
+/*
+==================
 Cmd_Undying_f
 
 Sets client to undead mode
@@ -1405,10 +1432,12 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	if (Q_stricmp (cmd, "give") == 0)
-		Cmd_Give_f (ent);
-	else if (Q_stricmp (cmd, "god") == 0)
-		Cmd_God_f (ent);
+	if (Q_stricmp(cmd, "give") == 0)
+		Cmd_Give_f(ent);
+	else if (Q_stricmp(cmd, "god") == 0)
+		Cmd_God_f(ent);
+	else if (Q_stricmp(cmd, "noforce") == 0)
+		Cmd_Noforce_f(ent);
 	else if (Q_stricmp (cmd, "undying") == 0)
 		Cmd_Undying_f (ent);
 	else if (Q_stricmp (cmd, "notarget") == 0)
