@@ -407,7 +407,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	if (!Q_stricmp("Valkorion", ent->NPC_type) ||
 		!Q_stricmp("Snoke", ent->NPC_type) ||
 		!Q_stricmp("Vitiate", ent->NPC_type) ||
-		!Q_stricmp("Emperor_Palpatine", ent->NPC_type))
+		!Q_stricmp("Emperor_Palpatine", ent->NPC_type) ||
+		!Q_stricmp("Sith_Eternal_Palpatine", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
 		ent->flags |= FL_SHIELDED;
@@ -3224,19 +3225,106 @@ void SP_NPC_Human_Merc(gentity_t *self)
 		}
 		else if ((self->spawnflags & 1))
 		{
-			self->NPC_type = "human_merc_bow";
+			if(!g_newgameplus->integer)
+				self->NPC_type = "human_merc_bow";
+			else
+			{
+				int npc_pick = rand() % 7;
+				switch (npc_pick)
+				{
+				case 0:
+				case 1:
+					self->NPC_type = "trandoshan_rc";
+					break;
+				case 2:
+				case 3:
+					self->NPC_type = "trandoshan_merc";
+					break;
+				case 4:
+				case 5:
+					self->NPC_type = "human_merc_bow";
+					break;
+				case 6:
+					self->NPC_type = "trandoshan_elite";
+					break;
+				default:
+					self->NPC_type = "human_merc_bow";
+					break;
+				
+
+				}
+			}
 		}
 		else if ((self->spawnflags & 2))
 		{
-			self->NPC_type = "human_merc_rep";
+			if (!g_newgameplus->integer)
+				self->NPC_type = "human_merc_rep";
+			else
+			{
+			
+				int npc_pick = rand() % 3;
+				switch (npc_pick)
+				{
+				case 0:
+					self->NPC_type = "human_merc_rep";
+					break;
+				case 1:
+					self->NPC_type = "IG-86";
+					break;
+				case 2:
+					self->NPC_type = "Gamorrean";
+					break;
+				default:
+					self->NPC_type = "human_merc_rep";
+					break;
+
+				}
+			}
 		}
 		else if ((self->spawnflags & 4))
 		{
-			self->NPC_type = "human_merc_flc";
+			if(!g_newgameplus->integer)
+				self->NPC_type = "human_merc_flc";
+			else
+			{
+				int npc_pick = rand() % 3;
+				switch (npc_pick)
+				{
+				case 0:
+					self->NPC_type = "human_merc_flc";
+					break;
+				case 1:
+					self->NPC_type = "human_merc_rep";
+					break;
+				case 2:
+					self->NPC_type = "Mandalorian";
+					break;
+				default:
+					self->NPC_type = "human_merc_flc";
+					break;
+				}
+			}
 		}
 		else if ((self->spawnflags & 8))
 		{
-			self->NPC_type = "human_merc_cnc";
+			if(!g_newgameplus->integer)
+				self->NPC_type = "human_merc_cnc";
+			else
+			{
+				int npc_pick = rand() % 2;
+				switch (npc_pick)
+				{
+				case 0:
+					self->NPC_type = "human_merc_cnc";
+					break;
+				case 1:
+					self->NPC_type = "Mandalorian";
+					break;
+				default:
+					self->NPC_type = "human_merc_cnc";
+					break;
+				}
+			}
 		}
 		else
 		{
@@ -3679,7 +3767,7 @@ void SP_NPC_Rodian(gentity_t *self)
 			else
 			{
 
-				int npc_pick = rand() % 2;
+				int npc_pick = rand() % 3;
 				switch (npc_pick)
 				{
 				case 0:
@@ -3688,6 +3776,10 @@ void SP_NPC_Rodian(gentity_t *self)
 
 				case 1:
 					self->NPC_type = "Gamorrean";
+					break;
+
+				case 2:
+					self->NPC_type = "IG-86";
 					break;
 
 				default:
