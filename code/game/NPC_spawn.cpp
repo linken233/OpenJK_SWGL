@@ -307,6 +307,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{
 		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
 	}
+	else if (!Q_stricmp("ig-86", ent->NPC_type))
+	{
+		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
+	}
 	else if (!Q_stricmp("stormtrooper2", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
