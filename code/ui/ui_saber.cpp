@@ -35,7 +35,7 @@ USER INTERFACE SABER LOADING & DISPLAY CODE
 #include "ui_shared.h"
 #include "../ghoul2/G2.h"
 
-#define MAX_SABER_DATA_SIZE 0x80000
+#define MAX_SABER_DATA_SIZE 0x100000
 char	SaberParms[MAX_SABER_DATA_SIZE];
 qboolean	ui_saber_parms_parsed = qfalse;
 
@@ -319,7 +319,7 @@ void UI_SaberLoadParms( void )
 {
 	int			len, totallen, saberExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
-	char		saberExtensionListBuf[2048];			//	The list of file names read in
+	char		saberExtensionListBuf[8192];			//	The list of file names read in
 
 	//ui.Printf( "UI Parsing *.sab saber definitions\n" );
 
