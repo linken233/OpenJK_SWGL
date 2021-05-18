@@ -35,7 +35,7 @@ extern qboolean PM_SaberInAttack( int move );
 
 extern stringID_table_t FPTable[];
 
-#define MAX_SABER_DATA_SIZE (1024*1024) // 1mb, was 512kb
+#define MAX_SABER_DATA_SIZE (2048*2048) // 1mb, was 512kb
 char	SaberParms[MAX_SABER_DATA_SIZE];
 
 void Saber_SithSwordPrecache( void )
@@ -2440,7 +2440,7 @@ void WP_SaberLoadParms( void )
 {
 	int			len, totallen, saberExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
-	char		saberExtensionListBuf[2048];			//	The list of file names read in
+	char		saberExtensionListBuf[8192];			//	The list of file names read in
 
 	//gi.Printf( "Parsing *.sab saber definitions\n" );
 

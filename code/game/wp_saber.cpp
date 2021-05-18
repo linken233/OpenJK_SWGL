@@ -8736,7 +8736,9 @@ qboolean WP_ForceThrowable( gentity_t *ent, gentity_t *forwardEnt, gentity_t *se
 		return qfalse;
 	if ( !(ent->inuse) )
 		return qfalse;
-	if ( ent->NPC && ent->NPC->scriptFlags & SCF_NO_FORCE )
+	if (ent == player && player->flags & FL_NOFORCE)
+		return qfalse;
+	if (ent->NPC && ent->NPC->scriptFlags & SCF_NO_FORCE) 
 	{
 		if ( ent->s.weapon == WP_SABER )
 		{//Hmm, should jedi do the resist behavior?  If this is on, perhaps it's because of a cinematic?
@@ -10699,6 +10701,8 @@ void ForceGrip( gentity_t *self )
 	{
 		return;
 	}
+	if (traceEnt == player && player->flags & FL_NOFORCE)
+		return;
 #else
 //rww - RAGDOLL_END
 	if ( !traceEnt || traceEnt == self/*???*/ || traceEnt->bmodel || (traceEnt->health <= 0 && traceEnt->takedamage) || (traceEnt->NPC && traceEnt->NPC->scriptFlags & SCF_NO_FORCE) )
@@ -11064,6 +11068,8 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 	{
 		return;
 	}
+	if (traceEnt == player && player->flags & FL_NOFORCE)
+		return;
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
@@ -11498,6 +11504,9 @@ qboolean ForceDrain2( gentity_t *self )
 	{
 		return qfalse;
 	}
+
+	if (traceEnt == player && player->flags & FL_NOFORCE)
+		return qfalse;
 
 	if ( traceEnt->client )
 	{

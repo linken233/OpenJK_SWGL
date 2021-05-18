@@ -44,6 +44,9 @@ extern cvar_t	*g_char_skin_legs;
 extern cvar_t	*g_char_color_red;
 extern cvar_t	*g_char_color_green;
 extern cvar_t	*g_char_color_blue;
+extern cvar_t	*g_npc_color_red;
+extern cvar_t	*g_npc_color_green;
+extern cvar_t	*g_npc_color_blue;
 extern cvar_t	*g_saber;
 extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
@@ -2005,6 +2008,29 @@ void G_InitPlayerFromCvars( gentity_t *ent )
 		ent->client->renderInfo.customRGBA[2] = g_char_color_blue->integer;
 		ent->client->renderInfo.customRGBA[3] = 255;
 	}
+}
+
+void G_ChangeModel(gentity_t *ent, const char *newModel)
+{
+	gi.cvar_set("g_char_model", newModel);
+	gi.cvar_set("g_char_skin_head", "model_default");
+	gi.cvar_set("g_char_skin_torso", "model_default");
+	gi.cvar_set("g_char_skin_legs", "model_default");
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeSkin(gentity_t *ent, const char *newSkin)
+{
+	gi.cvar_set("g_char_skin_head", newSkin);
+	gi.cvar_set("g_char_skin_torso", newSkin);
+	gi.cvar_set("g_char_skin_legs", newSkin);
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeScale(const char* data)
+{
+	int value = std::stoi(data);
+	player->s.modelScale[0] = player->s.modelScale[1] = player->s.modelScale[2] = value / 100.0f;
 }
 
 void G_ChangePlayerModel( gentity_t *ent, const char *newModel )

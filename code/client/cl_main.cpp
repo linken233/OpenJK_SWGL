@@ -1312,6 +1312,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("ingamecinematic", CL_PlayInGameCinematic_f);
 	Cmd_AddCommand ("uimenu", CL_GenericMenu_f);
 	Cmd_AddCommand ("datapad", CL_DataPad_f);
+	Cmd_AddCommand("swglsystem", CL_System_f);
+	Cmd_AddCommand("swglspawner", CL_Spawner_f);
 	Cmd_AddCommand ("endscreendissolve", CL_EndScreenDissolve_f);
 
 	CL_InitRef();
@@ -1365,6 +1367,8 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("ingamecinematic");
 	Cmd_RemoveCommand ("uimenu");
 	Cmd_RemoveCommand ("datapad");
+	Cmd_RemoveCommand("swglspawner");
+	Cmd_RemoveCommand("swglsystem");
 	Cmd_RemoveCommand ("endscreendissolve");
 
 	Cvar_Set( "cl_running", "0" );

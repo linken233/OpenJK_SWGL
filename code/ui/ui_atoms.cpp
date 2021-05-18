@@ -104,6 +104,21 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		UI_DataPadMenu();
 		return;
 	}
+
+	if (Q_stricmp(menuname, "ingameswglnpcspawner") == 0)
+	{
+		ui.Cvar_Set("cl_paused", "1");
+		UI_SpawnerMenu();
+		return;
+	}
+
+	if (Q_stricmp(menuname, "GameSelectionMenu") == 0)
+	{
+		ui.Cvar_Set("cl_paused", "1");
+		UI_SystemMenu();
+		return;
+	}
+
 #ifndef JK2_MODE
 	if ( Q_stricmp (menuname, "missionfailed_menu") == 0 )
 	{
@@ -281,6 +296,9 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "g_char_color_red",		"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_color_green",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_color_blue",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	ui.Cvar_Create(	"g_npc_color_red",		"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	ui.Cvar_Create(	"g_npc_color_green",	"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	ui.Cvar_Create(	"g_npc_color_blue",		"255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	ui.Cvar_Create( "g_saber_type",			"single",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber",				"single_1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber2",				"",			CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );

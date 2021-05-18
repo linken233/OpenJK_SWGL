@@ -174,8 +174,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "health") )
 	{
-		if ( argc == 3 )
-			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_MAX_HEALTH] = atoi(args);
+
+			ent->health = Com_Clampi(1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 		if ( !give_all )
@@ -184,8 +188,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_ARMOR] = atoi(args);
+
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi(0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 
@@ -195,8 +203,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "force" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.forcePower = Com_Clampi( 0, ent->client->ps.forcePowerMax, atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.forcePowerMax = atoi(args);
+
+			ent->client->ps.forcePower = Com_Clampi(0, ent->client->ps.forcePowerMax, atoi(args));
+		}
 		else
 			ent->client->ps.forcePower = ent->client->ps.forcePowerMax;
 
@@ -448,6 +460,33 @@ void Cmd_God_f (gentity_t *ent)
 
 	gi.SendServerCommand( ent-g_entities, "print \"%s\"", msg);
 }
+
+/*
+==================
+Cmd_Noforce_f
+
+Sets client to be immune to the force
+
+argv(0) noforce
+==================
+*/
+void Cmd_Noforce_f(gentity_t *ent)
+{
+	const char	*msg;
+
+	if (!CheatsOk(ent)) {
+		return;
+	}
+
+	ent->flags ^= FL_NOFORCE;
+	if (!(ent->flags & FL_NOFORCE))
+		msg = "No Force OFF\n";
+	else
+		msg = "No Force ON\n";
+
+	gi.SendServerCommand(ent - g_entities, "print \"%s\"", msg);
+}
+
 
 /*
 ==================
@@ -1393,10 +1432,12 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	if (Q_stricmp (cmd, "give") == 0)
-		Cmd_Give_f (ent);
-	else if (Q_stricmp (cmd, "god") == 0)
-		Cmd_God_f (ent);
+	if (Q_stricmp(cmd, "give") == 0)
+		Cmd_Give_f(ent);
+	else if (Q_stricmp(cmd, "god") == 0)
+		Cmd_God_f(ent);
+	else if (Q_stricmp(cmd, "noforce") == 0)
+		Cmd_Noforce_f(ent);
 	else if (Q_stricmp (cmd, "undying") == 0)
 		Cmd_Undying_f (ent);
 	else if (Q_stricmp (cmd, "notarget") == 0)

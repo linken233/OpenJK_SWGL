@@ -1775,44 +1775,6 @@ void Menu_SetItemBackground(const menuDef_t *menu,const char *itemName, const ch
 	}
 }
 
-// Change the exec command for a button.
-void Menu_SetItemExec(const menuDef_t *menu, const char *itemName, const char *text)
-{
-	try
-	{
-
-		itemDef_t	*item;
-		int			j, count;
-
-		if (!menu)	// No menu???
-		{
-			return;
-		}
-
-		count = Menu_ItemsMatchingGroup((menuDef_t *)menu, itemName);
-
-		for (j = 0; j < count; j++)
-		{
-			item = Menu_GetMatchingItemByNumber((menuDef_t *)menu, j, itemName);
-			if (item != NULL)
-			{
-				if (((text[0] == 'n') && (text[1] == 'p') && (text[2] == 'c')))
-				{
-					item->exec = (char*)text;
-					return;
-				}
-
-			}
-		}
-	}
-	catch (...)
-	{
-
-	}
-	return;
-
-	
-}
 
 // Set all the items within a given menu, with the given itemName, to the given text
 void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *text)
@@ -2111,32 +2073,6 @@ qboolean Script_SetItemText(itemDef_t *item, const char **args)
 	if (String_Parse(args, &itemName) && String_Parse(args, &text))
 	{
 		Menu_SetItemText((menuDef_t *) item->parent, itemName, text);
-	}
-	return qtrue;
-}
-/*
-=================
-Script_SetItemExec
-=================
-*/
-qboolean Script_SetItemExec(itemDef_t *item, const char **args)
-{
-	try
-	{
-		// expecting text
-		const char *itemName;
-		const char *text;
-
-		// expecting text
-		if (String_Parse(args, &itemName) && String_Parse(args, &text))
-		{
-			Menu_SetItemExec((menuDef_t *)item->parent, itemName, text);
-		}
-	}
-
-	catch (...)
-	{
-
 	}
 	return qtrue;
 }
@@ -2748,6 +2684,9 @@ int GetCurrentFeederIndex(itemDef_t * item)
 	{
 		return uiInfo.playerSpeciesIndex;
 	}
+
+	
+
 	if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
 		name = Cvar_VariableString("ui_char_skin_head");
@@ -2763,6 +2702,23 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		}
 		return -1;
 	}
+
+	else if (feederID == FEEDER_NPC_SKIN_HEAD)
+	{
+		name = Cvar_VariableString("g_NPChead");
+		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
+		for (i = 0; i < max; i++)
+		{
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[i].name))
+			{
+				return i;
+			}
+
+			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+		return -1;
+	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		name = Cvar_VariableString("ui_char_skin_torso");
@@ -2778,6 +2734,23 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		return -1;
 
 	}
+
+	else if (feederID == FEEDER_NPC_SKIN_TORSO)
+	{
+		name = Cvar_VariableString("g_NPCtorso");
+		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
+		for (i = 0; i < max; i++)
+		{
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[i].name))
+			{
+				return i;
+			}
+			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+		return -1;
+
+	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
 		name = Cvar_VariableString("ui_char_skin_legs");
@@ -2799,6 +2772,26 @@ int GetCurrentFeederIndex(itemDef_t * item)
 	//	}
 	}
 
+	else if (feederID == FEEDER_NPC_SKIN_LEGS)
+	{
+		name = Cvar_VariableString("g_NPClegs");
+		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
+		for (i = 0; i < max; i++)
+		{
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[i].name))
+			{
+				return i;
+			}
+			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+		return -1;
+
+
+		//	if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
+		//	{
+		//		Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]);
+		//	}
+	}
 
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
@@ -2910,35 +2903,12 @@ Script_Exec
 qboolean Script_Exec ( itemDef_t *item, const char **args)
 {
 	const char *val;
-	try
+	
+	if (String_Parse(args, &val))
 	{
-		if (initialLoad)
-		{
-			item->exec = "menumusic";
-			initialLoad = false;				
-		}		
-
-		if (item->exec != NULL)
-		{
-			// Little shortcut for the npc buttons, otherwise perform as normal.
-			if (item->exec[0] == 'n' && item->exec[1] == 'p' && item->exec[2] == 'c')
-			{
-				DC->executeText(EXEC_APPEND, va("%s ; bind h %s", item->exec, item->exec));
-			}
-			else
-			{
-				DC->executeText(EXEC_APPEND, va("%s; ", item->exec));
-			}
-		}
-		else if (String_Parse(args, &val))
-		{
-			DC->executeText(EXEC_APPEND, va("%s; ", val));
-		}
+		DC->executeText(EXEC_APPEND, va("%s; ", val));
 	}
-	catch (...)
-	{
-
-	}
+		
 	return qtrue;
 }
 
@@ -3059,7 +3029,6 @@ commandDef_t commandList[] =
   {"setitembackground", &Script_SetItemBackground},	// group/name
   {"setitemtext",	&Script_SetItemText},			// group/name
   {"setitemrect",	&Script_SetItemRect},			// group/name
-  {"setitemexec",	&Script_SetItemExec},			// group/name
   {"defer",			&Script_Defer},					//
   {"rundeferred",	&Script_RunDeferred},			//
   {"delay",			&Script_Delay},					// works on this (script)
@@ -4433,23 +4402,6 @@ qboolean ItemParse_action( itemDef_t *item)
 	return qtrue;
 }
 
-qboolean ItemParse_exec(itemDef_t *item)
-{
-	try
-	{
-		if (!PC_Script_Parse(&item->exec))
-		{
-			return qfalse;
-		}
-	}
-	catch (...)
-	{
-		return qfalse;
-	}
-	return qtrue;
-}
-
-
 /*
 ===============
 ItemParse_special
@@ -4948,6 +4900,24 @@ qboolean ItemParse_isCharacter( itemDef_t *item )
 	return qfalse;
 }
 
+qboolean ItemParse_isNPC(itemDef_t *item)
+{
+	int i;
+	if (!PC_ParseInt(&i))
+	{
+		if (i)
+		{
+			item->flags |= ITF_ISNPC;
+		}
+		else
+		{
+			item->flags &= ~ITF_ISNPC;
+		}
+		return qtrue;
+	}
+	return qfalse;
+}
+
 qboolean ItemParse_isSaber( itemDef_t *item )
 {
 extern void UI_SaberLoadParms( void );
@@ -5013,6 +4983,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"isCharacter",		ItemParse_isCharacter,		},
 	{"isSaber",			ItemParse_isSaber,			},
 	{"isSaber2",		ItemParse_isSaber2,			},
+	{"isNPC",			ItemParse_isNPC,			}, 
 	{"autowrapped",		ItemParse_autowrapped,		},
 	{"backcolor",		ItemParse_backcolor,		},
 	{"background",		ItemParse_background,		},
@@ -5035,7 +5006,6 @@ keywordHash_t itemParseKeywords[] = {
 	{"elementtype",		ItemParse_elementtype,		},
 	{"elementwidth",	ItemParse_elementwidth,		},
 	{"enableCvar",		ItemParse_enableCvar,		},
-	{"exec",			ItemParse_exec,				},
 	{"feeder",			ItemParse_feeder,			},
 	{"flag",			ItemParse_flag,				},
 	{"focusSound",		ItemParse_focusSound,		},
@@ -5634,6 +5604,9 @@ static const char *g_bindCommands[] = {
 #else
 	"save quick",
 #endif
+	"spawnnpc",
+	"swglspawner",
+	"swglsystem",
 	"taunt",
 	"uimenu ingameloadmenu",
 	"uimenu ingamesavemenu",
@@ -7463,6 +7436,13 @@ void Item_Model_Paint(itemDef_t *item)
 			ent.shaderRGBA[2] = ui_char_color_blue.integer;
 			ent.shaderRGBA[3] = 255;
 			UI_TalkingHead(item);
+		}
+		if ((item->flags&ITF_ISNPC))
+		{
+			ent.shaderRGBA[0] = ui_char_color_red.integer;
+			ent.shaderRGBA[1] = ui_char_color_green.integer;
+			ent.shaderRGBA[2] = ui_char_color_blue.integer;
+			ent.shaderRGBA[3] = 255;
 		}
 		if ( item->flags&ITF_ISANYSABER )
 		{//UGH, draw the saber blade!
@@ -11497,6 +11477,36 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 			}
 		}
 	}
+
+	// Special SwglSystem key handling
+	if (!(key & K_CHAR_FLAG))
+	{	//only check keys not chars
+		char	b[256];
+		DC->getBindingBuf(key, b, 256);
+		if (Q_stricmp(b, "swglsystem") == 0)	// They hit the datapad key again.
+		{
+			if ((Q_stricmp(menu->window.name, "ingameSWGLChars") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMaps") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMissions") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSpawner") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSaber") == 0) ||
+				(Q_stricmp(menu->window.name, "bhModels") == 0) ||
+				(Q_stricmp(menu->window.name, "cisModels") == 0) ||
+				(Q_stricmp(menu->window.name, "civiliansModels") == 0) ||
+				(Q_stricmp(menu->window.name, "first_orderModels") == 0) ||
+				(Q_stricmp(menu->window.name, "infinitiesModels") == 0) ||
+				(Q_stricmp(menu->window.name, "mandalorianModels") == 0) ||
+				(Q_stricmp(menu->window.name, "rebellionModels") == 0) ||
+				(Q_stricmp(menu->window.name, "republicModels") == 0) ||
+				(Q_stricmp(menu->window.name, "resistanceModels") == 0) ||
+				(Q_stricmp(menu->window.name, "torModels") == 0) ||
+				(Q_stricmp(menu->window.name, "tseModels") == 0))
+			{
+				key = A_ESCAPE;	//pop on outta here
+			}
+		}
+	}
+
 	// default handling
 	switch ( key )
 	{

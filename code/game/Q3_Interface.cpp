@@ -68,6 +68,9 @@ extern void WP_SaberSetColor( gentity_t *ent, int saberNum, int bladeNum, char *
 extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
+extern void G_ChangeModel(gentity_t *ent, const char *newModel);
+extern void G_ChangeSkin(gentity_t *ent, const char *newSkin);
+extern void G_ChangeScale(const char* data);
 extern vehicleType_t TranslateVehicleName( char *name );
 extern void WP_SetSaberOrigin( gentity_t *self, vec3_t newOrg );
 extern void JET_FlyStart( gentity_t *self );
@@ -503,6 +506,11 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_NO_ANGLES),
 	ENUM2STRING(SET_SABER_ORIGIN),
 	ENUM2STRING(SET_SKIN),
+	ENUM2STRING(SET_MODEL),
+	ENUM2STRING(SET_PLAYERSKIN),
+	ENUM2STRING(SET_PLAYERSCALE),
+	ENUM2STRING(SET_SOUNDSET),
+	ENUM2STRING(SET_GENDER),
 
 	{ "",	SET_ }
 };
@@ -9526,6 +9534,21 @@ extern void LockDoors(gentity_t *const ent);
 		G_ChangePlayerModel( &g_entities[entID], (const char *)data );
 		break;
 
+	case SET_MODEL:
+		G_ChangeModel(&g_entities[entID], (const char*)data);
+		break;
+
+	case SET_PLAYERSCALE:
+		G_ChangeScale((const char*)data);
+		break;
+
+	case SET_SOUNDSET:
+		gi.cvar_set("snd", (const char*)data);
+		break;
+
+	case SET_GENDER:
+		gi.cvar_set("sex", (const char*)data);
+		break;
 	// NOTE: Preconditions for entering a vehicle still exist. This is not assured to work. -Areis
 	case SET_VEHICLE:
 		Use( entID, (char *)data );
@@ -9660,6 +9683,21 @@ extern cvar_t	*g_char_skin_legs;
 			}
 		}
 		break;
+
+	case SET_PLAYERSKIN:
+		// If this is a (fake) Player NPC or this IS the Player...
+	{//just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
+		gentity_t *ent = &g_entities[entID];
+		if (ent && ent->inuse && ent->ghoul2.size())
+		{
+			int iSkinID = gi.RE_RegisterSkin((char *)data);
+			if (iSkinID)
+			{
+				gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex((char *)data), iSkinID);
+			}
+		}
+	}
+	break;
 
 	default:
 		//DebugPrint( WL_ERROR, "Set: '%s' is not a valid set field\n", type_name );

@@ -150,6 +150,7 @@ cvar_t	*g_stepSlideFix;
 
 cvar_t	*g_sex;
 cvar_t	*g_spskill;
+cvar_t	*g_newgameplus;
 cvar_t	*g_cheats;
 cvar_t	*g_developer;
 cvar_t	*g_timescale;
@@ -203,6 +204,8 @@ cvar_t	*g_allowSaberLocking;
 
 cvar_t	*g_validJKO;
 
+cvar_t	*g_charKey;
+
 cvar_t	*g_speederControlScheme;
 
 cvar_t	*g_char_model;
@@ -212,11 +215,27 @@ cvar_t	*g_char_skin_legs;
 cvar_t	*g_char_color_red;
 cvar_t	*g_char_color_green;
 cvar_t	*g_char_color_blue;
+cvar_t	*g_npc_color_red;
+cvar_t	*g_npc_color_green;
+cvar_t	*g_npc_color_blue;
 cvar_t	*g_saber;
 cvar_t	*g_saber2;
 cvar_t	*g_saber_color;
 cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
+
+// NPC attributes
+cvar_t *g_NPCtype;
+cvar_t *g_NPCskin;
+cvar_t *g_NPCteam;
+cvar_t *g_NPChealth;
+cvar_t *g_NPCspawnscript;
+cvar_t *g_NPCfleescript;
+cvar_t *g_NPCdeathscript;
+cvar_t *g_NPChead;
+cvar_t *g_NPCtorso;
+cvar_t *g_NPClegs;
+
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
@@ -631,6 +650,7 @@ void G_InitCvars( void ) {
 	g_stepSlideFix = gi.cvar( "g_stepSlideFix", "1", CVAR_ARCHIVE );
 	g_sex = gi.cvar ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
+	g_newgameplus = gi.cvar("g_newgameplus", "0", CVAR_ARCHIVE | CVAR_SAVEGAME);
 	g_knockback = gi.cvar( "g_knockback", "1000", CVAR_CHEAT );
 	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
 	// for now I'm making default 10 seconds
@@ -672,13 +692,15 @@ void G_InitCvars( void ) {
 	g_saberNewControlScheme = gi.cvar( "g_saberNewControlScheme", "0", CVAR_ARCHIVE );//use +forcefocus to pull off all the special moves
 	g_debugSaberLock = gi.cvar( "g_debugSaberLock", "0", CVAR_CHEAT );//just for debugging/development, makes saberlocks happen all the time
 	g_saberLockRandomNess = gi.cvar( "g_saberLockRandomNess", "2", CVAR_ARCHIVE );//just for debugging/development, controls frequency of saberlocks
-	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
+	g_debugMelee = gi.cvar( "g_debugMelee", "1", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
-	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
+	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_ARCHIVE );//lets you pick up sabers that are dropped
 
 	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//lets you pick up sabers that are dropped
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
+
+	g_charKey = gi.cvar("g_charKey", "stormtrooper", CVAR_ARCHIVE);
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
@@ -696,11 +718,25 @@ void G_InitCvars( void ) {
 	g_char_color_red = gi.cvar( "g_char_color_red", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_color_green = gi.cvar( "g_char_color_green", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_color_blue = gi.cvar( "g_char_color_blue", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_npc_color_red = gi.cvar("g_npc_color_red", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	g_npc_color_green = gi.cvar("g_npc_color_green", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	g_npc_color_blue = gi.cvar("g_npc_color_blue", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	g_saber = gi.cvar( "g_saber", "single_1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber2 = gi.cvar( "g_saber2", "", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber_color = gi.cvar( "g_saber_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber2_color = gi.cvar( "g_saber2_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saberDarkSideSaberColor = gi.cvar( "g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE );	//when you turn evil, it turns your saber red!
+
+	g_NPCtype = gi.cvar("g_NPCtype", "stormtrooper", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCskin = gi.cvar("g_NPCskin", "default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCteam = gi.cvar("g_NPCteam", "enemy", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPChealth = gi.cvar("g_NPChealth", "100", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCspawnscript = gi.cvar("g_NPCspawnscript", "spawnscripts/no_follow", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCfleescript = gi.cvar("g_NPCfleescript", "fleescripts/surrender", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCdeathscript = gi.cvar("g_NPCdeathscript", "deathscripts/losehead", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPChead = gi.cvar("g_NPChead", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCtorso = gi.cvar("g_NPCtorso", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPClegs = gi.cvar("g_NPClegs", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 

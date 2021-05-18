@@ -119,11 +119,11 @@ NET
 													// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
-#define	MAX_PACKET_USERCMDS		32		// max number of usercmd_t in a packet
+#define	MAX_PACKET_USERCMDS		256		// max number of usercmd_t in a packet
 
 #define	PORT_ANY			-1
 
-#define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
+#define	MAX_RELIABLE_COMMANDS	512			// max string commands buffered for restransmit
 
 typedef enum {
 	NS_CLIENT,
@@ -618,6 +618,7 @@ extern	cvar_t	*com_cl_running;
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
 extern	cvar_t	*g_validJKO;
+extern	cvar_t	*g_charKey;
 #ifndef _WIN32
 extern	cvar_t	*com_ansiColor;
 #endif

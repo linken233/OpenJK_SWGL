@@ -2,7 +2,7 @@
 
 Star Wars: Galactic Legacy is a modification for Jedi Academy built on the OpenJK framework by the JACoders group.
 
-<a href="https://discord.gg/hUGpGgR"><img src="https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat" /></a>
+<a href="https://discord.gg/hChZNvJ"><img src="https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat" /></a>
 
 ## Significant Contributors
 
