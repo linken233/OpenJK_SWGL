@@ -185,6 +185,8 @@ struct centity_s
 
 	int				snapShotTime;
 
+	bool			checkFiringMode;
+
 	//Pointer to corresponding gentity
 	gentity_t		*gent;
 };
@@ -654,8 +656,6 @@ extern	vmCvar_t		cg_fovViewmodel;
 extern	vmCvar_t		cg_fovViewmodelAdjust;
 
 extern	vmCvar_t		cg_scaleVehicleSensitivity;
-
-extern	vmCvar_t		cg_checkModelChange;
 
 void CG_NewClientinfo( int clientNum );
 //

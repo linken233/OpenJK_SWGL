@@ -78,6 +78,7 @@ typedef enum //# weapon_e
 	WP_TUSKEN_STAFF,
 	WP_SCEPTER,
 	WP_NOGHRI_STICK,
+
 	WP_BATTLEDROID,
 	WP_THEFIRSTORDER,
 	WP_CLONECARBINE,
@@ -169,6 +170,13 @@ typedef struct weaponData_s
 	float	splashRadius;
 	float	altSplashRadius;
 
+	int		firingType;
+	int		shotsPerBurst;
+	int		burstFireDelay;
+	int 	FTFireTime;
+
+	int 	scopeType;
+
 } weaponData_t;
 
 
@@ -177,6 +185,24 @@ typedef struct ammoData_s
 	char	icon[64];	// Name of ammo icon file
 	int		max;		// Max amount player can hold of ammo
 } ammoData_t;
+
+
+enum FiringType
+{
+	FT_AUTOMATIC = 1,
+	FT_SEMI,
+	FT_BURST,
+	FT_HIGH_POWERED
+};
+
+
+enum ScopeType
+{
+	ST_A280 = 4,
+	ST_WESTAR_M5,
+	ST_BOWCASTER,
+	ST_DLT_20A
+};
 
 // Bryar Pistol
 //--------
@@ -197,31 +223,47 @@ typedef struct ammoData_s
 #define	BLASTER_NPC_DAMAGE_NORMAL	12 // 14
 #define	BLASTER_NPC_DAMAGE_HARD		16 // 18
 
+
+// F-11D Blaster
+//---------
+#define F_11D_MAIN_SPREAD			1.5f
+#define F_11D_ALT_SPREAD			0.1f
+#define F_11D_NPC_SPREAD			0.4f
+#define F_11D_VELOCITY				2300
+#define F_11D_NPC_VEL_CUT			0.5f
+#define F_11D_NPC_HARD_VEL_CUT		0.7f
+#define F_11D_DAMAGE				20
+#define	F_11D_NPC_DAMAGE_EASY		6
+#define	F_11D_NPC_DAMAGE_NORMAL		12 // 14
+#define	F_11D_NPC_DAMAGE_HARD		16 // 18
+
 // DC-15
 //---------
-#define CLONERIFLE_MAIN_SPREAD			0.1f
-#define CLONERIFLE_ALT_SPREAD			0.5f
+#define CLONERIFLE_MAIN_SPREAD			0.5f
+#define CLONERIFLE_ALT_SPREAD			1.0f
 #define CLONERIFLE_NPC_SPREAD			0.1f
 #define CLONERIFLE_VELOCITY				2300
 #define CLONERIFLE_NPC_VEL_CUT			0.5f
 #define CLONERIFLE_NPC_HARD_VEL_CUT		0.7f
-#define CLONERIFLE_DAMAGE				20
+#define CLONERIFLE_DAMAGE				15
 #define	CLONERIFLE_NPC_DAMAGE_EASY		6
 #define	CLONERIFLE_NPC_DAMAGE_NORMAL	12 // 14
 #define	CLONERIFLE_NPC_DAMAGE_HARD		16 // 18
+#define CLONERIFLE_SEMI_SHOT			30
+#define CLONERIFLE_SEMI_AMOUNT			5
 
 // DH-17
 //---------
 #define REBELBLASTER_MAIN_SPREAD			1.5f
-#define REBELBLASTER_ALT_SPREAD				2.5f
-#define REBELBLASTER_NPC_SPREAD				1.0f
-#define REBELBLASTER_VELOCITY				2000
+#define REBELBLASTER_ALT_SPREAD				0.1f
+#define REBELBLASTER_NPC_SPREAD				0.4f
+#define REBELBLASTER_VELOCITY				2300
 #define REBELBLASTER_NPC_VEL_CUT			0.5f
 #define REBELBLASTER_NPC_HARD_VEL_CUT		0.7f
-#define REBELBLASTER_DAMAGE					65
-#define	REBELBLASTER_NPC_DAMAGE_EASY		20
-#define	REBELBLASTER_NPC_DAMAGE_NORMAL		35
-#define	REBELBLASTER_NPC_DAMAGE_HARD		50
+#define REBELBLASTER_DAMAGE					20
+#define	REBELBLASTER_NPC_DAMAGE_EASY		6
+#define	REBELBLASTER_NPC_DAMAGE_NORMAL		12
+#define	REBELBLASTER_NPC_DAMAGE_HARD		16
 
 // DC-17
 //---------
@@ -483,6 +525,17 @@ typedef struct ammoData_s
 #define TUSKEN_RIFLE_DAMAGE_EASY	20		// damaging
 #define TUSKEN_RIFLE_DAMAGE_MEDIUM	30		// very damaging
 #define TUSKEN_RIFLE_DAMAGE_HARD	50		// extremely damaging
+
+// Firing Types
+//--------------
+#define BURST_ENERGY_SHOT				4
+#define BURST_ENERGY_SHOT_SCOPED		5
+#define HIGH_POWERED_ENERGY_SHOT		50
+#define HIGH_POWERED_DAMAGE				150
+
+// Scope Types
+//--------------
+#define SCOPE_SPREAD					0.01f
 
 
 #endif//#ifndef __WEAPONS_H__

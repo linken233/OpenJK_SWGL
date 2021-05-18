@@ -418,6 +418,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		break;
 
 	case WP_BLASTER:
+	case WP_BATTLEDROID:
 	case WP_THEFIRSTORDER:
 	case WP_REBELBLASTER:
 	case WP_REBELRIFLE:
@@ -430,33 +431,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgs.effects.blasterFleshImpactEffect	= theFxScheduler.RegisterEffect( "blaster/flesh_impact" );
 		theFxScheduler.RegisterEffect( "blaster/deflect" );
 		theFxScheduler.RegisterEffect( "blaster/smoke_bolton" ); // note: this will be called game side
-		break;
-
-	case WP_CLONECARBINE:
-	case WP_CLONERIFLE:
-	case WP_CLONECOMMANDO:
-		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
-		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
-		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
-		break;
-
-	case WP_CLONEPISTOL:
-		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
-		cgs.effects.clonePowerupShotEffect = theFxScheduler.RegisterEffect("clone/crackleShot");
-		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
-		cgs.effects.cloneWallImpactEffect2 = theFxScheduler.RegisterEffect("clone/wall_impact2");
-		cgs.effects.cloneWallImpactEffect3 = theFxScheduler.RegisterEffect("clone/wall_impact3");
-		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
-		break;
-
-	case WP_BATTLEDROID:
-		cgs.effects.blasterShotEffect = theFxScheduler.RegisterEffect("blaster/shot");
-		theFxScheduler.RegisterEffect("blaster/NPCshot");
-		//		cgs.effects.blasterOverchargeEffect		= theFxScheduler.RegisterEffect( "blaster/overcharge" );
-		cgs.effects.blasterWallImpactEffect = theFxScheduler.RegisterEffect("blaster/wall_impact");
-		cgs.effects.blasterFleshImpactEffect = theFxScheduler.RegisterEffect("blaster/flesh_impact");
-		theFxScheduler.RegisterEffect("blaster/deflect");
-		theFxScheduler.RegisterEffect("blaster/smoke_bolton"); // note: this will be called game side
 		break;
 
 	case WP_DISRUPTOR:
@@ -669,6 +643,23 @@ void CG_RegisterWeapon( int weaponNum ) {
 
 	case WP_TIE_FIGHTER:
 		theFxScheduler.RegisterEffect( "ships/imp_blastershot" );
+		break;
+
+	case WP_CLONECARBINE:
+	case WP_CLONERIFLE:
+	case WP_CLONECOMMANDO:
+		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
+		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
+		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
+		break;
+
+	case WP_CLONEPISTOL:
+		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
+		cgs.effects.clonePowerupShotEffect = theFxScheduler.RegisterEffect("clone/crackleShot");
+		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
+		cgs.effects.cloneWallImpactEffect2 = theFxScheduler.RegisterEffect("clone/wall_impact2");
+		cgs.effects.cloneWallImpactEffect3 = theFxScheduler.RegisterEffect("clone/wall_impact3");
+		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
 		break;
 
 	}
@@ -976,7 +967,28 @@ static void CG_DoMuzzleFlash( centity_t *cent, vec3_t org, vec3_t dir, weaponDat
 		// Try and get a default muzzle so we have one to fall back on
 		if ( wData->mMuzzleEffect[0] )
 		{
-			effect = &wData->mMuzzleEffect[0];
+			if (cent->gent->client->ps.shotsRemaining & ~SHOTS_TOGGLEBIT)
+			{
+				effect = &wData->mAltMuzzleEffect[0];
+				cent->checkFiringMode = true;
+			}
+			else if (wData->firingType != FT_BURST && cent->gent->client->ps.firingMode == 1)
+			{
+				effect = &wData->mAltMuzzleEffect[0];
+				cent->checkFiringMode = false;
+			}
+			else
+			{
+				if (cent->checkFiringMode == true)
+				{
+					effect = &wData->mAltMuzzleEffect[0];
+					cent->checkFiringMode = false;
+				}
+				else
+				{
+					effect = &wData->mMuzzleEffect[0];
+				}
+			}
 		}
 
 		if ( cent->altFire )

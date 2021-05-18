@@ -8402,7 +8402,28 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 				// Try and get a default muzzle so we have one to fall back on
 				if ( wData->mMuzzleEffect[0] )
 				{
-					effect = &wData->mMuzzleEffect[0];
+					if (cent->gent->client->ps.shotsRemaining & ~SHOTS_TOGGLEBIT)
+					{
+						effect = &wData->mAltMuzzleEffect[0];
+						cent->checkFiringMode = true;
+					}
+					else if (wData->firingType != FT_BURST && cent->gent->client->ps.firingMode == 1)
+					{
+						effect = &wData->mAltMuzzleEffect[0];
+						cent->checkFiringMode = false;
+					}
+					else
+					{
+						if (cent->checkFiringMode == true)
+						{
+							effect = &wData->mAltMuzzleEffect[0];
+							cent->checkFiringMode = false;
+						}
+						else
+						{
+							effect = &wData->mMuzzleEffect[0];
+						}
+					}
 				}
 
 				if ( cent->altFire )
@@ -9029,15 +9050,13 @@ Ghoul2 Insert End
 				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 			}
-			if ( ps->weapon == WP_REY
-				|| ps->weapon == WP_REY )
+			else if ( ps->weapon == WP_REY)
 			{
 				// Hardcoded max charge time of 1 second
 				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 			}
-			if ( ps->weapon == WP_CLONEPISTOL
-			  || ps->weapon == WP_CLONEPISTOL )
+			else if ( ps->weapon == WP_CLONEPISTOL)
 			{
 			  // Hardcoded max charge time of 1 second
 			  val = ( cg.time - ps->weaponChargeTime ) * 0.001f;

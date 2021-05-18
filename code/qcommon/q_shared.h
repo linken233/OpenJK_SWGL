@@ -85,6 +85,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	BASEGAME "base"
 #define OPENJKGAME "SWGL"
 
+#define SHOTS_TOGGLEBIT 0x00000080
+
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #define BASE_SAVE_COMPAT // this is defined to disable/fix some changes that break save compatibility
@@ -1905,6 +1907,10 @@ public:
 	int			brokenLimbs;
 	int			electrifyTime;
 #endif // !JK2_MODE
+	int			shotsRemaining;
+
+	bool		firingMode;
+	bool		checkWeaponChange;
 
 
 	void sg_export(
@@ -2075,6 +2081,9 @@ public:
 		saved_game.write<int32_t>(brokenLimbs);
 		saved_game.write<int32_t>(electrifyTime);
 #endif // !JK2_MODE
+		saved_game.write<int32_t>(shotsRemaining);
+		saved_game.write<int8_t>(firingMode);
+		saved_game.write<int8_t>(checkWeaponChange);
 	}
 
 	void sg_import(
@@ -2245,6 +2254,9 @@ public:
 		saved_game.read<int32_t>(brokenLimbs);
 		saved_game.read<int32_t>(electrifyTime);
 #endif // !JK2_MODE
+		saved_game.read<int32_t>(shotsRemaining);
+		saved_game.read<int8_t>(firingMode);
+		saved_game.read<int8_t>(checkWeaponChange);
 	}
 }; // PlayerStateBase
 

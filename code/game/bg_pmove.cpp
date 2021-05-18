@@ -146,6 +146,7 @@ extern cvar_t	*g_debugMelee;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
+extern int defaultDamageCopy[WP_NUM_WEAPONS];
 
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
@@ -8928,6 +8929,28 @@ static void PM_BeginWeaponChange( int weapon ) {
 			cg.zoomMode = 0;
 			cg.zoomTime = cg.time;
 		}
+		else if ( cg.zoomMode >= ST_A280 )
+		{
+			cg.zoomMode = 0;
+		} 
+
+		if (weaponData[weapon].firingType >= FT_AUTOMATIC)
+		{
+			if (pm->ps->checkWeaponChange == true)
+			{
+				pm->ps->firingMode = 1;
+				pm->ps->checkWeaponChange = false;
+			}
+		}
+		else
+		{
+			if (pm->ps->firingMode == 1)
+			{
+				pm->ps->checkWeaponChange = true;
+			}
+
+			pm->ps->firingMode = 0;
+		}
 	}
 
 	if ( pm->gent
@@ -9077,6 +9100,7 @@ static void PM_FinishWeaponChange( void ) {
 			G_RemoveWeaponModels( pm->gent );
 			if (weaponData[weapon].weaponMdl[0]) {	//might be NONE, so check if it has a model
 				G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handRBolt, 0 );
+				// G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handLBolt, 1 );
 			}
 		}
 
@@ -12924,25 +12948,7 @@ static bool PM_DoChargedWeapons( void )
 	//------------------
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
-
-		// alt-fire charges the weapon
-		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
-		{
-			charging = qtrue;
-			altFire = qtrue;
-		}
-		break;
-
 	case WP_REY:
-
-		// alt-fire charges the weapon
-		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
-		{
-			charging = qtrue;
-			altFire = qtrue;
-		}
-		break;
-
 	case WP_CLONEPISTOL:
 
 		// alt-fire charges the weapon
@@ -13408,6 +13414,7 @@ static void PM_Weapon( void )
 			if ( pm->ps->weaponTime <= 0 )
 			{
 				pm->ps->weaponTime = 0;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 			}
 		}
 		return;
@@ -13475,9 +13482,13 @@ static void PM_Weapon( void )
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
-		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
-			PM_BeginWeaponChange( pm->cmd.weapon );
+	if (!(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+	{
+		if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
+			if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
+				PM_BeginWeaponChange( pm->cmd.weapon );
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+			}
 		}
 	}
 
@@ -13512,44 +13523,8 @@ static void PM_Weapon( void )
 			{
 			case WP_BRYAR_PISTOL:
 			case WP_BLASTER_PISTOL:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_REY:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_JANGO:
-				if ( pm->gent
-					&& pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					//FIXME: should be a better way of detecting a dual-pistols user so it's not hardcoded to the saboteurcommando...
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_NORMAL);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
-				}
-				break;
-
 			case WP_CLONEPISTOL:
 				if ( pm->gent
 					&& pm->gent->weaponModel[1] > 0 )
@@ -13662,6 +13637,23 @@ static void PM_Weapon( void )
 			}
 			return;
 		}
+
+		if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+		{
+			// Code from JKG
+			if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+			{
+				if (weaponData[pm->ps->weapon].firingType == FT_SEMI)
+				{
+					return;
+				}
+				else if (weaponData[pm->ps->weapon].firingType == FT_BURST)
+				{
+					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst & ~SHOTS_TOGGLEBIT;
+				}
+			}
+		}
+
 		if (pm->gent->s.m_iVehicleNum!=0)
 		{
 			// No Anims if on Veh
@@ -13730,40 +13722,8 @@ static void PM_Weapon( void )
 	*/
 			case WP_BRYAR_PISTOL://1-handed
 			case WP_BLASTER_PISTOL://1-handed
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
-
 			case WP_REY:
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
-
 			case WP_JANGO:
-				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
-				{//dual pistols
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				else
-				{//single pistol
-					PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
-				}
-				break;
-
 			case WP_CLONEPISTOL:
 				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
 				{//dual pistols
@@ -14021,7 +13981,34 @@ static void PM_Weapon( void )
 	}
 	else
 	{
-		amount = weaponData[pm->ps->weapon].energyPerShot;
+		if (cg.zoomMode >= ST_A280 && weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode == 1)
+		{
+			amount = BURST_ENERGY_SHOT_SCOPED;
+		}
+		else if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode == 1)
+		{
+			amount = BURST_ENERGY_SHOT;
+		}
+		else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
+		{
+			amount = HIGH_POWERED_ENERGY_SHOT;
+		}
+		else if (cg.zoomMode >= ST_A280)
+		{
+			amount = weaponData[pm->ps->weapon].altEnergyPerShot;
+		}
+		else
+		{
+			amount = weaponData[pm->ps->weapon].energyPerShot;
+		}
+
+		if (weaponData[pm->ps->weapon].firingType == FT_SEMI && pm->ps->firingMode == 1)
+		{
+			if (pm->ps->weapon == WP_CLONERIFLE)
+			{
+				amount = CLONERIFLE_SEMI_AMOUNT;
+			}
+		}
 	}
 
 	if ( (pm->ps->weaponstate == WEAPON_CHARGING) || (pm->ps->weaponstate == WEAPON_CHARGING_ALT) )
@@ -14047,6 +14034,7 @@ static void PM_Weapon( void )
 				// Switch weapons
 				PM_AddEvent( EV_NOAMMO );
 				pm->ps->weaponTime += 500;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 			}
 			return;
 		}
@@ -14139,6 +14127,47 @@ static void PM_Weapon( void )
 		{//NPCs have their own refire logic
 			return;
 		}
+	}
+
+	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	{
+		// Code from JKG
+		if (pm->cmd.buttons & BUTTON_ATTACK)
+		{
+			switch (weaponData[pm->ps->weapon].firingType)
+			{
+				case FT_AUTOMATIC:
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
+					break;
+				case FT_SEMI:
+					if (pm->ps->weapon == WP_CLONERIFLE)
+					{
+						weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
+					}
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					break;
+				case FT_BURST:
+					if ((pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) == 1)
+					{	
+						addTime = weaponData[pm->ps->weapon].FTFireTime;
+						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					}
+					else
+					{
+						addTime = weaponData[pm->ps->weapon].burstFireDelay;
+						pm->ps->shotsRemaining = (pm->ps->shotsRemaining - 1) & ~SHOTS_TOGGLEBIT;
+					}
+					break;
+				case FT_HIGH_POWERED:
+					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+					break;
+			}
+		}
+	}
+	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
+	{
+		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
 	}
 
 	if ( g_timescale != NULL )
@@ -14534,6 +14563,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 {
 	int amount;
 
+	qboolean primFireDown;
+
 	if ( !g_saberAutoBlocking->integer
 		&& !g_saberNewControlScheme->integer
 		&& (pm->cmd.buttons&BUTTON_FORCE_FOCUS) )
@@ -14542,6 +14573,31 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ATTACK;
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
+
+	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	{
+		if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+		{
+			// Code from JKG
+			if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+			{
+				if (pm->ps->eFlags & EF_FIRING)
+				{
+					if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->pm_type != PM_NOCLIP)
+					{
+						pm->cmd.buttons |= BUTTON_ATTACK;
+					}
+					else if (pm->ps->pm_type == PM_NOCLIP)
+					{
+						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					}
+				}
+			}
+		}
+	}
+
+	primFireDown = (qboolean)(pm->cmd.buttons & BUTTON_ATTACK);
+
 	// get ammo usage
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
@@ -14632,13 +14688,41 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	}
 
-	if (cg.renderingThirdPerson == false && cg_checkModelChange.integer == 1)
+	if ( pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) && pm->ps->weaponstate != WEAPON_DROPPING && weaponData[pm->ps->weapon].scopeType >= ST_A280 )
 	{
-		cg_drawHUD.integer = 2;
-	}
-	else
-	{
-		cg_drawHUD.integer = 1;
+		if ( !(pm->ps->eFlags & EF_ALT_FIRING) && (pm->cmd.buttons & BUTTON_ALT_ATTACK) )
+		{
+			if ( cg.zoomMode == 0 && !(pm->ps->eFlags & EF_FIRING) )
+			{
+				switch ( weaponData[pm->ps->weapon].scopeType )
+				{
+					case ST_A280:
+						cg.zoomMode = ST_A280;
+						cg_zoomFov = 15.0f;
+						break;
+					case ST_WESTAR_M5:
+						cg.zoomMode = ST_WESTAR_M5;
+						cg_zoomFov = 20.0f;
+						break;
+					case ST_BOWCASTER:
+						cg.zoomMode = ST_BOWCASTER;
+						cg_zoomFov = 25.0f;
+						break;
+					case ST_DLT_20A:
+						cg.zoomMode = ST_DLT_20A;
+						cg_zoomFov = 10.0f;
+						break;
+				}
+			}
+			else if ( cg.zoomMode >= ST_A280 )
+			{
+				cg.zoomMode = 0;
+			}
+		}
+		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+		{
+			pm->cmd.buttons &= ~BUTTON_ATTACK;
+		}
 	}
 
 	// Check for binocular specific mode
@@ -14666,6 +14750,27 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->ps->eFlags &= ~EF_FIRING;
 		pm->ps->eFlags &= ~EF_ALT_FIRING;
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
+	}
+
+	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	{
+		// Code from JKG
+		if ( !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) 
+			&& (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
+		{
+			if (pm->ps->weaponTime <= 0)
+			{
+				if (weaponData[pm->ps->weapon].firingType == FT_BURST)
+				{
+					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst & ~SHOTS_TOGGLEBIT;
+				}
+			}
+			else
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				primFireDown =  qfalse;
+			}
+		}
 	}
 
 	// set the firing flag for continuous beam weapons, phaser will fire even if out of ammo
@@ -14699,6 +14804,12 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->ps->eFlags &= ~EF_FIRING;
 		pm->ps->eFlags &= ~EF_ALT_FIRING;
 
+		// Code from JKG
+		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+		{
+			pm->ps->shotsRemaining = 0;
+		}
+
 		// if I don't check the flags before stopping FX then it switches them off too often, which tones down
 		//	the stronger FFFX so you can hardly feel them. However, if you only do iton these flags then the
 		//	repeat-fire weapons like tetrion and dreadnought don't switch off quick enough. So...
@@ -14724,6 +14835,58 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		{
 			// don't let an alt-fire through
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		}
+	}
+	
+	if (pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+	{
+		// If you try and switch between firingMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch. 
+		if (pm->cmd.buttons & BUTTON_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->firingMode == 0)
+		{
+			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+		}
+
+		// If you have a scope.
+		if (weaponData[pm->ps->weapon].scopeType >= ST_A280)
+		{
+			// If scoped, convert the main fire to the alt-fire.
+			if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
+			{
+				if (pm->ps->firingMode == 0)
+				{
+					pm->cmd.buttons |= BUTTON_ALT_ATTACK;
+					pm->ps->eFlags |= EF_ALT_FIRING;
+				}
+			}
+			// If you have a scope and you have the firing type of high powered, you can not use main click. 
+			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+			}
+			// Don't let an alt-fire through.
+			else
+			{
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
+		}
+		// If you don't have a scope, but a firing type.
+		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC)
+		{
+			if (pm->ps->firingMode == 1)
+			{
+				// If you have the firing type of high powered, you can not use main click. High powered firing type is useless without a scope.
+				if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
+				{
+					pm->cmd.buttons &= ~BUTTON_ATTACK;
+				}
+				// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
+				else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+				{
+					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
+			}
 		}
 	}
 }

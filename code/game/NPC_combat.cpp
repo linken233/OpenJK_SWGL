@@ -293,6 +293,15 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 		case WP_BRYAR_PISTOL:
 			break;
 		case WP_BLASTER:
+		case WP_BATTLEDROID:
+		case WP_THEFIRSTORDER:
+		case WP_CLONECARBINE:
+		case WP_REBELBLASTER:
+		case WP_CLONERIFLE:
+		case WP_CLONECOMMANDO:
+		case WP_REBELRIFLE:
+		case WP_JANGO:
+		case WP_BOBA:
 			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
 			{//rapid-fire blasters
 				attDelay += Q_irand( 0, 500 );
@@ -321,6 +330,8 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 			attDelay += Q_irand( 500, 1500 );
 			break;
 		case WP_BLASTER_PISTOL:	// apparently some enemy only version of the blaster
+		case WP_CLONEPISTOL:
+		case WP_REY:
 			attDelay -= Q_irand( 500, 1500 );
 			break;
 		case WP_DISRUPTOR://sniper's don't delay?
@@ -343,106 +354,6 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 			break;
 		case WP_NOGHRI_STICK:
 			attDelay += Q_irand( 0, 500 );
-			break;
-		case WP_BATTLEDROID:
-			if (self->NPC->scriptFlags & SCF_ALT_FIRE)
-			{//rapid-fire blasters
-				attDelay += Q_irand(0, 500);
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_THEFIRSTORDER:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_CLONECARBINE:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_REBELBLASTER:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_CLONERIFLE:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_CLONECOMMANDO:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-
-		case WP_REBELRIFLE:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand( 0, 500 );
-			}
-			break;
-
-		case WP_BOBA:
-			if ( self->NPC->scriptFlags & SCF_ALT_FIRE )
-			{//rapid-fire blasters
-				attDelay += Q_irand( 0, 500 );
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
-			break;
-		case WP_CLONEPISTOL:
-			attDelay -= Q_irand(500, 1500);
-			break;
-
-		case WP_REY:
-			attDelay -= Q_irand( 500, 1500 );
-			break;
-
-		case WP_JANGO:
-			if (self->NPC->scriptFlags & SCF_ALT_FIRE)
-			{//rapid-fire blasters
-				attDelay += Q_irand(0, 500);
-			}
-			else
-			{//regular blaster
-				attDelay -= Q_irand(0, 500);
-			}
 			break;
 
 		/*
@@ -802,6 +713,8 @@ void ChangeWeapon(gentity_t *ent, int newWeapon)
 		break;
 
 	case WP_BLASTER_PISTOL:
+	case WP_REY:
+	case WP_CLONEPISTOL:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
 		if (ent->weaponModel[1] > 0)
 		{//commando
@@ -1004,6 +917,15 @@ void ChangeWeapon(gentity_t *ent, int newWeapon)
 		*/
 
 	case WP_BLASTER:
+	case WP_BATTLEDROID:
+	case WP_THEFIRSTORDER:
+	case WP_CLONECARBINE:
+	case WP_REBELBLASTER:
+	case WP_CLONERIFLE:
+	case WP_CLONECOMMANDO:
+	case WP_REBELRIFLE:
+	case WP_JANGO:
+	case WP_BOBA:
 		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
@@ -1115,352 +1037,6 @@ void ChangeWeapon(gentity_t *ent, int newWeapon)
 			ent->NPC->burstSpacing = 1500;//attack debounce
 		else
 			ent->NPC->burstSpacing = 750;//attack debounce
-		break;
-
-	case WP_BATTLEDROID:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_THEFIRSTORDER:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_CLONECARBINE:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_REBELBLASTER:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_CLONERIFLE:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_CLONECOMMANDO:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_REBELRIFLE:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
-		break;
-
-	case WP_REY:
-		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		if (ent->weaponModel[1] > 0)
-		{//commando
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 4;
-#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 8;
-#endif
-			ent->NPC->burstMax = 12;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 400;//attack debounce
-			else
-				ent->NPC->burstSpacing = 250;//attack debounce
-		}
-		else if (ent->client->NPC_class == CLASS_SABOTEUR)
-		{
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 900;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else
-				ent->NPC->burstSpacing = 400;//attack debounce
-		}
-		else
-		{
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		break;
-
-	case WP_CLONEPISTOL:
-		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		if (ent->weaponModel[1] > 0)
-		{//commando
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 4;
-#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 8;
-#endif
-			ent->NPC->burstMax = 12;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 400;//attack debounce
-			else
-				ent->NPC->burstSpacing = 250;//attack debounce
-		}
-		else if (ent->client->NPC_class == CLASS_SABOTEUR)
-		{
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 900;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else
-				ent->NPC->burstSpacing = 400;//attack debounce
-		}
-		else
-		{
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		break;
-
-	case WP_JANGO:
-		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		if (ent->weaponModel[1] > 0)
-		{//commando
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 4;
-#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 8;
-#endif
-			ent->NPC->burstMax = 12;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 400;//attack debounce
-			else
-				ent->NPC->burstSpacing = 250;//attack debounce
-		}
-		else if (ent->client->NPC_class == CLASS_SABOTEUR)
-		{
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 900;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 600;//attack debounce
-			else
-				ent->NPC->burstSpacing = 400;//attack debounce
-		}
-		else
-		{
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		break;
-
-	case WP_BOBA:
-		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
-		{
-			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			ent->NPC->burstMin = 3;
-	#ifdef BASE_SAVE_COMPAT
-			ent->NPC->burstMean = 3;
-	#endif
-			ent->NPC->burstMax = 3;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1500;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-		}
-		else
-		{
-			ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-			if (g_spskill->integer == 0)
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if (g_spskill->integer == 1)
-				ent->NPC->burstSpacing = 750;//attack debounce
-			else
-				ent->NPC->burstSpacing = 500;//attack debounce
-			//	ent->NPC->burstSpacing = 1000;//attackdebounce
-		}
 		break;
 
 	default:
@@ -1888,18 +1464,6 @@ int NPC_AttackDebounceForWeapon (void)
 		return 3000;
 		break;
 
-	case WP_REY:
-		return 3000;
-		break;
-
-	case WP_CLONEPISTOL:
-		return 3000;
-		break;
-
-	case WP_JANGO:
-		return 3000;
-		break;
-
 	case WP_SABER:
 		return 100;
 		break;
@@ -1944,23 +1508,22 @@ float NPC_MaxDistSquaredForWeapon (void)
 	switch ( NPC->s.weapon )
 	{
 	case WP_BLASTER://scav rifle
+	case WP_BATTLEDROID:
+	case WP_THEFIRSTORDER:
+	case WP_CLONECARBINE:
+	case WP_REBELBLASTER:
+	case WP_CLONERIFLE:
+	case WP_CLONECOMMANDO:
+	case WP_REBELRIFLE:
+	case WP_REY:
+	case WP_JANGO:
+	case WP_BOBA:
+	case WP_CLONEPISTOL:
 		return 1024 * 1024;//should be shorter?
 		break;
 
-	case WP_BRYAR_PISTOL://prifle
+	case WP_BRYAR_PISTOL://prifsle
 		return 1024 * 1024;
-		break;
-
-	case WP_REY:
-	    return 1024 * 1024;
-	    break;
-
-	case WP_JANGO:
-		return 1024 * 1024;
-		break;
-
-	case WP_CLONEPISTOL:
-  	return 1024 * 1024;
 		break;
 
 	case WP_BLASTER_PISTOL://prifle
