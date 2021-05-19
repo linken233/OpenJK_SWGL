@@ -1463,16 +1463,18 @@ void WP_FireClonePistol( gentity_t *ent, qboolean alt_fire )
 	if ( alt_fire )
 	{
 		missile->methodOfDeath = MOD_CLONEPISTOL_ALT;
+		missile->s.eFlags |= EF_BOUNCE;
+		missile->bounceCount = 3;
 	}
 	else
 	{
 		missile->methodOfDeath = MOD_CLONEPISTOL;
+		// we don't want it to bounce forever
+		missile->bounceCount = 8;
+
 	}
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-	// we don't want it to bounce forever
-	missile->bounceCount = 8;
 
 	if ( ent->weaponModel[1] > 0 )
 	{//dual pistols, toggle the muzzle point back and forth between the two pistols each time he fires
