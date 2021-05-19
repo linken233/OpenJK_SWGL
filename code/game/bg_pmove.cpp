@@ -14160,6 +14160,7 @@ static void PM_Weapon( void )
 					}
 					break;
 				case FT_HIGH_POWERED:
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
 					break;
 			}

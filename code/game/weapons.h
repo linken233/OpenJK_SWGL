@@ -516,16 +516,17 @@ enum ScopeType
 
 // EE-3 Carbine Rifle
 //---------
-#define BOBA_MAIN_SPREAD		0.5f
-#define BOBA_ALT_SPREAD 		0.5f
+#define BOBA_MAIN_SPREAD		1.0f
+#define BOBA_ALT_SPREAD 		0.2f
 #define BOBA_NPC_SPREAD 		0.5f
-#define BOBA_VELOCITY			2500
+#define BOBA_VELOCITY			2800
 #define BOBA_NPC_VEL_CUT		0.5f
 #define BOBA_NPC_HARD_VEL_CUT	0.7f
-#define BOBA_DAMAGE 			35
-#define BOBA_NPC_DAMAGE_EASY	25
-#define BOBA_NPC_DAMAGE_NORMAL	30 // 14
-#define BOBA_NPC_DAMAGE_HARD	35 // 18
+#define BOBA_DAMAGE 			25
+#define BOBA_NPC_DAMAGE_EASY	18
+#define BOBA_NPC_DAMAGE_NORMAL	20
+#define BOBA_NPC_DAMAGE_HARD	25
+#define BOBA_SCOPE_DAMAGE 		10
 
 // DC-17 Hand Pistol
 //--------

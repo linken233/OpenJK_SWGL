@@ -527,9 +527,6 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 	}
 	else if (cg.zoomMode >= ST_A280)
 	{
-		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
-		// angs[YAW]   += Q_flrand(-0.25f, 0.25f) * 0.01;
-
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
 
@@ -984,7 +981,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 	if (cg.zoomMode >= ST_A280)
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
-		WP_FireRebelBlasterMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+		WP_FireRebelRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
 	}
 	else
 	{
@@ -1235,13 +1232,8 @@ void WP_FireJangoPistol(gentity_t *ent, qboolean alt_fire)
 void WP_FireBobaRifleMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire )
 //---------------------------------------------------------
 {
-	int velocity	= BOBA_VELOCITY;
-	int	damage		= altFire ? weaponData[WP_BOBA].altDamage : weaponData[WP_BOBA].damage;
-
-	if (altFire)
-	{
-		velocity = Q_irand(1500, 3000);
-	}
+	int velocity = BOBA_VELOCITY;
+	int	damage = altFire ? weaponData[WP_BOBA].altDamage : weaponData[WP_BOBA].damage;
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{
@@ -1323,11 +1315,25 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 {
 	vec3_t	dir, angs;
+	float alt_spread = BOBA_ALT_SPREAD;
 
 	vectoangles( forwardVec, angs );
 
 	if ( ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{//no inherent aim screw up
+	}
+	else if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+
+		if (ent->client->ps.firingMode)
+		{
+			alt_spread = 0.1f;
+		}
+
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * alt_spread;
+		angs[YAW]   += Q_flrand(-1.0f, 1.0f) * alt_spread;
 	}
 	else if ( !(ent->client->ps.forcePowersActive&(1<<FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2 )
@@ -1359,10 +1365,18 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 		}
 	}
 
-	AngleVectors( angs, dir, NULL, NULL );
+	if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireBobaRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+	}
+	else
+	{
+		AngleVectors( angs, dir, NULL, NULL );
 
-	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireBobaRifleMissile( ent, muzzle, dir, alt_fire );
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireBobaRifleMissile( ent, muzzle, dir, alt_fire );
+	}
 }
 
 //---------------
