@@ -647,7 +647,14 @@ void CG_RegisterWeapon( int weaponNum ) {
 
 	case WP_CLONECARBINE:
 	case WP_CLONERIFLE:
+		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
+		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
+		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
+		break;
+
 	case WP_CLONECOMMANDO:
+		theFxScheduler.RegisterEffect("dc17/shot");
+		theFxScheduler.RegisterEffect("dc17/explosion");
 		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
 		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
 		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
@@ -3170,7 +3177,14 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		break;
 
 	case WP_CLONECOMMANDO:
-		FX_CloneWeaponHitWall(origin, dir);
+		if (altFire)
+		{
+			FX_CloneCommandoHitWall(origin, dir);
+		}
+		else
+		{
+			FX_CloneWeaponHitWall(origin, dir);
+		}
 		break;
 
 	case WP_REBELRIFLE:
@@ -3383,7 +3397,14 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_CLONECOMMANDO:
-		FX_CloneWeaponHitPlayer(other, origin, dir, humanoid);
+		if (altFire)
+		{
+			FX_CloneCommandoHitPlayer(origin, dir, humanoid);
+		}
+		else
+		{
+			FX_CloneWeaponHitPlayer(other, origin, dir, humanoid);
+		}
 		break;
 
 	case WP_REBELRIFLE:

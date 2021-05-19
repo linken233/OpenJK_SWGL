@@ -1125,6 +1125,8 @@ void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
 void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
 void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
 void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
 
 void FX_DisruptorMainShot( vec3_t start, vec3_t end );
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean full );

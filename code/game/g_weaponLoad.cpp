@@ -43,6 +43,7 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 void FX_CloneProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_CloneAltFireThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_CloneAltProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneCommandoProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 
 
 // Bowcaster
@@ -112,6 +113,7 @@ func_t	funcs[] = {
 	{ "clone_func",			FX_CloneProjectileThink},
 	{ "clone_alt_func",     FX_CloneAltFireThink },
 	{ "clone_pistol_alt_func", FX_CloneAltProjectileThink },
+	{ "clone_commando_alt_func", FX_CloneCommandoProjectileThink },
 	{NULL,					NULL}
 };
 
@@ -293,22 +295,14 @@ const int defaultDamage[] = {
 	BLASTER_DAMAGE,				// WP_BATTLEDROID
 	F_11D_DAMAGE,				// WP_THEFIRSTORDER
 	BLASTER_DAMAGE,				// WP_CLONECARBINE
-
-	CLONERIFLE_DAMAGE,			// WP_CLONERIFLE
-
 	REBELBLASTER_DAMAGE,		// WP_REBELBLASTER
-
-	CLONECOMMANDO_DAMAGE,		// WP_CLONERIFLE
-
+	CLONERIFLE_DAMAGE,			// WP_CLONERIFLE
+	CLONECOMMANDO_DAMAGE,		// WP_CLONECOMMANDO
 	REBELRIFLE_DAMAGE,			// WP_REBELRIFLE
-
 	REY_DAMAGE,					// WP_REY
-
 	JANGO_DAMAGE,				// WP_JANGO
-
 	BOBA_DAMAGE,				// WP_BOBA
-
-	CLONEPISTOL_DAMAGE,					// WP_CLONEPISTOL
+	CLONEPISTOL_DAMAGE,			// WP_CLONEPISTOL
 };
 
 const int defaultAltDamage[] = {
@@ -346,25 +340,18 @@ const int defaultAltDamage[] = {
 	0,						// WP_TUSKEN_STAFF
 	0,						// WP_SCEPTER
 	0,						// WP_NOGHRI_STICK
+
 	BLASTER_DAMAGE,			// WP_BATTLEDROID
 	F_11D_DAMAGE,			// WP_THEFIRSTORDER
 	BLASTER_DAMAGE,			// WP_CLONECARBINE
-
-	CLONERIFLE_DAMAGE,		// WP_CLONERIFLE
-
 	REBELBLASTER_DAMAGE,	// WP_REBELBLASTER
-
-	CLONECOMMANDO_DAMAGE,	// WP_REBELBLASTER
-
+	CLONERIFLE_DAMAGE,		// WP_CLONERIFLE
+	CLONECOMMANDO_ALT_DAMAGE, // WP_CLONECOMMANDO
 	REBELRIFLE_DAMAGE,		// WP_REBELRIFLE
-
 	REY_DAMAGE,				// WP_REY
-
 	JANGO_DAMAGE,			// WP_JANGO
-
 	BOBA_DAMAGE,			// WP_BOBA
-
-	CLONEPISTOL_DAMAGE,				// WP_CLONEPISTOL
+	CLONEPISTOL_DAMAGE,		// WP_CLONEPISTOL
 };
 
 const int defaultSplashDamage[] = {
@@ -506,7 +493,7 @@ const int defaultAltSplashDamage[] = {
 	0,								// WP_CLONECARBINE
 	0,								// WP_REBELBLASTER
 	0,				   				// WP_CLONERIFLE
-	0,				   				// WP_CLONECOMMANDO
+	CLONECOMMANDO_ALT_SPLASH_DAMAGE,// WP_CLONECOMMANDO
 	0,				   				// WP_REBELRIFLE
 	0,				   				// WP_REY
 	0,				   				// WP_JANGO
@@ -555,7 +542,7 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_CLONECARBINE
 	0.0f,							// WP_REBELBLASTER
 	0.0f,							// WP_CLONERIFLE
-	0.0f,							// WP_CLONECOMMANDO
+	CLONECOMMANDO_ALT_SPLASH_RADIUS,// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
 	0.0f,							// WP_REY
 	0.0f,							// WP_JANGO

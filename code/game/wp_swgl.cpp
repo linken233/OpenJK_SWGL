@@ -716,7 +716,7 @@ void WP_FireCloneRifle(gentity_t *ent, qboolean alt_fire)
 void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
 {
-	int velocity = CLONECOMMANDO_VELOCITY;
+	int velocity = altFire ? CLONECOMMANDO_ALT_VELOCITY : CLONECOMMANDO_VELOCITY;
 	int	damage = altFire ? weaponData[WP_CLONECOMMANDO].altDamage : weaponData[WP_CLONECOMMANDO].damage;
 
 	if (ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE)
@@ -780,7 +780,14 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	if (altFire)
 	{
+		VectorSet( missile->maxs, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE);
+		VectorScale( missile->maxs, -1, missile->mins );
+
+		missile->s.pos.trType = TR_GRAVITY;
+		missile->s.pos.trDelta[2] += 200.0f;
 		missile->methodOfDeath = MOD_CLONECOMMANDO_ALT;
+		missile->splashDamage = weaponData[WP_CLONECOMMANDO].altSplashDamage;
+		missile->splashRadius = weaponData[WP_CLONECOMMANDO].altSplashRadius;
 	}
 	else
 	{
@@ -805,31 +812,21 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 	}
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
-	{//force sight 2+ gives perfect aim
-		//FIXME: maybe force sight level 3 autoaims some?
-		if (alt_fire)
+	{
+		// Troopers use their aim values as well as the gun's inherent inaccuracy
+		// so check for all classes of stormtroopers and anyone else that has aim error
+		if (ent->client && ent->NPC &&
+			(ent->client->NPC_class == CLASS_STORMTROOPER ||
+			ent->client->NPC_class == CLASS_SWAMPTROOPER))
 		{
-			// add some slop to the alt-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_ALT_SPREAD;
-			angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_ALT_SPREAD;
+			angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (CLONECOMMANDO_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+			angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (CLONECOMMANDO_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
 		}
 		else
 		{
-			// Troopers use their aim values as well as the gun's inherent inaccuracy
-			// so check for all classes of stormtroopers and anyone else that has aim error
-			if (ent->client && ent->NPC &&
-				(ent->client->NPC_class == CLASS_STORMTROOPER ||
-				ent->client->NPC_class == CLASS_SWAMPTROOPER))
-			{
-				angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (CLONECOMMANDO_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (CLONECOMMANDO_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
-			}
-			else
-			{
-				// add some slop to the main-fire direction
-				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_MAIN_SPREAD;
-				angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_MAIN_SPREAD;
-			}
+			// add some slop to the main-fire direction
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_MAIN_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_MAIN_SPREAD;
 		}
 	}
 
