@@ -498,7 +498,7 @@ enum ScopeType
 //--------
 #define REY_VEL 			1800
 #define REY_DAMAGE			14
-#define REY_CHARGE_UNIT 	200.0f
+#define REY_CHARGE_UNIT 	100.0f
 
 // Westar 34
 //--------

@@ -1383,8 +1383,8 @@ void CG_AddViewWeapon( playerState_t *ps )
 		if ( ps->weapon == WP_REY
 			|| ps->weapon == WP_REY )
 		{
-			// Hardcoded max charge time of 1 second
-			val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
+			// Hardcoded max charge time of 0.5 second
+			val = ( cg.time - ps->weaponChargeTime ) * 0.0005f;
 			shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 		}
 

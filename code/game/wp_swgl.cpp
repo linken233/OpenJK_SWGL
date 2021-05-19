@@ -1004,7 +1004,7 @@ void WP_FireReyPistol( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage = !alt_fire ? weaponData[WP_REY].damage : weaponData[WP_REY].altDamage;
+	int	damage = !alt_fire ? weaponData[WP_REY].damage : weaponData[WP_REY].altDamage;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -1051,7 +1051,7 @@ void WP_FireReyPistol( gentity_t *ent, qboolean alt_fire )
 
 	if ( alt_fire )
 	{
-		int count = ( level.time - ent->client->ps.weaponChargeTime ) / BRYAR_CHARGE_UNIT;
+		int count = ( level.time - ent->client->ps.weaponChargeTime ) / REY_CHARGE_UNIT;
 
 		if ( count < 1 )
 		{
