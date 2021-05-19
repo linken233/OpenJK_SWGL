@@ -925,11 +925,26 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
 	vec3_t	dir, angs;
+	float main_spread = REBELRIFLE_MAIN_SPREAD;
+	float alt_spread = REBELRIFLE_ALT_SPREAD;
 
 	vectoangles(forwardVec, angs);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
+	}
+	else if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+
+		if (ent->client->ps.firingMode)
+		{
+			alt_spread += 0.2f;
+		}
+
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * alt_spread;
+		angs[YAW]   += Q_flrand(-1.0f, 1.0f) * alt_spread;
 	}
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
@@ -954,17 +969,30 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 			}
 			else
 			{
+				if (ent->client->ps.firingMode)
+				{
+					main_spread += 0.5f;
+				}
+
 				// add some slop to the main-fire direction
-				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REBELRIFLE_MAIN_SPREAD;
-				angs[YAW] += Q_flrand(-1.0f, 1.0f) * REBELRIFLE_MAIN_SPREAD;
+				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * main_spread;
+				angs[YAW] += Q_flrand(-1.0f, 1.0f) * main_spread;
 			}
 		}
 	}
 
-	AngleVectors(angs, dir, NULL, NULL);
+	if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireRebelBlasterMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+	}
+	else
+	{
+		AngleVectors(angs, dir, NULL, NULL);
 
-	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireRebelRifleMissile(ent, muzzle, dir, alt_fire);
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireRebelRifleMissile(ent, muzzle, dir, alt_fire);
+	}
 }
 
 //---------------
