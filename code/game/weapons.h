@@ -502,16 +502,17 @@ enum ScopeType
 
 // Westar 34
 //--------
-#define JANGO_MAIN_SPREAD			0.1f
-#define JANGO_ALT_SPREAD			0.1f
-#define JANGO_NPC_SPREAD			0.1f
-#define JANGO_VELOCITY				3800
+#define JANGO_MAIN_SPREAD			0.3f
+#define JANGO_ALT_SPREAD			0.4f
+#define JANGO_NPC_SPREAD			0.3f
+#define JANGO_VELOCITY				3600
 #define JANGO_NPC_VEL_CUT			0.5f
 #define JANGO_NPC_HARD_VEL_CUT		0.7f
-#define JANGO_DAMAGE				8
+#define JANGO_DAMAGE				12
 #define JANGO_NPC_DAMAGE_EASY		6
 #define JANGO_NPC_DAMAGE_NORMAL 	8
 #define JANGO_NPC_DAMAGE_HARD		10
+#define JANGO_ALT_DAMAGE			8
 
 // EE-3 Carbine Rifle
 //---------
