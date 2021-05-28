@@ -8944,7 +8944,7 @@ static void PM_BeginWeaponChange( int weapon ) {
 		}
 		else
 		{
-			if (pm->ps->firingMode == 1)
+			if (pm->ps->firingMode)
 			{
 				pm->ps->checkWeaponChange = true;
 			}
@@ -13482,13 +13482,10 @@ static void PM_Weapon( void )
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if (!(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
-	{
-		if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
-			if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
-				PM_BeginWeaponChange( pm->cmd.weapon );
-				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-			}
+	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
+		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
+			PM_BeginWeaponChange( pm->cmd.weapon );
+			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 		}
 	}
 
@@ -13638,18 +13635,21 @@ static void PM_Weapon( void )
 			return;
 		}
 
-		if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+		if (pm->ps->firingMode)
 		{
-			// Code from JKG
+			// Code from JKG: 2 (Only called if you are holding down the button)
+			// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
 			if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
 			{
+				// If you are holding down the button, return.
 				if (weaponData[pm->ps->weapon].firingType == FT_SEMI)
 				{
 					return;
 				}
+				// If you are holding down the button, keep reloading shotsRemaining.
 				else if (weaponData[pm->ps->weapon].firingType == FT_BURST)
 				{
-					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst & ~SHOTS_TOGGLEBIT;
+					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst;
 				}
 			}
 		}
@@ -13981,15 +13981,15 @@ static void PM_Weapon( void )
 	}
 	else
 	{
-		if (cg.zoomMode >= ST_A280 && weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode == 1)
+		if (cg.zoomMode >= ST_A280 && weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode)
 		{
 			amount = BURST_ENERGY_SHOT_SCOPED;
 		}
-		else if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode == 1)
+		else if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode)
 		{
 			amount = BURST_ENERGY_SHOT;
 		}
-		else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
+		else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode)
 		{
 			amount = HIGH_POWERED_ENERGY_SHOT;
 		}
@@ -14002,7 +14002,7 @@ static void PM_Weapon( void )
 			amount = weaponData[pm->ps->weapon].energyPerShot;
 		}
 
-		if (weaponData[pm->ps->weapon].firingType == FT_SEMI && pm->ps->firingMode == 1)
+		if (weaponData[pm->ps->weapon].firingType == FT_SEMI && pm->ps->firingMode)
 		{
 			if (pm->ps->weapon == WP_CLONERIFLE)
 			{
@@ -14129,41 +14129,46 @@ static void PM_Weapon( void )
 		}
 	}
 
-	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	if (pm->ps->firingMode)
 	{
-		// Code from JKG
-		if (pm->cmd.buttons & BUTTON_ATTACK)
+		// Code from JKG: 3
+		switch (weaponData[pm->ps->weapon].firingType)
 		{
-			switch (weaponData[pm->ps->weapon].firingType)
-			{
-				case FT_AUTOMATIC:
+			case FT_AUTOMATIC:
+				addTime = weaponData[pm->ps->weapon].FTFireTime;
+				break;
+			case FT_SEMI:
+				if (pm->ps->weapon == WP_CLONERIFLE)
+				{
+					weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
+				}
+				// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
+				// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
+				// and returns out of the function.
+				addTime = weaponData[pm->ps->weapon].FTFireTime;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				break;
+			case FT_BURST:
+				if (pm->ps->shotsRemaining == 1)
+				{	
+					// Setting it to a regular fire delay between each burst.
 					addTime = weaponData[pm->ps->weapon].FTFireTime;
-					break;
-				case FT_SEMI:
-					if (pm->ps->weapon == WP_CLONERIFLE)
-					{
-						weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
-					}
-					addTime = weaponData[pm->ps->weapon].FTFireTime;
+					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
+					// And to stop BUTTON_ATTACK (4).
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					break;
-				case FT_BURST:
-					if ((pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) == 1)
-					{	
-						addTime = weaponData[pm->ps->weapon].FTFireTime;
-						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					}
-					else
-					{
-						addTime = weaponData[pm->ps->weapon].burstFireDelay;
-						pm->ps->shotsRemaining = (pm->ps->shotsRemaining - 1) & ~SHOTS_TOGGLEBIT;
-					}
-					break;
-				case FT_HIGH_POWERED:
-					addTime = weaponData[pm->ps->weapon].FTFireTime;
-					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
-					break;
-			}
+				}
+				else
+				{
+					// The delay between each shot.
+					addTime = weaponData[pm->ps->weapon].burstFireDelay;
+					// Minus it by 1 to call the above if statement.
+					pm->ps->shotsRemaining -= 1;
+				}
+				break;
+			case FT_HIGH_POWERED:
+				addTime = weaponData[pm->ps->weapon].FTFireTime;
+				weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+				break;
 		}
 	}
 	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
@@ -14575,23 +14580,22 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
-	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	if (pm->ps->firingMode)
 	{
-		if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+		// Code from JKG: 4
+		// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0
+		// Keep attack button 'pressed' until no more shots are remaining.
+		if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
 		{
-			// Code from JKG
-			if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+			if (pm->ps->eFlags & EF_FIRING)
 			{
-				if (pm->ps->eFlags & EF_FIRING)
+				if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->pm_type != PM_NOCLIP)
 				{
-					if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->pm_type != PM_NOCLIP)
-					{
-						pm->cmd.buttons |= BUTTON_ATTACK;
-					}
-					else if (pm->ps->pm_type == PM_NOCLIP)
-					{
-						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					}
+					pm->cmd.buttons |= BUTTON_ATTACK;
+				}
+				else if (pm->ps->pm_type == PM_NOCLIP)
+				{
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 				}
 			}
 		}
@@ -14753,23 +14757,27 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	if (pm->ps->firingMode == 1 || pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+	if (pm->ps->firingMode)
 	{
-		// Code from JKG
-		if ( !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) 
-			&& (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
+		// Code from JKG: 1
+		// This is the initial click.
+		// If there are no shots, main click is pressed, and the weapon is not currently firing.
+		if (!(pm->ps->shotsRemaining) && (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
 		{
+			// Right when you press main click. 
 			if (pm->ps->weaponTime <= 0)
 			{
 				if (weaponData[pm->ps->weapon].firingType == FT_BURST)
 				{
-					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst & ~SHOTS_TOGGLEBIT;
+					// First time loading shotsRemaining.
+					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst;
 				}
 			}
 			else
 			{
+				// If you try to press main click between burts, do nothing.
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
-				primFireDown =  qfalse;
+				primFireDown = qfalse;
 			}
 		}
 	}
@@ -14805,7 +14813,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->ps->eFlags &= ~EF_FIRING;
 		pm->ps->eFlags &= ~EF_ALT_FIRING;
 
-		// Code from JKG
+		// Code from JKG: 5
+		// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
 		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
 		{
 			pm->ps->shotsRemaining = 0;
@@ -14861,7 +14870,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				}
 			}
 			// If you have a scope and you have the firing type of high powered, you can not use main click. 
-			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode == 1)
+			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode)
 			{
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
 			}
@@ -14874,7 +14883,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		// If you don't have a scope, but a firing type.
 		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC)
 		{
-			if (pm->ps->firingMode == 1)
+			if (pm->ps->firingMode)
 			{
 				// If you have the firing type of high powered, you can not use main click. High powered firing type is useless without a scope.
 				if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
