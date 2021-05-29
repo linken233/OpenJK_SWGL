@@ -14582,20 +14582,24 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	if (pm->ps->firingMode)
 	{
-		// Code from JKG: 4
-		// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0
-		// Keep attack button 'pressed' until no more shots are remaining.
-		if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+		// This is to make sure that only the player can burst fire.
+		if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
 		{
-			if (pm->ps->eFlags & EF_FIRING)
+			// Code from JKG: 4
+			// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0
+			// Keep attack button 'pressed' until no more shots are remaining.
+			if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
 			{
-				if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->pm_type != PM_NOCLIP)
+				if (pm->ps->eFlags & EF_FIRING)
 				{
-					pm->cmd.buttons |= BUTTON_ATTACK;
-				}
-				else if (pm->ps->pm_type == PM_NOCLIP)
-				{
-					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->pm_type != PM_NOCLIP)
+					{
+						pm->cmd.buttons |= BUTTON_ATTACK;
+					}
+					else if (pm->ps->pm_type == PM_NOCLIP)
+					{
+						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					}
 				}
 			}
 		}
