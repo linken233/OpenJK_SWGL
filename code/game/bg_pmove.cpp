@@ -180,6 +180,8 @@ const float pm_airDecelRate = 1.35f;	//Used for air decelleration away from curr
 
 int	c_pmove = 0;
 
+int shots_total = 0;
+
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
 extern void PM_TorsoAnimation( void );
@@ -13635,8 +13637,8 @@ static void PM_Weapon( void )
 			return;
 		}
 
-		if (pm->ps->firingMode)
-		{
+		// if (pm->ps->firingMode)
+		// {
 			// Code from JKG: 2 (Only called if you are holding down the button)
 			// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
 			if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
@@ -13649,10 +13651,10 @@ static void PM_Weapon( void )
 				// If you are holding down the button, keep reloading shotsRemaining.
 				else if (weaponData[pm->ps->weapon].firingType == FT_BURST)
 				{
-					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst;
+					pm->ps->shotsRemaining = shots_total;
 				}
 			}
-		}
+		// }
 
 		if (pm->gent->s.m_iVehicleNum!=0)
 		{
@@ -14129,52 +14131,55 @@ static void PM_Weapon( void )
 		}
 	}
 
-	if (pm->ps->firingMode)
-	{
+	// if (pm->ps->firingMode)
+	// {
 		// Code from JKG: 3
-		switch (weaponData[pm->ps->weapon].firingType)
+		if (pm->cmd.buttons & BUTTON_ATTACK)
 		{
-			case FT_AUTOMATIC:
-				addTime = weaponData[pm->ps->weapon].FTFireTime;
-				break;
-			case FT_SEMI:
-				if (pm->ps->weapon == WP_CLONERIFLE)
-				{
-					weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
-				}
-				// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
-				// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
-				// and returns out of the function.
-				addTime = weaponData[pm->ps->weapon].FTFireTime;
-				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-				break;
-			case FT_BURST:
-				if (pm->ps->shotsRemaining == 1)
-				{	
-					// Setting it to a regular fire delay between each burst.
+			switch (weaponData[pm->ps->weapon].firingType)
+			{
+				case FT_AUTOMATIC:
 					addTime = weaponData[pm->ps->weapon].FTFireTime;
-					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
-					// And to stop BUTTON_ATTACK (4).
+					break;
+				case FT_SEMI:
+					if (pm->ps->weapon == WP_CLONERIFLE)
+					{
+						weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
+					}
+					// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
+					// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
+					// and returns out of the function.
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-				}
-				else
-				{
-					// The delay between each shot.
-					addTime = weaponData[pm->ps->weapon].burstFireDelay;
-					// Minus it by 1 to call the above if statement.
-					pm->ps->shotsRemaining -= 1;
-				}
-				break;
-			case FT_HIGH_POWERED:
-				addTime = weaponData[pm->ps->weapon].FTFireTime;
-				weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
-				break;
+					break;
+				case FT_BURST:
+					if (pm->ps->shotsRemaining == 1)
+					{
+						// Setting it to a regular fire delay between each burst.
+						addTime = weaponData[pm->ps->weapon].FTFireTime;
+						// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
+						// And to stop BUTTON_ATTACK (4).
+						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					}
+					else
+					{
+						// The delay between each shot.
+						addTime = weaponData[pm->ps->weapon].burstFireDelay;
+						// Minus it by 1 to call the above if statement.
+						pm->ps->shotsRemaining -= 1;
+					}
+					break;
+				case FT_HIGH_POWERED:
+					addTime = weaponData[pm->ps->weapon].FTFireTime;
+					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+					break;
+			}
 		}
-	}
-	else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
-	{
-		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
-	}
+	// }
+	// else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
+	// {
+	// 	weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
+	// }
 
 	if ( g_timescale != NULL )
 	{
@@ -14569,7 +14574,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 {
 	int amount;
 
-	qboolean primFireDown;
+	qboolean primFireDown = qfalse;
 
 	if ( !g_saberAutoBlocking->integer
 		&& !g_saberNewControlScheme->integer
@@ -14580,13 +14585,13 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
-	if (pm->ps->firingMode)
-	{
+	// if (pm->ps->firingMode)
+	// {
 		// This is to make sure that only the player can burst fire.
 		if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
 		{
 			// Code from JKG: 4
-			// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0
+			// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0.
 			// Keep attack button 'pressed' until no more shots are remaining.
 			if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
 			{
@@ -14603,7 +14608,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				}
 			}
 		}
-	}
+	// }
 
 	primFireDown = (qboolean)(pm->cmd.buttons & BUTTON_ATTACK);
 
@@ -14761,8 +14766,29 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	if (pm->ps->firingMode)
+	// If you press the alt key, you are not currently firing, and your alt fire has a firing mode of burst.
+	if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING))
 	{
+		// Don't let the alt-fite get through. 
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		// Switch the flags.
+		pm->cmd.buttons |= BUTTON_ATTACK;
+		pm->ps->eFlags |= EF_FIRING;
+		// Setting shots_total. 
+		shots_total = 2;
+	}
+	else if ((primFireDown && !(pm->ps->eFlags & EF_FIRING)))
+	{
+		shots_total = 3;
+	}
+	else
+	{
+		// Don't let the alt-fite get through.
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+	}
+
+	// if (pm->ps->firingMode)
+	// {
 		// Code from JKG: 1
 		// This is the initial click.
 		// If there are no shots, main click is pressed, and the weapon is not currently firing.
@@ -14774,7 +14800,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				if (weaponData[pm->ps->weapon].firingType == FT_BURST)
 				{
 					// First time loading shotsRemaining.
-					pm->ps->shotsRemaining = weaponData[pm->ps->weapon].shotsPerBurst;
+					pm->ps->shotsRemaining = shots_total;
 				}
 			}
 			else
@@ -14784,7 +14810,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				primFireDown = qfalse;
 			}
 		}
-	}
+	// }
 
 	// set the firing flag for continuous beam weapons, phaser will fire even if out of ammo
 	if ( (( pm->cmd.buttons & BUTTON_ATTACK || pm->cmd.buttons & BUTTON_ALT_ATTACK ) && ( amount >= 0 || pm->ps->weapon == WP_SABER )) )

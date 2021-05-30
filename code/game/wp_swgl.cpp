@@ -128,9 +128,10 @@ void WP_FireBattleDroid(gentity_t *ent, qboolean alt_fire)
 		//FIXME: maybe force sight level 3 autoaims some?
 		if (alt_fire)
 		{
+			Com_Printf("Alt Fire\n");
 			// add some slop to the alt-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
-			angs[YAW] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * 5.0f;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * 5.0f;
 		}
 		else
 		{
@@ -145,9 +146,10 @@ void WP_FireBattleDroid(gentity_t *ent, qboolean alt_fire)
 			}
 			else
 			{
+				Com_Printf("Main Fire\n");
 				// add some slop to the main-fire direction
-				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
-				angs[YAW] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
+				angs[PITCH] += Q_flrand(-1.0f, 1.0f);
+				angs[YAW] += Q_flrand(-1.0f, 1.0f);
 			}
 		}
 	}
