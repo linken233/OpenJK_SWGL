@@ -244,6 +244,9 @@ void WPN_FTFireTime(const char **holdBuf);
 
 void WPN_ScopeType(const char **holdBuf);
 
+void WPN_MainFireOptions(const char **holdBuf);
+void WPN_AltFireOptions(const char **holdBuf);
+
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
 
@@ -604,6 +607,9 @@ wpnParms_t WpnParms[] =
 	{ "FTFireTime",			WPN_FTFireTime },
 
 	{ "scopeType",			WPN_ScopeType },
+
+	{ "mainfireopt",		WPN_MainFireOptions},
+	{ "altfireopt",			WPN_AltFireOptions},
 
 	// Old legacy files contain these, so we skip them to shut up warnings
 	{ "firingforce",		WPN_FuncSkip },
@@ -1717,6 +1723,54 @@ void WPN_ScopeType(const char **holdBuf)
         return;
     }
     weaponData[wpnParms.weaponNum].scopeType = tokenInt;
+}
+
+//--------------------------------------------
+void WPN_MainFireOptions(const char **holdBuf)
+{
+	int i;
+	int tokenInt;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (COM_ParseInt(holdBuf, &tokenInt))
+		{
+			SkipRestOfLine(holdBuf);
+			continue;
+		}
+
+		if ((tokenInt < 0) || (tokenInt > 10000 ))
+		{
+			gi.Printf(S_COLOR_YELLOW"WARNING: bad mainfireopt in external weapon data '%d'\n", tokenInt);
+			continue;
+		}
+
+		weaponData[wpnParms.weaponNum].mainFireOpt[i] = tokenInt;
+	}
+}
+
+//--------------------------------------------
+void WPN_AltFireOptions(const char **holdBuf)
+{
+	int i;
+	int tokenInt;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (COM_ParseInt(holdBuf, &tokenInt))
+		{
+			SkipRestOfLine(holdBuf);
+			continue;
+		}
+
+		if ((tokenInt < 0) || (tokenInt > 10000 ))
+		{
+			gi.Printf(S_COLOR_YELLOW"WARNING: bad altfireopt in external weapon data '%d'\n", tokenInt);
+			continue;
+		}
+
+		weaponData[wpnParms.weaponNum].altFireOpt[i] = tokenInt;
+	}
 }
 
 //--------------------------------------------

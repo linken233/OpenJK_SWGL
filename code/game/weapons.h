@@ -176,6 +176,9 @@ typedef struct weaponData_s
 	int 	FTFireTime;
 
 	int 	scopeType;
+	
+	int 	mainFireOpt[3];
+	int		altFireOpt[3];
 
 } weaponData_t;
 
@@ -187,7 +190,7 @@ typedef struct ammoData_s
 } ammoData_t;
 
 
-enum FiringType
+enum firingType
 {
 	FT_AUTOMATIC = 1,
 	FT_SEMI,
@@ -196,12 +199,20 @@ enum FiringType
 };
 
 
-enum ScopeType
+enum scopeType
 {
 	ST_A280 = 4,
 	ST_WESTAR_M5,
 	ST_BOWCASTER,
 	ST_DLT_20A
+};
+
+
+enum firingOptions
+{
+	FIRING_TYPE,
+	SHOTS_PER_BURST,
+	BURST_FIRE_DELAY
 };
 
 // Bryar Pistol
