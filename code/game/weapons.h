@@ -170,15 +170,15 @@ typedef struct weaponData_s
 	float	splashRadius;
 	float	altSplashRadius;
 
-	int		firingType;
-	int		shotsPerBurst;
-	int		burstFireDelay;
-	int 	FTFireTime;
+	int 	tertiaryEnergyPerShot;
+	int 	tertiaryFireTime;
+	int		tertiaryRange;
 
 	int 	scopeType;
 	
 	int 	mainFireOpt[3];
 	int		altFireOpt[3];
+	int 	tertiaryFireOpt[3];
 
 } weaponData_t;
 

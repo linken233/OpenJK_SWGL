@@ -46,6 +46,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include <float.h>
 
+#define MAIN_ATTACK 		1
+#define ALT_ATTACK			2
+#define TERTIARY_ATTACK 	4
+
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean G_EntIsDoor( int entityNum );
@@ -181,7 +185,7 @@ const float pm_airDecelRate = 1.35f;	//Used for air decelleration away from curr
 int	c_pmove = 0;
 
 int shots_total = 0;
-qboolean is_alt_fire = qfalse;
+short firing_attacks = 0;
 
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
@@ -8937,22 +8941,22 @@ static void PM_BeginWeaponChange( int weapon ) {
 			cg.zoomMode = 0;
 		} 
 
-		if (weaponData[weapon].firingType >= FT_AUTOMATIC)
+		if (weaponData[weapon].tertiaryFireOpt[FIRING_TYPE] >= FT_AUTOMATIC)
 		{
 			if (pm->ps->checkWeaponChange == true)
 			{
-				pm->ps->firingMode = 1;
+				pm->ps->tertiaryMode = 1;
 				pm->ps->checkWeaponChange = false;
 			}
 		}
 		else
 		{
-			if (pm->ps->firingMode)
+			if (pm->ps->tertiaryMode)
 			{
 				pm->ps->checkWeaponChange = true;
 			}
 
-			pm->ps->firingMode = 0;
+			pm->ps->tertiaryMode = 0;
 		}
 	}
 
@@ -13384,8 +13388,14 @@ static void PM_Weapon( void )
 	int burst_fire_delay = 0;
 
 	if (pm->cmd.buttons & BUTTON_ATTACK)
-	{
-		if (is_alt_fire)
+	{	
+		if (firing_attacks & TERTIARY_ATTACK)
+		{
+			firing_type = weaponData[pm->ps->weapon].tertiaryFireOpt[FIRING_TYPE];
+			fire_time = weaponData[pm->ps->weapon].tertiaryFireTime;
+			burst_fire_delay = weaponData[pm->ps->weapon].tertiaryFireOpt[BURST_FIRE_DELAY];
+		}
+		else if (firing_attacks & ALT_ATTACK)
 		{
 			firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
 			fire_time = weaponData[pm->ps->weapon].altFireTime;
@@ -13397,6 +13407,8 @@ static void PM_Weapon( void )
 			fire_time = weaponData[pm->ps->weapon].fireTime;
 			burst_fire_delay = weaponData[pm->ps->weapon].mainFireOpt[BURST_FIRE_DELAY];
 		}
+
+		firing_attacks = 0;
 	}
 
 	if ( (pm->ps->eFlags&EF_HELD_BY_WAMPA) )
@@ -13658,24 +13670,21 @@ static void PM_Weapon( void )
 			return;
 		}
 
-		// if (pm->ps->firingMode)
-		// {
-			// Code from JKG: 2 (Only called if you are holding down the button)
-			// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
-			if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+		// Code from JKG: 2 (Only called if you are holding down the button)
+		// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
+		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+		{
+			// If you are holding down the button, return.
+			if (firing_type == FT_SEMI)
 			{
-				// If you are holding down the button, return.
-				if (firing_type == FT_SEMI)
-				{
-					return;
-				}
-				// If you are holding down the button, keep reloading shotsRemaining.
-				else if (firing_type == FT_BURST)
-				{
-					pm->ps->shotsRemaining = shots_total;
-				}
+				return;
 			}
-		// }
+			// If you are holding down the button, keep reloading shotsRemaining.
+			else if (firing_type == FT_BURST)
+			{
+				pm->ps->shotsRemaining = shots_total;
+			}
+		}
 
 		if (pm->gent->s.m_iVehicleNum!=0)
 		{
@@ -13998,39 +14007,20 @@ static void PM_Weapon( void )
 		}
 	}
 
+	
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
 		amount = weaponData[pm->ps->weapon].altEnergyPerShot;
 	}
 	else
 	{
-		if (cg.zoomMode >= ST_A280 && weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode)
+		if (pm->ps->tertiaryMode)
 		{
-			amount = BURST_ENERGY_SHOT_SCOPED;
-		}
-		else if (weaponData[pm->ps->weapon].firingType == FT_BURST && pm->ps->firingMode)
-		{
-			amount = BURST_ENERGY_SHOT;
-		}
-		else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode)
-		{
-			amount = HIGH_POWERED_ENERGY_SHOT;
-		}
-		else if (cg.zoomMode >= ST_A280)
-		{
-			amount = weaponData[pm->ps->weapon].altEnergyPerShot;
+			amount = weaponData[pm->ps->weapon].tertiaryEnergyPerShot;
 		}
 		else
 		{
 			amount = weaponData[pm->ps->weapon].energyPerShot;
-		}
-
-		if (weaponData[pm->ps->weapon].firingType == FT_SEMI && pm->ps->firingMode)
-		{
-			if (pm->ps->weapon == WP_CLONERIFLE)
-			{
-				amount = CLONERIFLE_SEMI_AMOUNT;
-			}
 		}
 	}
 
@@ -14152,55 +14142,55 @@ static void PM_Weapon( void )
 		}
 	}
 
-	// if (pm->ps->firingMode)
-	// {
-		// Code from JKG: 3
-		if (pm->cmd.buttons & BUTTON_ATTACK)
+	// Code from JKG: 3
+	if (pm->cmd.buttons & BUTTON_ATTACK)
+	{
+		switch (firing_type)
 		{
-			switch (firing_type)
-			{
-				case FT_AUTOMATIC:
+			case FT_AUTOMATIC:
+				addTime = fire_time;
+				break;
+			case FT_SEMI:
+				// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
+				// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
+				// and returns out of the function.
+				addTime = fire_time;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				break;
+			case FT_BURST:
+				if (pm->ps->shotsRemaining == 1)
+				{
+					// Setting it to a regular fire delay between each burst.
 					addTime = fire_time;
-					break;
-				case FT_SEMI:
-					if (pm->ps->weapon == WP_CLONERIFLE)
-					{
-						weaponData[pm->ps->weapon].damage = CLONERIFLE_SEMI_SHOT;
-					}
-					// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
-					// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
-					// and returns out of the function.
-					addTime = fire_time;
+					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
+					// And to stop BUTTON_ATTACK (4).
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					break;
-				case FT_BURST:
-					if (pm->ps->shotsRemaining == 1)
-					{
-						// Setting it to a regular fire delay between each burst.
-						addTime = fire_time;
-						// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
-						// And to stop BUTTON_ATTACK (4).
-						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					}
-					else
-					{
-						// The delay between each shot.
-						addTime = burst_fire_delay;
-						// Minus it by 1 to call the above if statement.
-						pm->ps->shotsRemaining -= 1;
-					}
-					break;
-				case FT_HIGH_POWERED:
-					addTime = fire_time;
-					weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
-					break;
-			}
+				}
+				else
+				{
+					// The delay between each shot.
+					addTime = burst_fire_delay;
+					// Minus it by 1 to call the above if statement.
+					pm->ps->shotsRemaining -= 1;
+				}
+				break;
+			case FT_HIGH_POWERED:
+				addTime = fire_time;
+				weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+				break;
 		}
-	// }
-	// else if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED || pm->ps->weapon == WP_CLONERIFLE)
-	// {
-	// 	weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
-	// }
+	}
+
+	// If the current firing type is not high powered.
+	if (firing_type != FT_HIGH_POWERED)
+	{
+		// If the damges are different.
+		if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
+		{
+			// Load back the default damage of that weapon.
+			weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
+		}
+	}
 
 	if ( g_timescale != NULL )
 	{
@@ -14597,7 +14587,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	int main_firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
 	int alt_firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
-	int tertiary_firing_type = 0;
+	int tertiary_firing_type = weaponData[pm->ps->weapon].tertiaryFireOpt[FIRING_TYPE];
 
 	qboolean primFireDown = qfalse;
 
@@ -14610,30 +14600,27 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
-	// if (pm->ps->firingMode)
-	// {
-		// This is to make sure that only the player can burst fire.
-		if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+	// This is to make sure that only the player can burst fire.
+	if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+	{
+		// Code from JKG: 4
+		// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0.
+		// Keep attack button 'pressed' until no more shots are remaining.
+		if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
 		{
-			// Code from JKG: 4
-			// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0.
-			// Keep attack button 'pressed' until no more shots are remaining.
-			if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+			if (pm->ps->eFlags & EF_FIRING)
 			{
-				if (pm->ps->eFlags & EF_FIRING)
+				if ((main_firing_type == FT_BURST || alt_firing_type == FT_BURST || tertiary_firing_type == FT_BURST) && pm->ps->pm_type != PM_NOCLIP)
 				{
-					if ((main_firing_type == FT_BURST || alt_firing_type == FT_BURST) && pm->ps->pm_type != PM_NOCLIP)
-					{
-						pm->cmd.buttons |= BUTTON_ATTACK;
-					}
-					else if (pm->ps->pm_type == PM_NOCLIP)
-					{
-						pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					}
+					pm->cmd.buttons |= BUTTON_ATTACK;
+				}
+				else if (pm->ps->pm_type == PM_NOCLIP)
+				{
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 				}
 			}
 		}
-	// }
+	}
 
 	// get ammo usage
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
@@ -14791,29 +14778,39 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	// If you press the main click and you are scoped.
-	if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
-	{
-		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
-		is_alt_fire = qtrue;
-	}
-	// If you press alt click, you are not currently firing, and you have no scope.
+	// If you press alt click, you are not currently firing, you have no scope, and tertiary mode is not enabled.
 	// When you have a scope, alt click doesn't get through.
-	else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280)
+	if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280 && pm->ps->tertiaryMode == 0)
 	{
-		// Don't let the alt-fite get through. 
+		// Don't let the alt-fite get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 		// Switch the flag.
 		pm->cmd.buttons |= BUTTON_ATTACK;
-		// Setting shots_total. 
+
+		// Setting shots_total.
 		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
-		is_alt_fire = qtrue;
+		firing_attacks |= ALT_ATTACK;
 	}
 	// If a you press the main key and you not currently firing.
 	else if (pm->cmd.buttons & BUTTON_ATTACK && !(pm->ps->eFlags & EF_FIRING))
 	{
-		shots_total = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
-		is_alt_fire = qfalse;
+		// If you have tertiaryMode on regardless if you are scoped or not.
+		if (pm->ps->tertiaryMode)
+		{
+			shots_total = weaponData[pm->ps->weapon].tertiaryFireOpt[SHOTS_PER_BURST];
+			firing_attacks |= TERTIARY_ATTACK;
+		}
+		// If you are scoped.
+		else if (cg.zoomMode >= ST_A280)
+		{
+			shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
+			firing_attacks |= ALT_ATTACK;
+		}
+		else
+		{
+			shots_total = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
+			firing_attacks |= MAIN_ATTACK;
+		}
 	}
 	else if (weaponData[pm->ps->weapon].scopeType < ST_A280)
 	{
@@ -14823,30 +14820,29 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	primFireDown = (qboolean)(pm->cmd.buttons & BUTTON_ATTACK);
 
-	// if (pm->ps->firingMode)
-	// {
-		// Code from JKG: 1
-		// This is the initial click.
-		// If there are no shots, main click is pressed, and the weapon is not currently firing.
-		if (!(pm->ps->shotsRemaining) && (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
+	// Code from JKG: 1
+	// This is the initial click.
+	// If there are no shots, main click is pressed, and the weapon is not currently firing.
+	if (!(pm->ps->shotsRemaining) && (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
+	{
+		// Right when you press main click. 
+		if (pm->ps->weaponTime <= 0)
 		{
-			// Right when you press main click. 
-			if (pm->ps->weaponTime <= 0)
+			// First time loading shotsRemaining.
+			if ((tertiary_firing_type == FT_BURST && firing_attacks & TERTIARY_ATTACK)
+				|| (alt_firing_type == FT_BURST && firing_attacks & ALT_ATTACK)
+				|| (main_firing_type == FT_BURST && firing_attacks & MAIN_ATTACK))
 			{
-				if (main_firing_type == FT_BURST || alt_firing_type == FT_BURST)
-				{
-					// First time loading shotsRemaining.
-					pm->ps->shotsRemaining = shots_total;
-				}
-			}
-			else
-			{
-				// If you try to press main click between burts, do nothing.
-				pm->cmd.buttons &= ~BUTTON_ATTACK;
-				primFireDown = qfalse;
+				pm->ps->shotsRemaining = shots_total;
 			}
 		}
-	// }
+		else
+		{
+			// If you try to press main click between burts, do nothing.
+			pm->cmd.buttons &= ~BUTTON_ATTACK;
+			primFireDown = qfalse;
+		}
+	}
 
 	// set the firing flag for continuous beam weapons, phaser will fire even if out of ammo
 	if ( (( pm->cmd.buttons & BUTTON_ATTACK || pm->cmd.buttons & BUTTON_ALT_ATTACK ) && ( amount >= 0 || pm->ps->weapon == WP_SABER )) )
@@ -14916,8 +14912,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	
 	if (pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
 	{
-		// If you try and switch between firingMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch. 
-		if (pm->cmd.buttons & BUTTON_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->firingMode == 0)
+		// If you try and switch between tertiaryMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch. 
+		if (pm->cmd.buttons & BUTTON_ATTACK /*&& weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC*/ && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->tertiaryMode == 0)
 		{
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
@@ -14936,7 +14932,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
 			{
 				/*
-				if (pm->ps->firingMode == 0)
+				if (pm->ps->tertiaryMode == 0)
 				{
 					pm->cmd.buttons |= BUTTON_ALT_ATTACK;
 					pm->ps->eFlags |= EF_ALT_FIRING;
@@ -14944,7 +14940,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				*/
 			}
 			// If you have a scope and you have the firing type of high powered, you can not use main click. 
-			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED /*&& pm->ps->firingMode*/)
+			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED && pm->ps->tertiaryMode)
 			{
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
 			}
@@ -14957,22 +14953,19 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		// If you don't have a scope, but a firing type.
 		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && (main_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC))
 		{
-			// if (pm->ps->firingMode)
-			// {
-				// If you have the firing type of high powered, you can not use main or alt click.
-				// High powered firing type is useless without a scope.
-				if (main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED)
-				{
-					pm->cmd.buttons &= ~BUTTON_ATTACK;
-					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
-				}
-				// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
-				else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining))
-				{
-					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
-					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-				}
-			// }
+			// If you have the firing type of high powered, you can not use main or alt click.
+			// High powered firing type is useless without a scope.
+			if (main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED)
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
+			// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
+			else if (pm->cmd.buttons & BUTTON_ALT_ATTACK /*&& weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC*/ && !(pm->ps->shotsRemaining))
+			{
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+			}
 		}
 	}
 }

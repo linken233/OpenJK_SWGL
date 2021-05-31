@@ -1909,7 +1909,7 @@ public:
 #endif // !JK2_MODE
 	int			shotsRemaining;
 
-	bool		firingMode;
+	bool		tertiaryMode;
 	bool		checkWeaponChange;
 
 
@@ -2082,7 +2082,7 @@ public:
 		saved_game.write<int32_t>(electrifyTime);
 #endif // !JK2_MODE
 		saved_game.write<int32_t>(shotsRemaining);
-		saved_game.write<int8_t>(firingMode);
+		saved_game.write<int8_t>(tertiaryMode);
 		saved_game.write<int8_t>(checkWeaponChange);
 	}
 
@@ -2255,7 +2255,7 @@ public:
 		saved_game.read<int32_t>(electrifyTime);
 #endif // !JK2_MODE
 		saved_game.read<int32_t>(shotsRemaining);
-		saved_game.read<int8_t>(firingMode);
+		saved_game.read<int8_t>(tertiaryMode);
 		saved_game.read<int8_t>(checkWeaponChange);
 	}
 }; // PlayerStateBase

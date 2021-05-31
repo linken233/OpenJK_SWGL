@@ -935,7 +935,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
 
-		if (ent->client->ps.firingMode)
+		if (ent->client->ps.tertiaryMode)
 		{
 			alt_spread += 0.2f;
 		}
@@ -966,7 +966,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 			}
 			else
 			{
-				if (ent->client->ps.firingMode)
+				if (ent->client->ps.tertiaryMode)
 				{
 					main_spread += 0.5f;
 				}
@@ -1327,7 +1327,7 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
 
-		if (ent->client->ps.firingMode)
+		if (ent->client->ps.tertiaryMode)
 		{
 			alt_spread = 0.1f;
 		}

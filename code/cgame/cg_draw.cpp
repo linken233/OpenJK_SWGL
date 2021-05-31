@@ -372,7 +372,7 @@ static void CG_DrawAmmo(const centity_t	*cent,const int xPos,const int yPos)
 			}
 			else
 			{
-				if (cent->gent->client->ps.firingMode == 1)
+				if (cent->gent->client->ps.tertiaryMode == 1)
 				{
 					memcpy(calcColor, colorTable[CT_RED], sizeof(vec4_t));
 				}

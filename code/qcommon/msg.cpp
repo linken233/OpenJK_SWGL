@@ -1028,7 +1028,7 @@ static const netField_t	playerStateFields[] =
 { PSF(forceRageRecoveryTime), 32 },
 #endif // !JK2_MODE
 { PSF(shotsRemaining), 8 },
-{ PSF(firingMode), 8 },
+{ PSF(tertiaryMode), 8 },
 { PSF(checkWeaponChange), 8 },
 };
 
