@@ -14597,6 +14597,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	int main_firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
 	int alt_firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
+	int tertiary_firing_type = 0;
 
 	qboolean primFireDown = qfalse;
 
@@ -14726,9 +14727,10 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	if ( pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) && pm->ps->weaponstate != WEAPON_DROPPING && weaponData[pm->ps->weapon].scopeType >= ST_A280 )
 	{
-		if ( !(pm->ps->eFlags & EF_ALT_FIRING) && (pm->cmd.buttons & BUTTON_ALT_ATTACK) )
+		// If you are not currently firing, you press the alt key, and the alt firing type is not high powered.
+		if (!(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK && (main_firing_type != FT_HIGH_POWERED && alt_firing_type != FT_HIGH_POWERED))
 		{
-			if ( cg.zoomMode == 0 && !(pm->ps->eFlags & EF_FIRING) )
+			if (cg.zoomMode == 0)
 			{
 				switch ( weaponData[pm->ps->weapon].scopeType )
 				{
@@ -14755,7 +14757,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				cg.zoomMode = 0;
 			}
 		}
-		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+		// I think this is to avoid a glitch?
+		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining))
 		{
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
 		}
@@ -14788,24 +14791,31 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	// If you press the alt key, you are not currently firing, and your alt fire has a firing mode of burst.
-	if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING))
+	// If you press the main click and you are scoped.
+	if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
+	{
+		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
+		is_alt_fire = qtrue;
+	}
+	// If you press alt click, you are not currently firing, and you have no scope.
+	// When you have a scope, alt click doesn't get through.
+	else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280)
 	{
 		// Don't let the alt-fite get through. 
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
-		// Switch the flags.
+		// Switch the flag.
 		pm->cmd.buttons |= BUTTON_ATTACK;
-		/* pm->ps->eFlags |= EF_FIRING; */
 		// Setting shots_total. 
 		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
 		is_alt_fire = qtrue;
 	}
+	// If a you press the main key and you not currently firing.
 	else if (pm->cmd.buttons & BUTTON_ATTACK && !(pm->ps->eFlags & EF_FIRING))
 	{
 		shots_total = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
 		is_alt_fire = qfalse;
 	}
-	else
+	else if (weaponData[pm->ps->weapon].scopeType < ST_A280)
 	{
 		// Don't let the alt-fite get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
@@ -14916,17 +14926,25 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		// If you have a scope.
 		if (weaponData[pm->ps->weapon].scopeType >= ST_A280)
 		{
-			// If scoped, convert the main fire to the alt-fire.
-			if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
+			// High powered shot only works with tertiary.
+			if (main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED)
 			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
+			// If scoped, convert the main fire to the alt-fire.
+			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode >= ST_A280)
+			{
+				/*
 				if (pm->ps->firingMode == 0)
 				{
 					pm->cmd.buttons |= BUTTON_ALT_ATTACK;
 					pm->ps->eFlags |= EF_ALT_FIRING;
 				}
+				*/
 			}
 			// If you have a scope and you have the firing type of high powered, you can not use main click. 
-			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED && pm->ps->firingMode)
+			else if (pm->cmd.buttons & BUTTON_ATTACK && cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED /*&& pm->ps->firingMode*/)
 			{
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
 			}
@@ -14937,22 +14955,24 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			}
 		}
 		// If you don't have a scope, but a firing type.
-		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC)
+		else if (weaponData[pm->ps->weapon].scopeType < ST_A280 && (main_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC))
 		{
-			if (pm->ps->firingMode)
-			{
-				// If you have the firing type of high powered, you can not use main click. High powered firing type is useless without a scope.
-				if (weaponData[pm->ps->weapon].firingType == FT_HIGH_POWERED)
+			// if (pm->ps->firingMode)
+			// {
+				// If you have the firing type of high powered, you can not use main or alt click.
+				// High powered firing type is useless without a scope.
+				if (main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED)
 				{
 					pm->cmd.buttons &= ~BUTTON_ATTACK;
+					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 				}
 				// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
-				else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT))
+				else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining))
 				{
 					pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 				}
-			}
+			// }
 		}
 	}
 }
