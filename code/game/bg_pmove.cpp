@@ -14910,12 +14910,14 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	
 	if (pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
 	{
-		// If you try and switch between tertiaryMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch. 
-		if (pm->cmd.buttons & BUTTON_ATTACK /*&& weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC*/ && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->tertiaryMode == 0)
+		// If you try and switch between tertiaryMode 0 and 1 while pressing main click and alt click, set the shotsRemaining to default to avoid a glitch.
+		/*
+		if (pm->cmd.buttons & BUTTON_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT) && pm->ps->tertiaryMode == 0)
 		{
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 		}
+		*/
 
 		// If you have a scope.
 		if (weaponData[pm->ps->weapon].scopeType >= ST_A280)
