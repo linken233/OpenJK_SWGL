@@ -13385,14 +13385,12 @@ static void PM_Weapon( void )
 			fire_time = weaponData[pm->ps->weapon].altFireTime;
 			burst_fire_delay = weaponData[pm->ps->weapon].altFireOpt[BURST_FIRE_DELAY];
 		}
-		else
+		else if (firing_attacks & MAIN_ATTACK)
 		{
 			firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
 			fire_time = weaponData[pm->ps->weapon].fireTime;
 			burst_fire_delay = weaponData[pm->ps->weapon].mainFireOpt[BURST_FIRE_DELAY];
 		}
-
-		firing_attacks = 0;
 	}
 
 	if ( (pm->ps->eFlags&EF_HELD_BY_WAMPA) )
@@ -14879,6 +14877,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		{
 			pm->ps->shotsRemaining = 0;
 		}
+
+		firing_attacks = 0;
 
 		// if I don't check the flags before stopping FX then it switches them off too often, which tones down
 		//	the stronger FFFX so you can hardly feel them. However, if you only do iton these flags then the
