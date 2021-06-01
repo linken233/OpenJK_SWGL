@@ -14147,6 +14147,8 @@ static void PM_Weapon( void )
 					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
 					// And to stop BUTTON_ATTACK (4).
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+					// Clear to avoid (MAIN_ATTACK & ALT_ATTACK) which would be 3 and that is bad.
+					firing_attacks = 0;
 				}
 				else
 				{
@@ -14760,12 +14762,13 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	// If you press alt click, you are not currently firing, you have no scope, 
-	// tertiary mode is not enabled, and you have a alt firing type.
+	// If main click is not pressed(this is to avoid one overriding the other), 
+	// you pressed alt click, alt-fire is not currently firing,
+	// you have no scope, tertiary mode is not enabled, and you have an alt firing type.
 	// When you have a scope, alt click doesn't get through.
-	if (pm->cmd.buttons & BUTTON_ALT_ATTACK && !(pm->ps->eFlags & EF_ALT_FIRING) 
-		&& weaponData[pm->ps->weapon].scopeType < ST_A280 && pm->ps->tertiaryMode == 0 
-		&& alt_firing_type >= FT_AUTOMATIC)
+	if (!(pm->cmd.buttons & BUTTON_ATTACK) && pm->cmd.buttons & BUTTON_ALT_ATTACK
+		&& !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280
+		&& pm->ps->tertiaryMode == 0 && alt_firing_type >= FT_AUTOMATIC)
 	{
 		// Don't let the alt-fite get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
@@ -14776,10 +14779,10 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
 		firing_attacks |= ALT_ATTACK;
 	}
-	// If a you press the main key, you not currently firing,
-	// and you either have a tertiary or main firing type.
-	else if (pm->cmd.buttons & BUTTON_ATTACK && !(pm->ps->eFlags & EF_FIRING) 
-		&& (tertiary_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
+	// If a you press the main key, alt click is not pressed(this is to avoid one overriding the other),
+	// main fire is not currently firing, and you either have a tertiary or main firing type.
+	else if (pm->cmd.buttons & BUTTON_ATTACK && !(pm->cmd.buttons & BUTTON_ALT_ATTACK) 
+		&& !(pm->ps->eFlags & EF_FIRING) && (tertiary_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
 	{
 		// If you have tertiaryMode on regardless if you are scoped or not.
 		if (pm->ps->tertiaryMode)
@@ -14801,6 +14804,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
 			firing_attacks |= ALT_ATTACK;
 		}
+		// Default main.
 		else
 		{
 			shots_total = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
@@ -14966,11 +14970,11 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			}
 			// If you try and press main click and alt click at the same time, set the shotsRemaining to default to avoid a glitch. 
-			else if (pm->cmd.buttons & BUTTON_ALT_ATTACK /*&& weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC*/ && !(pm->ps->shotsRemaining))
+			/*else if (pm->cmd.buttons & BUTTON_ALT_ATTACK && weaponData[pm->ps->weapon].firingType >= FT_AUTOMATIC && !(pm->ps->shotsRemaining))
 			{
 				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-			}
+			}*/
 		}
 	}
 }
