@@ -46,10 +46,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include <float.h>
 
-#define MAIN_ATTACK 		1
-#define ALT_ATTACK			2
-#define TERTIARY_ATTACK 	4
-
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean G_EntIsDoor( int entityNum );
@@ -185,7 +181,6 @@ const float pm_airDecelRate = 1.35f;	//Used for air decelleration away from curr
 int	c_pmove = 0;
 
 int shots_total = 0;
-short firing_attacks = 0;
 
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
@@ -13373,19 +13368,19 @@ static void PM_Weapon( void )
 
 	if (pm->cmd.buttons & BUTTON_ATTACK)
 	{	
-		if (firing_attacks & TERTIARY_ATTACK)
+		if (pm->ps->firing_attack & TERTIARY_ATTACK)
 		{
 			firing_type = weaponData[pm->ps->weapon].tertiaryFireOpt[FIRING_TYPE];
 			fire_time = weaponData[pm->ps->weapon].tertiaryFireTime;
 			burst_fire_delay = weaponData[pm->ps->weapon].tertiaryFireOpt[BURST_FIRE_DELAY];
 		}
-		else if (firing_attacks & ALT_ATTACK)
+		else if (pm->ps->firing_attack & ALT_ATTACK)
 		{
 			firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
 			fire_time = weaponData[pm->ps->weapon].altFireTime;
 			burst_fire_delay = weaponData[pm->ps->weapon].altFireOpt[BURST_FIRE_DELAY];
 		}
-		else if (firing_attacks & MAIN_ATTACK)
+		else if (pm->ps->firing_attack & MAIN_ATTACK)
 		{
 			firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
 			fire_time = weaponData[pm->ps->weapon].fireTime;
@@ -14127,6 +14122,9 @@ static void PM_Weapon( void )
 	// Code from JKG: 3
 	if (pm->cmd.buttons & BUTTON_ATTACK)
 	{
+		// This is for firing sounds.
+		pm->ps->prev_firing_attack = pm->ps->firing_attack;
+
 		switch (firing_type)
 		{
 			case FT_AUTOMATIC:
@@ -14148,7 +14146,7 @@ static void PM_Weapon( void )
 					// And to stop BUTTON_ATTACK (4).
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 					// Clear to avoid (MAIN_ATTACK & ALT_ATTACK) which would be 3 and that is bad.
-					firing_attacks = 0;
+					pm->ps->firing_attack = 0;
 				}
 				else
 				{
@@ -14777,7 +14775,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 		// Setting shots_total.
 		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
-		firing_attacks |= ALT_ATTACK;
+		pm->ps->firing_attack |= ALT_ATTACK;
 	}
 	// If a you press the main key, alt click is not pressed(this is to avoid one overriding the other),
 	// main fire is not currently firing, and you either have a tertiary or main firing type.
@@ -14795,20 +14793,20 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			else
 			{
 				shots_total = weaponData[pm->ps->weapon].tertiaryFireOpt[SHOTS_PER_BURST];
-				firing_attacks |= TERTIARY_ATTACK;
+				pm->ps->firing_attack |= TERTIARY_ATTACK;
 			}
 		}
 		// If you are scoped.
 		else if (cg.zoomMode >= ST_A280)
 		{
 			shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
-			firing_attacks |= ALT_ATTACK;
+			pm->ps->firing_attack |= ALT_ATTACK;
 		}
 		// Default main.
 		else
 		{
 			shots_total = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
-			firing_attacks |= MAIN_ATTACK;
+			pm->ps->firing_attack |= MAIN_ATTACK;
 		}
 	}
 	else if (weaponData[pm->ps->weapon].scopeType < ST_A280 
@@ -14829,9 +14827,9 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		if (pm->ps->weaponTime <= 0)
 		{
 			// First time loading shotsRemaining.
-			if ((tertiary_firing_type == FT_BURST && firing_attacks & TERTIARY_ATTACK)
-				|| (alt_firing_type == FT_BURST && firing_attacks & ALT_ATTACK)
-				|| (main_firing_type == FT_BURST && firing_attacks & MAIN_ATTACK))
+			if ((tertiary_firing_type == FT_BURST && pm->ps->firing_attack & TERTIARY_ATTACK)
+				|| (alt_firing_type == FT_BURST && pm->ps->firing_attack & ALT_ATTACK)
+				|| (main_firing_type == FT_BURST && pm->ps->firing_attack & MAIN_ATTACK))
 			{
 				pm->ps->shotsRemaining = shots_total;
 			}
@@ -14882,7 +14880,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			pm->ps->shotsRemaining = 0;
 		}
 
-		firing_attacks = 0;
+		pm->ps->firing_attack = 0;
 
 		// if I don't check the flags before stopping FX then it switches them off too often, which tones down
 		//	the stronger FFFX so you can hardly feel them. However, if you only do iton these flags then the

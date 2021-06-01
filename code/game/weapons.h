@@ -215,6 +215,12 @@ enum firingOptions
 	BURST_FIRE_DELAY
 };
 
+// Attack Options
+//--------
+#define MAIN_ATTACK 		1
+#define ALT_ATTACK			2
+#define TERTIARY_ATTACK 	4
+
 // Bryar Pistol
 //--------
 #define BRYAR_PISTOL_VEL			1800

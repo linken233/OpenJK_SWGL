@@ -1910,7 +1910,8 @@ public:
 	int			shotsRemaining;
 
 	bool		tertiaryMode;
-	bool		checkWeaponChange;
+	u_int8_t	firing_attack;
+	u_int8_t	prev_firing_attack;
 
 
 	void sg_export(
@@ -2083,7 +2084,8 @@ public:
 #endif // !JK2_MODE
 		saved_game.write<int32_t>(shotsRemaining);
 		saved_game.write<int8_t>(tertiaryMode);
-		saved_game.write<int8_t>(checkWeaponChange);
+		saved_game.write<int8_t>(firing_attack);
+		saved_game.write<u_int8_t>(prev_firing_attack);
 	}
 
 	void sg_import(
@@ -2256,7 +2258,8 @@ public:
 #endif // !JK2_MODE
 		saved_game.read<int32_t>(shotsRemaining);
 		saved_game.read<int8_t>(tertiaryMode);
-		saved_game.read<int8_t>(checkWeaponChange);
+		saved_game.read<u_int8_t>(firing_attack);
+		saved_game.read<u_int8_t>(prev_firing_attack);
 	}
 }; // PlayerStateBase
 
