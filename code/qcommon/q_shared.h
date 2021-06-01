@@ -2084,7 +2084,7 @@ public:
 #endif // !JK2_MODE
 		saved_game.write<int32_t>(shotsRemaining);
 		saved_game.write<int8_t>(tertiaryMode);
-		saved_game.write<int8_t>(firing_attack);
+		saved_game.write<u_int8_t>(firing_attack);
 		saved_game.write<u_int8_t>(prev_firing_attack);
 	}
 
