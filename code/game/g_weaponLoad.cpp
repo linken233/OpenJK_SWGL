@@ -227,7 +227,7 @@ void WPN_MissileHitSound(const char **holdBuf);
 void WPN_AltMissileHitSound(const char **holdBuf);
 void WPN_MuzzleEffect(const char **holdBuf);
 void WPN_AltMuzzleEffect(const char **holdBuf);
-
+void WPN_TertiaryMuzzleEffect(const char **holdBuf);
 // OPENJK ADD
 
 void WPN_Damage(const char **holdBuf);
@@ -593,6 +593,7 @@ wpnParms_t WpnParms[] =
 	{ "altmissileHitSound",	WPN_AltMissileHitSound },
 	{ "muzzleEffect",			WPN_MuzzleEffect },
 	{ "altmuzzleEffect",		WPN_AltMuzzleEffect },
+	{ "tertiarymuzzleEffect",	WPN_TertiaryMuzzleEffect },
 	// OPENJK NEW FIELDS
 	{ "damage",			WPN_Damage },
 	{ "altdamage",		WPN_AltDamage },
@@ -1533,6 +1534,28 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mAltMuzzleEffect,tokenStr,len);
+}
+
+//--------------------------------------------
+void WPN_TertiaryMuzzleEffect(const char **holdBuf)
+{
+	const char	*tokenStr;
+
+	if ( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+	size_t len = strlen( tokenStr );
+
+	len++;
+	if (len > 64)
+	{
+		len = 64;
+		gi.Printf(S_COLOR_YELLOW"WARNING: TertiaryMuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
+	}
+
+	G_EffectIndex( tokenStr );
+	Q_strncpyz(weaponData[wpnParms.weaponNum].mTertiaryMuzzleEffect,tokenStr,len);
 }
 
 //--------------------------------------------

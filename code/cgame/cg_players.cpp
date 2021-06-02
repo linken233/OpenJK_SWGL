@@ -8421,7 +8421,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 						}
 						else if (firing_attack & TERTIARY_ATTACK)
 						{
-							effect = &wData->mMuzzleEffect[0];
+							effect = &wData->mTertiaryMuzzleEffect[0];
 						}
 					}
 					else
@@ -8966,6 +8966,11 @@ Ghoul2 Insert End
 				if ( wData->mMuzzleEffectID )
 				{
 					effect = wData->mMuzzleEffectID;
+				}
+
+				if (wData->mTertiaryMuzzleEffectID)
+				{
+					effect = wData->mTertiaryMuzzleEffectID;
 				}
 
 				if ( cent->currentState.eFlags & EF_ALT_FIRING )

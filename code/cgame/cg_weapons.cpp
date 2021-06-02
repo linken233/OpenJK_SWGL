@@ -207,6 +207,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 	{
 		weaponData[weaponNum].mAltMuzzleEffectID = theFxScheduler.RegisterEffect( weaponData[weaponNum].mAltMuzzleEffect );
 	}
+	if ( weaponData[weaponNum].mTertiaryMuzzleEffect[0] )
+	{
+		weaponData[weaponNum].mTertiaryMuzzleEffectID = theFxScheduler.RegisterEffect( weaponData[weaponNum].mTertiaryMuzzleEffect );
+	}
 
 	//fixme: don't really need to copy these, should just use directly
 	// give ourselves the functions if we can
@@ -993,7 +997,7 @@ static void CG_DoMuzzleFlash( centity_t *cent, vec3_t org, vec3_t dir, weaponDat
 				}
 				else if (firing_attack & TERTIARY_ATTACK)
 				{
-					effect = &wData->mMuzzleEffect[0];
+					effect = &wData->mTertiaryMuzzleEffect[0];
 				}
 			}
 			else
