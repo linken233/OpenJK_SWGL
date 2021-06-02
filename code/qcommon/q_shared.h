@@ -1909,7 +1909,7 @@ public:
 #endif // !JK2_MODE
 	int			shotsRemaining;
 
-	bool		tertiaryMode;
+	qboolean	tertiaryMode;
 	u_int8_t	firing_attack;
 	u_int8_t	prev_firing_attack;
 
@@ -2083,7 +2083,7 @@ public:
 		saved_game.write<int32_t>(electrifyTime);
 #endif // !JK2_MODE
 		saved_game.write<int32_t>(shotsRemaining);
-		saved_game.write<int8_t>(tertiaryMode);
+		saved_game.write<int32_t>(tertiaryMode);
 		saved_game.write<u_int8_t>(firing_attack);
 		saved_game.write<u_int8_t>(prev_firing_attack);
 	}
@@ -2257,7 +2257,7 @@ public:
 		saved_game.read<int32_t>(electrifyTime);
 #endif // !JK2_MODE
 		saved_game.read<int32_t>(shotsRemaining);
-		saved_game.read<int8_t>(tertiaryMode);
+		saved_game.read<int32_t>(tertiaryMode);
 		saved_game.read<u_int8_t>(firing_attack);
 		saved_game.read<u_int8_t>(prev_firing_attack);
 	}

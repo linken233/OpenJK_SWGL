@@ -185,8 +185,6 @@ struct centity_s
 
 	int				snapShotTime;
 
-	bool			checktertiaryMode;
-
 	//Pointer to corresponding gentity
 	gentity_t		*gent;
 };

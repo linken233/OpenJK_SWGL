@@ -400,13 +400,13 @@ void Svcmd_SaberAttackCycle_f( void )
 
 	if (weaponData[self->s.weapon].tertiaryFireOpt[FIRING_TYPE] >= FT_AUTOMATIC)
 	{
-		if (self->client->ps.tertiaryMode == 1)
+		if (self->client->ps.tertiaryMode)
 		{
-			self->client->ps.tertiaryMode = 0;
+			self->client->ps.tertiaryMode = qfalse;
 		}
 		else
 		{
-			self->client->ps.tertiaryMode = 1;
+			self->client->ps.tertiaryMode = qtrue;
 		}
 
 		G_Sound(self, G_SoundIndex("sound/vehicles/common/linkweaps.wav"));
