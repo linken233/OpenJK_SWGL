@@ -14145,8 +14145,6 @@ static void PM_Weapon( void )
 					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
 					// And to stop BUTTON_ATTACK (4).
 					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
-					// Clear to avoid (MAIN_ATTACK & ALT_ATTACK) which would be 3 and that is bad.
-					pm->ps->firing_attack = 0;
 				}
 				else
 				{
@@ -14772,6 +14770,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 		// Switch the flag.
 		pm->cmd.buttons |= BUTTON_ATTACK;
+		// Clear it just in case.
+		pm->ps->firing_attack &= ~MAIN_ATTACK;
 
 		// Setting shots_total.
 		shots_total = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
