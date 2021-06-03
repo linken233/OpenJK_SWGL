@@ -8914,6 +8914,12 @@ qboolean WP_ForceThrowable( gentity_t *ent, gentity_t *forwardEnt, gentity_t *se
 				return qfalse;
 			}
 			break;
+		case WP_CLONECOMMANDO:
+			if (ent->methodOfDeath != MOD_CLONECOMMANDO_ALT)
+			{
+				return qfalse;
+			}
+			break;
 		//everything else cannot be pushed
 		case WP_ATST_SIDE:
 			if ( ent->methodOfDeath != MOD_EXPLOSIVE )

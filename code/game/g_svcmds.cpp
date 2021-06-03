@@ -390,24 +390,27 @@ void Svcmd_SaberAttackCycle_f( void )
 	}
 
 	gentity_t *self = G_GetSelfForPlayerCmd();
-	// if ( self->s.weapon != WP_SABER )
-	// {// saberAttackCycle button also switches to saber
-	// 	gi.SendConsoleCommand("weapon 1" );
-	// 	return;
-	// }
+	/*
+	if ( self->s.weapon != WP_SABER )
+	{// saberAttackCycle button also switches to saber
+		gi.SendConsoleCommand("weapon 1" );
+		return;
+	}
+	*/
 
-	if (weaponData[self->s.weapon].firingType >= FT_AUTOMATIC)
+	// If you have a tertiary option and you are not firing.
+	if (weaponData[self->s.weapon].tertiaryFireOpt[FIRING_TYPE] >= FT_AUTOMATIC && self->client->ps.weaponTime == 0)
 	{
-		if (self->client->ps.firingMode == 1)
+		if (self->client->ps.tertiaryMode)
 		{
-			self->client->ps.firingMode = 0;
+			self->client->ps.tertiaryMode = qfalse;
 		}
 		else
 		{
-			self->client->ps.firingMode = 1;
+			self->client->ps.tertiaryMode = qtrue;
 		}
 
-		G_Sound( self, G_SoundIndex( "sound/vehicles/common/linkweaps.wav" ));
+		G_Sound(self, G_SoundIndex("sound/vehicles/common/linkweaps.wav"));
 	}
 
 	if ( self->client->ps.dualSabers )

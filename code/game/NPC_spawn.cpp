@@ -530,7 +530,6 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			{
 			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
 			case WP_BLASTER_PISTOL:
-			case WP_CLONEPISTOL:
 				if (ent->client->NPC_class == CLASS_REBORN
 					&& ent->NPC->rank >= RANK_LT_COMM
 					&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
@@ -640,7 +639,6 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			case WP_BRYAR_PISTOL:
 				break;
 			case WP_BLASTER_PISTOL:
-			case WP_CLONEPISTOL:
 				NPCInfo->scriptFlags |= SCF_PILOT;
 				if (ent->client->NPC_class == CLASS_REBORN
 					&& ent->NPC->rank >= RANK_LT_COMM
