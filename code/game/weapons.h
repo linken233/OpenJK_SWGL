@@ -217,6 +217,11 @@ enum firingOptions
 	BURST_FIRE_DELAY
 };
 
+
+// High Powered
+//--------------
+#define HIGH_POWERED_DAMAGE			150
+
 // Attack Options
 //--------
 #define MAIN_ATTACK 		1
@@ -439,6 +444,20 @@ enum firingOptions
 #define TUSKEN_RIFLE_DAMAGE_MEDIUM	30		// very damaging
 #define TUSKEN_RIFLE_DAMAGE_HARD	50		// extremely damaging
 
+// E5
+//---------
+#define E5_MAIN_SPREAD			0.5f
+#define E5_ALT_SPREAD			1.5f
+#define E5_NPC_SPREAD			0.5f
+#define E5_VELOCITY 			2300
+#define E5_NPC_VEL_CUT			0.5f
+#define E5_NPC_HARD_VEL_CUT 	0.7f
+#define E5_DAMAGE				20
+#define E5_ALT_DAMAGE			22
+#define	E5_NPC_DAMAGE_EASY		6
+#define	E5_NPC_DAMAGE_NORMAL	12
+#define	E5_NPC_DAMAGE_HARD		16
+
 // F-11D Blaster
 //---------
 #define F_11D_MAIN_SPREAD			1.5f
@@ -447,26 +466,40 @@ enum firingOptions
 #define F_11D_VELOCITY				2300
 #define F_11D_NPC_VEL_CUT			0.5f
 #define F_11D_NPC_HARD_VEL_CUT		0.7f
-#define F_11D_DAMAGE				16
+#define F_11D_DAMAGE				20
+#define F_11D_SCOPE_DAMAGE			8
 #define F_11D_NPC_DAMAGE_EASY		6
 #define F_11D_NPC_DAMAGE_NORMAL 	12
 #define F_11D_NPC_DAMAGE_HARD		16
-#define F_11D_SCOPE_DAMAGE			8
 
-// DC-15
+// DC-15S
 //---------
-#define CLONERIFLE_MAIN_SPREAD			0.5f
+#define CLONECARBINE_MAIN_SPREAD		0.5f
+#define CLONECARBINE_ALT_SPREAD 		1.0f
+#define CLONECARBINE_NPC_SPREAD 		0.5f
+#define CLONECARBINE_VELOCITY 			2300
+#define CLONECARBINE_NPC_VEL_CUT		0.5f
+#define CLONECARBINE_NPC_HARD_VEL_CUT 	0.7f
+#define CLONECARBINE_DAMAGE 			20
+#define CLONECARBINE_ALT_DAMAGE 		15
+#define CLONECARBINE_NPC_DAMAGE_EASY	6
+#define CLONECARBINE_NPC_DAMAGE_NORMAL	12
+#define CLONECARBINE_NPC_DAMAGE_HARD	16
+
+
+// DC-15A
+//---------
+#define CLONERIFLE_MAIN_SPREAD			1.5f
 #define CLONERIFLE_ALT_SPREAD			1.0f
-#define CLONERIFLE_NPC_SPREAD			0.1f
+#define CLONERIFLE_NPC_SPREAD			1.0f
 #define CLONERIFLE_VELOCITY 			2300
 #define CLONERIFLE_NPC_VEL_CUT			0.5f
 #define CLONERIFLE_NPC_HARD_VEL_CUT 	0.7f
-#define CLONERIFLE_DAMAGE				15
+#define CLONERIFLE_DAMAGE				20
+#define CLONERIFLE_ALT_DAMAGE			25
 #define CLONERIFLE_NPC_DAMAGE_EASY		6
 #define CLONERIFLE_NPC_DAMAGE_NORMAL	12
 #define CLONERIFLE_NPC_DAMAGE_HARD		16
-#define CLONERIFLE_SEMI_SHOT			30
-#define CLONERIFLE_SEMI_AMOUNT			5
 
 // DH-17
 //---------
@@ -485,9 +518,9 @@ enum firingOptions
 
 // DC-17
 //---------
-#define CLONECOMMANDO_MAIN_SPREAD			0.5f
+#define CLONECOMMANDO_MAIN_SPREAD			1.5f
 #define CLONECOMMANDO_NPC_SPREAD			0.5f
-#define CLONECOMMANDO_VELOCITY				3500
+#define CLONECOMMANDO_VELOCITY				2800
 #define CLONECOMMANDO_ALT_VELOCITY			1000
 #define CLONECOMMANDO_NPC_VEL_CUT			0.5f
 #define CLONECOMMANDO_NPC_HARD_VEL_CUT		0.7f
@@ -501,17 +534,18 @@ enum firingOptions
 
 // A280
 //---------
-#define REBELRIFLE_MAIN_SPREAD			1.70f
-#define REBELRIFLE_ALT_SPREAD			0.3f
-#define REBELRIFLE_NPC_SPREAD			1.0f
+#define REBELRIFLE_MAIN_SPREAD			1.5f
+#define REBELRIFLE_ALT_SPREAD			0.2f
+#define REBELRIFLE_TERTIARY_SPREAD		0.5f
+#define REBELRIFLE_NPC_SPREAD			0.5f
 #define REBELRIFLE_VELOCITY 			2300
 #define REBELRIFLE_NPC_VEL_CUT			0.5f
 #define REBELRIFLE_NPC_HARD_VEL_CUT 	0.7f
-#define REBELRIFLE_DAMAGE				16
+#define REBELRIFLE_DAMAGE				15
+#define REBELRIFLE_SCOPE_DAMAGE 		8
 #define REBELRIFLE_NPC_DAMAGE_EASY		6
 #define REBELRIFLE_NPC_DAMAGE_NORMAL	12
 #define REBELRIFLE_NPC_DAMAGE_HARD		16
-#define REBELRIFLE_SCOPE_DAMAGE 		8
 
 // LPA NN-14
 //--------
@@ -535,34 +569,24 @@ enum firingOptions
 
 // EE-3 Carbine Rifle
 //---------
-#define BOBA_MAIN_SPREAD		1.0f
+#define BOBA_MAIN_SPREAD		1.5f
 #define BOBA_ALT_SPREAD 		0.2f
+#define BOBA_TERTIARY_SPREAD 	0.1f
 #define BOBA_NPC_SPREAD 		0.5f
-#define BOBA_VELOCITY			2800
+#define BOBA_VELOCITY			2500
 #define BOBA_NPC_VEL_CUT		0.5f
 #define BOBA_NPC_HARD_VEL_CUT	0.7f
-#define BOBA_DAMAGE 			25
+#define BOBA_DAMAGE 			15
+#define BOBA_SCOPE_DAMAGE 		10
 #define BOBA_NPC_DAMAGE_EASY	18
 #define BOBA_NPC_DAMAGE_NORMAL	20
 #define BOBA_NPC_DAMAGE_HARD	25
-#define BOBA_SCOPE_DAMAGE 		10
 
 // DC-17 Hand Pistol
 //--------
 #define CLONEPISTOL_VEL 			1800
 #define CLONEPISTOL_DAMAGE			14
 #define CLONEPISTOL_CHARGE_UNIT 	150.0f
-
-// Firing Types
-//--------------
-#define BURST_ENERGY_SHOT				4
-#define BURST_ENERGY_SHOT_SCOPED		5
-#define HIGH_POWERED_ENERGY_SHOT		50
-#define HIGH_POWERED_DAMAGE				150
-
-// Scope Types
-//--------------
-#define SCOPE_SPREAD					0.01f
 
 
 #endif//#ifndef __WEAPONS_H__

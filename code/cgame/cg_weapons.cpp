@@ -973,11 +973,7 @@ static void CG_DoMuzzleFlash( centity_t *cent, vec3_t org, vec3_t dir, weaponDat
 		cent->muzzleFlashTime  = 0;
 		const char *effect = NULL;
 
-		// I declared these variables just for readability.
-		int main_firing_type = wData->mainFireOpt[FIRING_TYPE];
-		int alt_firing_type = wData->altFireOpt[FIRING_TYPE];
-		int tertiary_firing_type = wData->tertiaryFireOpt[FIRING_TYPE];
-
+		// I declared this variable just for readability.
 		unsigned char firing_attack = cent->gent->client->ps.prev_firing_attack;
 
 //		CG_PositionEntityOnTag( &flash, &gun, gun.hModel, "tag_flash");
@@ -985,23 +981,17 @@ static void CG_DoMuzzleFlash( centity_t *cent, vec3_t org, vec3_t dir, weaponDat
 		// Try and get a default muzzle so we have one to fall back on
 		if ( wData->mMuzzleEffect[0] )
 		{
-			if (main_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC || tertiary_firing_type >= FT_AUTOMATIC)
+			if (firing_attack & ALT_ATTACK)
 			{
-				if (firing_attack & MAIN_ATTACK)
-				{
-					effect = &wData->mMuzzleEffect[0];
-				}
-				else if (firing_attack & ALT_ATTACK)
-				{
-					effect = &wData->mAltMuzzleEffect[0];
-				}
-				else if (firing_attack & TERTIARY_ATTACK)
-				{
-					effect = &wData->mTertiaryMuzzleEffect[0];
-				}
+				effect = &wData->mAltMuzzleEffect[0];
+			}
+			else if (firing_attack & TERTIARY_ATTACK)
+			{
+				effect = &wData->mTertiaryMuzzleEffect[0];
 			}
 			else
-			{
+			{	
+				// We need to make sure that the base guns also get their sound.
 				effect = &wData->mMuzzleEffect[0];
 			}
 		}

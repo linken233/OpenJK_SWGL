@@ -8399,33 +8399,23 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 
 				cent->muzzleFlashTime  = 0;
 
-				// I declared these variables just for readability.
-				int main_firing_type = wData->mainFireOpt[FIRING_TYPE];
-				int alt_firing_type = wData->altFireOpt[FIRING_TYPE];
-				int tertiary_firing_type = wData->tertiaryFireOpt[FIRING_TYPE];
-
+				// I declared this variable just for readability.
 				unsigned char firing_attack = cent->gent->client->ps.prev_firing_attack;
 
 				// Try and get a default muzzle so we have one to fall back on
-				if (wData->mMuzzleEffect[0])
+				if ( wData->mMuzzleEffect[0] )
 				{
-					if (main_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC || tertiary_firing_type >= FT_AUTOMATIC)
+					if (firing_attack & ALT_ATTACK)
 					{
-						if (firing_attack & MAIN_ATTACK)
-						{
-							effect = &wData->mMuzzleEffect[0];
-						}
-						else if (firing_attack & ALT_ATTACK)
-						{
-							effect = &wData->mAltMuzzleEffect[0];
-						}
-						else if (firing_attack & TERTIARY_ATTACK)
-						{
-							effect = &wData->mTertiaryMuzzleEffect[0];
-						}
+						effect = &wData->mAltMuzzleEffect[0];
+					}
+					else if (firing_attack & TERTIARY_ATTACK)
+					{
+						effect = &wData->mTertiaryMuzzleEffect[0];
 					}
 					else
-					{
+					{	
+						// We need to make sure that the base guns also get their sound.
 						effect = &wData->mMuzzleEffect[0];
 					}
 				}

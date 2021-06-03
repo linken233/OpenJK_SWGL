@@ -13993,17 +13993,19 @@ static void PM_Weapon( void )
 	}
 	else
 	{
-		if (pm->ps->firing_attack & MAIN_ATTACK)
-		{
-			amount = weaponData[pm->ps->weapon].energyPerShot;
-		}
-		else if (pm->ps->firing_attack & ALT_ATTACK)
+		
+		if (pm->ps->firing_attack & ALT_ATTACK)
 		{
 			amount = weaponData[pm->ps->weapon].altEnergyPerShot;
 		}
 		else if (pm->ps->firing_attack & TERTIARY_ATTACK)
 		{
 			amount = weaponData[pm->ps->weapon].tertiaryEnergyPerShot;
+		}
+		else
+		{
+			// We need to make sure that the base guns also get their energy shot.
+			amount = weaponData[pm->ps->weapon].energyPerShot;
 		}
 	}
 
