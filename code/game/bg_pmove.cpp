@@ -14844,7 +14844,9 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				pm->ps->shotsRemaining = burst_shots;
 			}
 		}
-		else
+		// If you enter noclip while you are bursting, you still
+		// should be able to turbo boost. 
+		else if (pm->ps->pm_type != PM_NOCLIP)
 		{
 			// If you try to press main click between burts, do nothing.
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
