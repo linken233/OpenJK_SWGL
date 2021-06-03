@@ -13654,7 +13654,7 @@ static void PM_Weapon( void )
 		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
 		{
 			// If you are holding down the button, return.
-			if (firing_type == FT_SEMI)
+			if (firing_type == FT_SEMI || firing_type == FT_HIGH_POWERED)
 			{
 				return;
 			}
@@ -14139,6 +14139,7 @@ static void PM_Weapon( void )
 				addTime = fire_time;
 				break;
 			case FT_SEMI:
+			case FT_HIGH_POWERED:
 				// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
 				// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
 				// and returns out of the function.
@@ -14162,15 +14163,15 @@ static void PM_Weapon( void )
 					pm->ps->shotsRemaining -= 1;
 				}
 				break;
-			case FT_HIGH_POWERED:
-				addTime = fire_time;
-				weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
-				break;
 		}
 	}
 
-	// If the current firing type is not high powered.
-	if (firing_type != FT_HIGH_POWERED)
+	// If the current firing type is high powered.
+	if (firing_type == FT_HIGH_POWERED)
+	{
+		weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+	}
+	else
 	{
 		// If the damges are different.
 		if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
