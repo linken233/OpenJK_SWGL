@@ -85,8 +85,7 @@ float weaponSpeed[WP_NUM_WEAPONS][2] =
 	{ REY_VEL,REY_VEL },//WP_REY,
 	{ JANGO_VELOCITY, JANGO_VELOCITY },// WP_JANGO
 	{ BOBA_VELOCITY, BOBA_VELOCITY },// WP_BOBA
-	{ CLONEPISTOL_VEL,CLONEPISTOL_VEL },//WP_CLONEPISTOL,
-
+	{ CLONEPISTOL_VELOCITY, CLONEPISTOL_VELOCITY },// WP_CLONEPISTOL
 };
 
 float WP_SpeedOfMissileForWeapon( int wp, qboolean alt_fire )
@@ -410,6 +409,10 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		case WP_BRYAR_PISTOL:
 		case WP_BLASTER_PISTOL:
 		case WP_BLASTER:
+		case WP_DISRUPTOR:
+		case WP_BOWCASTER:
+		case WP_ROCKET_LAUNCHER:
+		case WP_CONCUSSION:
 		case WP_BATTLEDROID:
 		case WP_THEFIRSTORDER:
 		case WP_CLONECARBINE:
@@ -421,10 +424,6 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		case WP_JANGO:
 		case WP_BOBA:
 		case WP_CLONEPISTOL:
-		case WP_DISRUPTOR:
-		case WP_BOWCASTER:
-		case WP_ROCKET_LAUNCHER:
-		case WP_CONCUSSION:
 			return qtrue;
 			break;
 		//non-alt standard
@@ -509,7 +508,6 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t forwardVec, vec3_t right, vec
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
 	case WP_REY:
-	case WP_CLONEPISTOL:
 		ViewHeightFix(ent);
 		muzzlePoint[2] += ent->client->ps.viewheight;//By eyes
 		muzzlePoint[2] -= 16;
@@ -535,6 +533,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t forwardVec, vec3_t right, vec
 	case WP_REBELRIFLE:
 	case WP_JANGO:
 	case WP_BOBA:
+	case WP_CLONEPISTOL:
 		ViewHeightFix(ent);
 		muzzlePoint[2] += ent->client->ps.viewheight;//By eyes
 		muzzlePoint[2] -= 1;

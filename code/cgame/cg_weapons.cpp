@@ -422,12 +422,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 		break;
 
 	case WP_BLASTER:
-	case WP_BATTLEDROID:
-	case WP_THEFIRSTORDER:
-	case WP_REBELBLASTER:
-	case WP_REBELRIFLE:
-	case WP_JANGO:
-	case WP_BOBA:
 		cgs.effects.blasterShotEffect			= theFxScheduler.RegisterEffect( "blaster/shot" );
 													theFxScheduler.RegisterEffect( "blaster/NPCshot" );
 //		cgs.effects.blasterOverchargeEffect		= theFxScheduler.RegisterEffect( "blaster/overcharge" );
@@ -649,8 +643,23 @@ void CG_RegisterWeapon( int weaponNum ) {
 		theFxScheduler.RegisterEffect( "ships/imp_blastershot" );
 		break;
 
+	case WP_BATTLEDROID:
+	case WP_THEFIRSTORDER:
+	case WP_REBELBLASTER:
+	case WP_REBELRIFLE:
+	case WP_JANGO:
+	case WP_BOBA:
+		cgs.effects.blasterShotEffect = theFxScheduler.RegisterEffect( "blaster/shot" );
+		theFxScheduler.RegisterEffect("blaster/NPCshot");
+		cgs.effects.blasterWallImpactEffect	= theFxScheduler.RegisterEffect( "blaster/wall_impact" );
+		cgs.effects.blasterFleshImpactEffect = theFxScheduler.RegisterEffect( "blaster/flesh_impact" );
+		theFxScheduler.RegisterEffect("blaster/deflect");
+		theFxScheduler.RegisterEffect("blaster/smoke_bolton");
+		break;
+
 	case WP_CLONECARBINE:
 	case WP_CLONERIFLE:
+	case WP_CLONEPISTOL:
 		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
 		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
 		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
@@ -663,16 +672,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
 		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
 		break;
-
-	case WP_CLONEPISTOL:
-		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
-		cgs.effects.clonePowerupShotEffect = theFxScheduler.RegisterEffect("clone/crackleShot");
-		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
-		cgs.effects.cloneWallImpactEffect2 = theFxScheduler.RegisterEffect("clone/wall_impact2");
-		cgs.effects.cloneWallImpactEffect3 = theFxScheduler.RegisterEffect("clone/wall_impact3");
-		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
-		break;
-
 	}
 }
 
@@ -1362,7 +1361,6 @@ void CG_AddViewWeapon( playerState_t *ps )
 	if (( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BRYAR_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BLASTER_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_REY )
-			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_CLONEPISTOL )
 			|| ( ps->weapon == WP_BOWCASTER && ps->weaponstate == WEAPON_CHARGING )
 			|| ( ps->weapon == WP_DEMP2 && ps->weaponstate == WEAPON_CHARGING_ALT ))
 	{
@@ -1378,20 +1376,11 @@ void CG_AddViewWeapon( playerState_t *ps )
 			shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 		}
 
-		if ( ps->weapon == WP_REY
-			|| ps->weapon == WP_REY )
+		if (ps->weapon == WP_REY)
 		{
 			// Hardcoded max charge time of 0.5 second
 			val = ( cg.time - ps->weaponChargeTime ) * 0.0005f;
 			shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
-		}
-
-		if ( ps->weapon == WP_CLONEPISTOL
-			|| ps->weapon == WP_CLONEPISTOL )
-		{
-			// Hardcoded max charge time of 1 second
-			val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
-			shader = cgi_R_RegisterShader( "gfx/effects/cloneFrontFlash" );
 		}
 
 		else if ( ps->weapon == WP_BOWCASTER )
@@ -3155,22 +3144,17 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		break;
 
 	case WP_BATTLEDROID:
-		FX_BlasterWeaponHitWall(origin, dir);
-		break;
-
 	case WP_THEFIRSTORDER:
+	case WP_REBELBLASTER:
+	case WP_REBELRIFLE:
+	case WP_JANGO:
+	case WP_BOBA:
 		FX_BlasterWeaponHitWall(origin, dir);
 		break;
 
 	case WP_CLONECARBINE:
-		FX_CloneWeaponHitWall(origin, dir);
-		break;
-
-	case WP_REBELBLASTER:
-		FX_BlasterWeaponHitWall(origin, dir);
-		break;
-
 	case WP_CLONERIFLE:
+	case WP_CLONEPISTOL:
 		FX_CloneWeaponHitWall(origin, dir);
 		break;
 
@@ -3183,18 +3167,6 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		{
 			FX_CloneWeaponHitWall(origin, dir);
 		}
-		break;
-
-	case WP_REBELRIFLE:
-		FX_BlasterWeaponHitWall(origin, dir);
-		break;
-
-	case WP_JANGO:
-		FX_BlasterWeaponHitWall(origin, dir);
-		break;
-
-	case WP_BOBA:
-		FX_BlasterWeaponHitWall(origin, dir);
 		break;
 
 	case WP_REY:
@@ -3214,25 +3186,6 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 			FX_BryarHitWall( origin, dir );
 		}
 		break;
-
-	case WP_CLONEPISTOL:
-		if ( altFire )
-		{
-			parm = 0;
-
-			if ( cent->gent )
-			{
-				parm += cent->gent->count;
-			}
-
-			FX_CloneAltHitWall( origin, dir, parm );
-		}
-		else
-		{
-			FX_CloneWeaponHitWall( origin, dir );
-		}
-		break;
-
 	}
 }
 
@@ -3366,6 +3319,7 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 			theFxScheduler.PlayEffect( "atst/side_main_impact", origin, dir );
 		}
 		break;
+
 	case WP_TUSKEN_RIFLE:
 		FX_TuskenShotWeaponHitPlayer( other, origin, dir, humanoid );
 		break;
@@ -3375,22 +3329,17 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_BATTLEDROID:
-		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
-		break;
-
 	case WP_THEFIRSTORDER:
+	case WP_REBELBLASTER:
+	case WP_REBELRIFLE:
+	case WP_JANGO:
+	case WP_BOBA:
 		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 
 	case WP_CLONECARBINE:
-		FX_CloneWeaponHitPlayer(other, origin, dir, humanoid);
-		break;
-
-	case WP_REBELBLASTER:
-		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
-		break;
-
 	case WP_CLONERIFLE:
+	case WP_CLONEPISTOL:
 		FX_CloneWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 
@@ -3405,10 +3354,6 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		}
 		break;
 
-	case WP_REBELRIFLE:
-		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
-		break;
-
 	case WP_REY:
 		if ( altFire )
 		{
@@ -3419,25 +3364,5 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 			FX_BryarHitPlayer( origin, dir, humanoid );
 		}
 		break;
-
-case WP_JANGO:
-	FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
-	break;
-
-case WP_BOBA:
-	FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
-	break;
-
-case WP_CLONEPISTOL:
-	if (altFire)
-	{
-		FX_CloneAltHitPlayer(origin, dir, humanoid);
-	}
-	else
-	{
-		FX_CloneWeaponHitPlayer(other, origin, dir, humanoid);
-	}
-	break;
-
 	}
 }

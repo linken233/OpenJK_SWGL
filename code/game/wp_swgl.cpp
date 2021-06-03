@@ -1469,100 +1469,129 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 //---------------
 
 //---------------------------------------------------------
-void WP_FireClonePistol( gentity_t *ent, qboolean alt_fire )
+void WP_FireClonePistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
 {
-	vec3_t	start;
-	int		damage = !alt_fire ? weaponData[WP_CLONEPISTOL].damage : weaponData[WP_CLONEPISTOL].altDamage;
+	int velocity = CLONEPISTOL_VELOCITY;
+	int	damage = altFire ? weaponData[WP_CLONEPISTOL].altDamage : weaponData[WP_CLONEPISTOL].damage;
 
-	VectorCopy( muzzle, start );
-	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
-
-	if ( !(ent->client->ps.forcePowersActive&(1<<FP_SEE))
-		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2 )
-	{//force sight 2+ gives perfect aim
-		//FIXME: maybe force sight level 3 autoaims some?
-		if ( ent->NPC && ent->NPC->currentAim < 5 )
-		{
-			vec3_t	angs;
-
-			vectoangles( forwardVec, angs );
-
-			if ( ent->client->NPC_class == CLASS_IMPWORKER )
-			{//*sigh*, hack to make impworkers less accurate without affecteing imperial officer accuracy
-				angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-			}
-			else
-			{
-				angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * ((5-ent->NPC->currentAim)*0.25f) );
-				angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * ((5-ent->NPC->currentAim)*0.25f) );
-			}
-
-			AngleVectors( angs, forwardVec, NULL, NULL );
-		}
-	}
-
-	WP_MissileTargetHint(ent, start, forwardVec);
-
-	gentity_t	*missile = CreateMissile( start, forwardVec, BRYAR_PISTOL_VEL, 10000, ent, alt_fire );
-
-	missile->classname = "clone_proj";
-	if ( ent->s.weapon == WP_BLASTER_PISTOL
-		|| ent->s.weapon == WP_JAWA )
-	{//*SIGH*... I hate our weapon system...
-		missile->s.weapon = ent->s.weapon;
+	if (ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE)
+	{
+		damage *= 3;
+		velocity = ATST_MAIN_VEL + ent->client->ps.speed;
 	}
 	else
 	{
-		missile->s.weapon = WP_CLONEPISTOL;
+		// If an enemy is shooting at us, lower the velocity so you have a chance to evade
+		if (ent->client && ent->client->ps.clientNum != 0 && (ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
+		{
+			if (g_spskill->integer < 2)
+			{
+				velocity *= CLONEPISTOL_NPC_VEL_CUT;
+			}
+			else
+			{
+				velocity *= CLONEPISTOL_NPC_HARD_VEL_CUT;
+			}
+		}
 	}
 
-	if ( alt_fire )
+	WP_TraceSetStart(ent, start, vec3_origin, vec3_origin);//make sure our start point isn't on the other side of a wall
+
+	WP_MissileTargetHint(ent, start, dir);
+
+	gentity_t *missile = CreateMissile(start, dir, velocity, 10000, ent, altFire);
+
+	missile->classname = "blaster_proj";
+	missile->s.weapon = WP_CLONEPISTOL;
+
+	// Do the damages
+	if (ent->s.number != 0 && (ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
 	{
-		int count = ( level.time - ent->client->ps.weaponChargeTime ) / BRYAR_CHARGE_UNIT;
-
-		if ( count < 1 )
+		if (g_spskill->integer == 0)
 		{
-			count = 1;
+			damage = CLONEPISTOL_NPC_DAMAGE_EASY;
 		}
-		else if ( count > 5 )
+		else if (g_spskill->integer == 1)
 		{
-			count = 5;
+			damage = CLONEPISTOL_NPC_DAMAGE_NORMAL;
 		}
-
-		damage *= count;
-		missile->count = count; // this will get used in the projectile rendering code to make a beefier effect
+		else
+		{
+			damage = CLONEPISTOL_NPC_DAMAGE_HARD;
+		}
 	}
-
-//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-//	{
-//		// in overcharge mode, so doing double damage
-//		missile->flags |= FL_OVERCHARGED;
-//		damage *= 2;
-//	}
 
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 
-	if ( alt_fire )
+	if (altFire)
 	{
 		missile->methodOfDeath = MOD_CLONEPISTOL_ALT;
-		missile->s.eFlags |= EF_BOUNCE;
-		missile->bounceCount = 3;
 	}
 	else
 	{
 		missile->methodOfDeath = MOD_CLONEPISTOL;
-		// we don't want it to bounce forever
-		missile->bounceCount = 8;
-
 	}
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-	if ( ent->weaponModel[1] > 0 )
-	{//dual pistols, toggle the muzzle point back and forth between the two pistols each time he fires
-		ent->count = (ent->count)?0:1;
+	// we don't want it to bounce forever
+	missile->bounceCount = 8;
+}
+
+//---------------------------------------------------------
+void WP_FireClonePistol(gentity_t *ent, qboolean alt_fire)
+//---------------------------------------------------------
+{
+	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_CLONEPISTOL].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
+	{
+		alt_fire = qfalse;
 	}
+	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
+	{
+		alt_fire = qtrue;
+	}
+
+	vec3_t	dir, angs;
+
+	vectoangles(forwardVec, angs);
+
+	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
+	{//no inherent aim screw up
+	}
+	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
+		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
+	{//force sight 2+ gives perfect aim
+		//FIXME: maybe force sight level 3 autoaims some?
+		if (alt_fire)
+		{
+			// add some slop to the alt-fire direction
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONEPISTOL_ALT_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONEPISTOL_ALT_SPREAD;
+		}
+		else
+		{
+			// Troopers use their aim values as well as the gun's inherent inaccuracy
+			// so check for all classes of stormtroopers and anyone else that has aim error
+			if (ent->client && ent->NPC &&
+				(ent->client->NPC_class == CLASS_STORMTROOPER ||
+				ent->client->NPC_class == CLASS_SWAMPTROOPER))
+			{
+				angs[PITCH] += (Q_flrand(-1.0f, 1.0f) * (CLONEPISTOL_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+				angs[YAW] += (Q_flrand(-1.0f, 1.0f) * (CLONEPISTOL_NPC_SPREAD + (6 - ent->NPC->currentAim)*0.25f));//was 0.5f
+			}
+			else
+			{
+				// add some slop to the main-fire direction
+				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONEPISTOL_MAIN_SPREAD;
+				angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONEPISTOL_MAIN_SPREAD;
+			}
+		}
+	}
+
+	AngleVectors(angs, dir, NULL, NULL);
+
+	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+	WP_FireClonePistolMissile(ent, muzzle, dir, alt_fire);
 }

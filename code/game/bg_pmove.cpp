@@ -12933,8 +12933,6 @@ static bool PM_DoChargedWeapons( void )
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
 	case WP_REY:
-	case WP_CLONEPISTOL:
-
 		// alt-fire charges the weapon
 		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 		{
@@ -14173,7 +14171,7 @@ static void PM_Weapon( void )
 	}
 	else
 	{
-		// If the damges are different.
+		// If the damages are different.
 		if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
 		{
 			// Load back the default damage of that weapon.

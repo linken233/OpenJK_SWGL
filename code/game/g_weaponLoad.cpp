@@ -175,7 +175,7 @@ qboolean playerUsableWeapons[WP_NUM_WEAPONS] =
 	qtrue,//WP_REY,
 	qtrue,//WP_JANGO,
 	qtrue,//WP_BOBA,
-	qtrue,//WP_CLONEPISTOL,
+	qtrue,//WP_CLONEPISTOL
 
 	//# #eol
 	//WP_NUM_WEAPONS
@@ -354,7 +354,7 @@ const int defaultAltDamage[] = {
 	REY_DAMAGE,				// WP_REY
 	JANGO_ALT_DAMAGE,		// WP_JANGO
 	BOBA_SCOPE_DAMAGE,		// WP_BOBA
-	CLONEPISTOL_DAMAGE,		// WP_CLONEPISTOL
+	CLONEPISTOL_ALT_DAMAGE,		// WP_CLONEPISTOL
 };
 
 const int defaultSplashDamage[] = {
