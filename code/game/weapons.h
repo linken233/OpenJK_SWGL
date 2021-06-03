@@ -453,7 +453,7 @@ enum firingOptions
 #define E5_NPC_VEL_CUT			0.5f
 #define E5_NPC_HARD_VEL_CUT 	0.7f
 #define E5_DAMAGE				20
-#define E5_ALT_DAMAGE			22
+#define E5_ALT_DAMAGE			25
 #define	E5_NPC_DAMAGE_EASY		6
 #define	E5_NPC_DAMAGE_NORMAL	12
 #define	E5_NPC_DAMAGE_HARD		16
