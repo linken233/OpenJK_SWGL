@@ -973,7 +973,7 @@ static void CG_DoMuzzleFlash( centity_t *cent, vec3_t org, vec3_t dir, weaponDat
 		const char *effect = NULL;
 
 		// I declared this variable just for readability.
-		unsigned char firing_attack = cent->gent->client->ps.prev_firing_attack;
+		char firing_attack = cent->gent->client->ps.prev_firing_attack;
 
 //		CG_PositionEntityOnTag( &flash, &gun, gun.hModel, "tag_flash");
 

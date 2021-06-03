@@ -8399,7 +8399,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 				cent->muzzleFlashTime  = 0;
 
 				// I declared this variable just for readability.
-				unsigned char firing_attack = cent->gent->client->ps.prev_firing_attack;
+				char firing_attack = cent->gent->client->ps.prev_firing_attack;
 
 				// Try and get a default muzzle so we have one to fall back on
 				if ( wData->mMuzzleEffect[0] )
