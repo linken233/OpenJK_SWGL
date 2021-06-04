@@ -14703,7 +14703,9 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	if ( pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) && pm->ps->weaponstate != WEAPON_DROPPING && weaponData[pm->ps->weapon].scopeType >= ST_A280 )
 	{
 		// If you are not currently firing, you press the alt key, and the alt firing type is not high powered.
-		if (!(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK && (main_firing_type != FT_HIGH_POWERED && alt_firing_type != FT_HIGH_POWERED))
+		if (!(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK 
+			&& (main_firing_type != FT_HIGH_POWERED && alt_firing_type != FT_HIGH_POWERED)
+			&& !(pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode))
 		{
 			if (cg.zoomMode == 0)
 			{
@@ -14819,6 +14821,12 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	}
 	else if (weaponData[pm->ps->weapon].scopeType < ST_A280 
 		&& (tertiary_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
+	{
+		// Don't let the alt-fite get through.
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+	}
+
+	if (pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode)
 	{
 		// Don't let the alt-fite get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;

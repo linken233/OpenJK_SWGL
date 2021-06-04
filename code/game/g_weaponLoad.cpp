@@ -1679,7 +1679,7 @@ void WPN_TertiaryFireTime(const char **holdBuf)
 		return;
 	}
 
-	if ((tokenInt < 0) || (tokenInt > 1000))
+	if ((tokenInt < 0) || (tokenInt > 10000))
 	{
 		gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryFireTime in external weapon data '%d'\n", tokenInt);
 		return;
@@ -1699,7 +1699,7 @@ void WPN_TertiaryRange(const char **holdBuf)
 		return;
 	}
 
-	if ((tokenInt < 0) || (tokenInt > 1000))
+	if ((tokenInt < 0) || (tokenInt > 10000))
 	{
 		gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryRange in external weapon data '%d'\n", tokenInt);
 		return;

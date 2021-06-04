@@ -765,7 +765,20 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 //---------------------------------------------------------
 {
 	int velocity = altFire ? CLONECOMMANDO_ALT_VELOCITY : CLONECOMMANDO_VELOCITY;
-	int	damage = altFire ? weaponData[WP_CLONECOMMANDO].altDamage : weaponData[WP_CLONECOMMANDO].damage;
+	int	damage = 0;
+
+	if (cg.zoomMode >= ST_A280)
+	{
+		damage = CLONECOMMANDO_SCOPE_DAMAGE;
+	}
+	else if (altFire)
+	{
+		damage = weaponData[WP_CLONECOMMANDO].altDamage;
+	}
+	else
+	{
+		damage = weaponData[WP_CLONECOMMANDO].damage;
+	}
 
 	if (ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{
@@ -851,11 +864,11 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_CLONECOMMANDO].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
+	if (cg.zoomMode >= ST_A280)
 	{
 		alt_fire = qfalse;
 	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
+	else if (ent->client->ps.firing_attack & TERTIARY_ATTACK)
 	{
 		alt_fire = qtrue;
 	}
@@ -867,6 +880,14 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
+	else if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_SCOPE_SPREAD;
+		angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_SCOPE_SPREAD;
+	} 
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
 	{
@@ -887,10 +908,18 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	AngleVectors(angs, dir, NULL, NULL);
+	if (cg.zoomMode >= ST_A280)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireCloneCommandoMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
+	}
+	else
+	{
+		AngleVectors(angs, dir, NULL, NULL);
 
-	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireCloneCommandoMissile(ent, muzzle, dir, alt_fire);
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireCloneCommandoMissile(ent, muzzle, dir, alt_fire);
+	}
 }
 
 //---------------
