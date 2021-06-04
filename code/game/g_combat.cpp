@@ -264,37 +264,17 @@ gentity_t *TossClientItems( gentity_t *self )
 					dropped->count = 15;
 					break;
 				case WP_BATTLEDROID:
-					dropped->count = 15;
-					break;
 				case WP_THEFIRSTORDER:
-					dropped->count = 15;
-					break;
 				case WP_CLONECARBINE:
-					dropped->count = 15;
-					break;
 				case WP_REBELBLASTER:
-					dropped->count = 15;
-					break;
 				case WP_CLONERIFLE:
-					dropped->count = 15;
-					break;
 				case WP_CLONECOMMANDO:
-					dropped->count = 15;
-					break;
 				case WP_REBELRIFLE:
-					dropped->count = 15;
-					break;
 				case WP_REY:
-					dropped->count = 15;
-					break;
 				case WP_JANGO:
-					dropped->count = 15;
-					break;
 				case WP_BOBA:
-					dropped->count = 15;
-					break;
 				case WP_CLONEPISTOL:
-					dropped->count = 15;
+					dropped->count = 50;
 					break;
 				default:
 					dropped->count = 0;
@@ -5377,44 +5357,6 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_BRYAR_ALT:
 			weapon = WP_BRYAR_PISTOL;
 			break;
-		case MOD_BLASTER:
-		case MOD_BLASTER_ALT:
-			weapon = WP_BLASTER;
-			weapon = WP_THEFIRSTORDER;
-			weapon = WP_CLONECARBINE;
-			break;
-		case MOD_CLONERIFLE:
-		case MOD_CLONERIFLE_ALT:
-			weapon = WP_CLONERIFLE;
-			break;
-		case MOD_REBELBLASTER:
-		case MOD_REBELBLASTER_ALT:
-			weapon = WP_REBELBLASTER;
-			break;
-		case MOD_CLONECOMMANDO:
-		case MOD_CLONECOMMANDO_ALT:
-			weapon = WP_CLONECOMMANDO;
-			break;
-		case MOD_REBELRIFLE:
-		case MOD_REBELRIFLE_ALT:
-			weapon = WP_REBELRIFLE;
-			break;
-		case MOD_REY:
-		case MOD_REY_ALT:
-			weapon = WP_REY;
-			break;
-		case MOD_CLONEPISTOL:
-		case MOD_CLONEPISTOL_ALT:
-			weapon = WP_CLONEPISTOL;
-			break;
-		case MOD_JANGO:
-		case MOD_JANGO_ALT:
-			weapon = WP_JANGO;
-			break;
-		case MOD_BOBA:
-		case MOD_BOBA_ALT:
-			weapon = WP_BOBA;
-			break;
 		case MOD_DISRUPTOR:
 		case MOD_SNIPER:
 			weapon = WP_DISRUPTOR;
@@ -5463,6 +5405,44 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 			{
 				weapon = WP_MELEE;
 			}
+			break;
+		case MOD_BLASTER:
+		case MOD_BLASTER_ALT:
+			weapon = WP_BLASTER;
+			weapon = WP_THEFIRSTORDER;
+			weapon = WP_CLONECARBINE;
+			break;
+		case MOD_CLONERIFLE:
+		case MOD_CLONERIFLE_ALT:
+			weapon = WP_CLONERIFLE;
+			break;
+		case MOD_REBELBLASTER:
+		case MOD_REBELBLASTER_ALT:
+			weapon = WP_REBELBLASTER;
+			break;
+		case MOD_CLONECOMMANDO:
+		case MOD_CLONECOMMANDO_ALT:
+			weapon = WP_CLONECOMMANDO;
+			break;
+		case MOD_REBELRIFLE:
+		case MOD_REBELRIFLE_ALT:
+			weapon = WP_REBELRIFLE;
+			break;
+		case MOD_REY:
+		case MOD_REY_ALT:
+			weapon = WP_REY;
+			break;
+		case MOD_CLONEPISTOL:
+		case MOD_CLONEPISTOL_ALT:
+			weapon = WP_CLONEPISTOL;
+			break;
+		case MOD_JANGO:
+		case MOD_JANGO_ALT:
+			weapon = WP_JANGO;
+			break;
+		case MOD_BOBA:
+		case MOD_BOBA_ALT:
+			weapon = WP_BOBA;
 			break;
 		}
 	}

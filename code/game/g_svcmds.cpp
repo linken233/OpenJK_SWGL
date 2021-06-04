@@ -396,10 +396,33 @@ void Svcmd_SaberAttackCycle_f( void )
 	}
 
 	gentity_t *self = G_GetSelfForPlayerCmd();
+	/*
 	if ( self->s.weapon != WP_SABER )
 	{// saberAttackCycle button also switches to saber
 		gi.SendConsoleCommand("weapon 1" );
 		return;
+	}
+	*/
+
+	// If you have a tertiary option and you are not firing.
+	if (weaponData[self->s.weapon].tertiaryFireOpt[FIRING_TYPE] >= FT_AUTOMATIC && self->client->ps.weaponTime == 0)
+	{
+		if (self->client->ps.tertiaryMode)
+		{
+			self->client->ps.tertiaryMode = qfalse;
+		}
+		else
+		{
+			self->client->ps.tertiaryMode = qtrue;
+		}
+
+		G_Sound(self, G_SoundIndex("sound/vehicles/common/linkweaps.wav"));
+	}
+
+	// If you are scoped and switched to tertiaryMode, you should be no longer scoped.
+	if (self->s.weapon == WP_CLONECOMMANDO && self->client->ps.tertiaryMode && cg.zoomMode >= ST_A280)
+	{
+		cg.zoomMode = 0;
 	}
 
 	if ( self->client->ps.dualSabers )
@@ -429,7 +452,10 @@ void Svcmd_SaberAttackCycle_f( void )
 					if ( !skipThisBlade )
 					{
 						self->client->ps.saber[1].BladeActivate( bladeNum, qfalse );
-						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[1].soundOff );
+						if ( self->s.weapon == WP_SABER )
+						{
+							G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[1].soundOff );
+						}
 					}
 				}
 			}
@@ -497,7 +523,10 @@ void Svcmd_SaberAttackCycle_f( void )
 					self->client->ps.saber[0].BladeActivate( bladeNum, qfalse );
 					if ( !playedSound )
 					{
-						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
+						if ( self->s.weapon == WP_SABER )
+						{
+							G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
+						}
 						playedSound = qtrue;
 					}
 				}

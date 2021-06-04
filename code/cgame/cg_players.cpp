@@ -7334,7 +7334,7 @@ else
 
 		if ( !(cent->gent->client->ps.saber[saberNum].type == SABER_SITH_SWORD || client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE) )
 		{
-			CG_DoSFXSaber( saberTrail->base, saberTrail->tip, saberTrail->dualtip, saberTrail->dualbase, (client->ps.saber[saberNum].blade[bladeNum].lengthMax), (client->ps.saber[saberNum].blade[bladeNum].radius), client->ps.saber[saberNum].blade[bladeNum].color, renderfx, (qboolean)!noDlight );
+			CG_DoSFXSaber( fx->mVerts[0].origin, fx->mVerts[1].origin, fx->mVerts[2].origin, fx->mVerts[3].origin, (client->ps.saber[saberNum].blade[bladeNum].lengthMax), (client->ps.saber[saberNum].blade[bladeNum].radius), client->ps.saber[saberNum].blade[bladeNum].color, renderfx, (qboolean)!noDlight );
 		}
 
 		if ( cg.time > saberTrail->inAction )
@@ -8322,7 +8322,6 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
 					*/
 					&& cent->gent->s.weapon == WP_BLASTER_PISTOL//using blaster pistol
-					&& cent->gent->s.weapon == WP_CLONEPISTOL//using blaster pistol
 					&& cent->gent->s.weapon == WP_REY//using blaster pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
@@ -8412,10 +8411,25 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 
 				cent->muzzleFlashTime  = 0;
 
+				// I declared this variable just for readability.
+				char firing_attack = cent->gent->client->ps.prev_firing_attack;
+
 				// Try and get a default muzzle so we have one to fall back on
 				if ( wData->mMuzzleEffect[0] )
 				{
-					effect = &wData->mMuzzleEffect[0];
+					if (firing_attack & ALT_ATTACK)
+					{
+						effect = &wData->mAltMuzzleEffect[0];
+					}
+					else if (firing_attack & TERTIARY_ATTACK)
+					{
+						effect = &wData->mTertiaryMuzzleEffect[0];
+					}
+					else
+					{	
+						// We need to make sure that the base guns also get their sound.
+						effect = &wData->mMuzzleEffect[0];
+					}
 				}
 
 				if ( cent->altFire )
@@ -8964,6 +8978,11 @@ Ghoul2 Insert End
 					effect = wData->mMuzzleEffectID;
 				}
 
+				if (wData->mTertiaryMuzzleEffectID)
+				{
+					effect = wData->mTertiaryMuzzleEffectID;
+				}
+
 				if ( cent->currentState.eFlags & EF_ALT_FIRING )
 				{
 					// We're alt-firing, so see if we need to override with a custom alt-fire effect
@@ -9035,7 +9054,6 @@ Ghoul2 Insert End
 		if (( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BRYAR_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BLASTER_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_REY )
-			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_CLONEPISTOL )
 			|| ( ps->weapon == WP_BOWCASTER && ps->weaponstate == WEAPON_CHARGING )
 			|| ( ps->weapon == WP_DEMP2 && ps->weaponstate == WEAPON_CHARGING_ALT ))
 		{
@@ -9050,19 +9068,11 @@ Ghoul2 Insert End
 				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 			}
-			if ( ps->weapon == WP_REY
-				|| ps->weapon == WP_REY )
+			else if ( ps->weapon == WP_REY)
 			{
-				// Hardcoded max charge time of 1 second
-				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
+				// Hardcoded max charge time of 0.5 second
+				val = ( cg.time - ps->weaponChargeTime ) * 0.0005f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
-			}
-			if ( ps->weapon == WP_CLONEPISTOL
-			  || ps->weapon == WP_CLONEPISTOL )
-			{
-			  // Hardcoded max charge time of 1 second
-			  val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
-			  shader = cgi_R_RegisterShader( "gfx/effects/cloneFrontFlash" );
 			}
 			else if ( ps->weapon == WP_BOWCASTER )
 			{

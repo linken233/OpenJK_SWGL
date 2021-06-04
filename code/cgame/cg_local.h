@@ -655,8 +655,6 @@ extern	vmCvar_t		cg_fovViewmodelAdjust;
 
 extern	vmCvar_t		cg_scaleVehicleSensitivity;
 
-extern	vmCvar_t		cg_checkModelChange;
-
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c
@@ -1125,6 +1123,8 @@ void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
 void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
 void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
 void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
 
 void FX_DestructionProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_DestructionHitWall(vec3_t origin, vec3_t normal);

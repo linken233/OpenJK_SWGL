@@ -43,6 +43,7 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 void FX_CloneProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_CloneAltFireThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_CloneAltProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneCommandoProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 
 
 // Bowcaster
@@ -112,6 +113,7 @@ func_t	funcs[] = {
 	{ "clone_func",			FX_CloneProjectileThink},
 	{ "clone_alt_func",     FX_CloneAltFireThink },
 	{ "clone_pistol_alt_func", FX_CloneAltProjectileThink },
+	{ "clone_commando_alt_func", FX_CloneCommandoProjectileThink },
 	{NULL,					NULL}
 };
 
@@ -173,7 +175,7 @@ qboolean playerUsableWeapons[WP_NUM_WEAPONS] =
 	qtrue,//WP_REY,
 	qtrue,//WP_JANGO,
 	qtrue,//WP_BOBA,
-	qtrue,//WP_CLONEPISTOL,
+	qtrue,//WP_CLONEPISTOL
 
 	//# #eol
 	//WP_NUM_WEAPONS
@@ -225,7 +227,7 @@ void WPN_MissileHitSound(const char **holdBuf);
 void WPN_AltMissileHitSound(const char **holdBuf);
 void WPN_MuzzleEffect(const char **holdBuf);
 void WPN_AltMuzzleEffect(const char **holdBuf);
-
+void WPN_TertiaryMuzzleEffect(const char **holdBuf);
 // OPENJK ADD
 
 void WPN_Damage(const char **holdBuf);
@@ -235,6 +237,16 @@ void WPN_SplashRadius(const char **holdBuf);
 void WPN_AltSplashDamage(const char **holdBuf);
 void WPN_AltSplashRadius(const char **holdBuf);
 
+void WPN_TertiaryEnergyPerShot(const char **holdBuf);
+void WPN_TertiaryFireTime(const char **holdBuf);
+void WPN_TertiaryRange(const char **holdBuf);
+
+void WPN_ScopeType(const char **holdBuf);
+
+void WPN_MainFireOptions(const char **holdBuf);
+void WPN_AltFireOptions(const char **holdBuf);
+void WPN_TertiaryFireOptions(const char **holdBuf);
+
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
 
@@ -243,6 +255,8 @@ typedef struct
 	const char	*parmName;
 	void	(*func)(const char **holdBuf);
 } wpnParms_t;
+
+int defaultDamageCopy[WP_NUM_WEAPONS];
 
 // This is used as a fallback for each new field, in case they're using base files --eez
 const int defaultDamage[] = {
@@ -280,25 +294,18 @@ const int defaultDamage[] = {
 	0,							// WP_TUSKEN_STAFF
 	0,							// WP_SCEPTER
 	0,							// WP_NOGHRI_STICK
-	BLASTER_DAMAGE,				// WP_BATTLEDROID
-	BLASTER_DAMAGE,				// WP_THEFIRSTORDER
-	BLASTER_DAMAGE,				// WP_CLONECARBINE
 
-	CLONERIFLE_DAMAGE,			// WP_CLONERIFLE
-
+	E5_DAMAGE,					// WP_BATTLEDROID
+	F_11D_DAMAGE,				// WP_THEFIRSTORDER
+	CLONECARBINE_DAMAGE,		// WP_CLONECARBINE
 	REBELBLASTER_DAMAGE,		// WP_REBELBLASTER
-
-	CLONECOMMANDO_DAMAGE,		// WP_CLONERIFLE
-
+	CLONERIFLE_DAMAGE,			// WP_CLONERIFLE
+	CLONECOMMANDO_DAMAGE,		// WP_CLONECOMMANDO
 	REBELRIFLE_DAMAGE,			// WP_REBELRIFLE
-
 	REY_DAMAGE,					// WP_REY
-
 	JANGO_DAMAGE,				// WP_JANGO
-
 	BOBA_DAMAGE,				// WP_BOBA
-
-	CLONEPISTOL_DAMAGE,					// WP_CLONEPISTOL
+	CLONEPISTOL_DAMAGE,			// WP_CLONEPISTOL
 };
 
 const int defaultAltDamage[] = {
@@ -336,25 +343,18 @@ const int defaultAltDamage[] = {
 	0,						// WP_TUSKEN_STAFF
 	0,						// WP_SCEPTER
 	0,						// WP_NOGHRI_STICK
-	BLASTER_DAMAGE,			// WP_BATTLEDROID
-	BLASTER_DAMAGE,			// WP_THEFIRSTORDER
-	BLASTER_DAMAGE,			// WP_CLONECARBINE
 
-	CLONERIFLE_DAMAGE,		// WP_CLONERIFLE
-
-	REBELBLASTER_DAMAGE,	// WP_REBELBLASTER
-
-	CLONECOMMANDO_DAMAGE,	// WP_REBELBLASTER
-
-	REBELRIFLE_DAMAGE,		// WP_REBELRIFLE
-
+	E5_ALT_DAMAGE,			// WP_BATTLEDROID
+	F_11D_SCOPE_DAMAGE,		// WP_THEFIRSTORDER
+	CLONECARBINE_ALT_DAMAGE, // WP_CLONECARBINE
+	REBELBLASTER_SCOPE_DAMAGE,// WP_REBELBLASTER
+	CLONERIFLE_ALT_DAMAGE,		// WP_CLONERIFLE
+	CLONECOMMANDO_ALT_DAMAGE,// WP_CLONECOMMANDO
+	REBELRIFLE_SCOPE_DAMAGE,// WP_REBELRIFLE
 	REY_DAMAGE,				// WP_REY
-
-	JANGO_DAMAGE,			// WP_JANGO
-
-	BOBA_DAMAGE,			// WP_BOBA
-
-	CLONEPISTOL_DAMAGE,				// WP_CLONEPISTOL
+	JANGO_ALT_DAMAGE,		// WP_JANGO
+	BOBA_SCOPE_DAMAGE,		// WP_BOBA
+	CLONEPISTOL_ALT_DAMAGE,		// WP_CLONEPISTOL
 };
 
 const int defaultSplashDamage[] = {
@@ -392,6 +392,7 @@ const int defaultSplashDamage[] = {
 	0,								// WP_TUSKEN_STAFF
 	0,								// WP_SCEPTER
 	0,								// WP_NOGHRI_STICK
+
 	0,								// WP_BATTLEDROID
 	0,				   				// WP_THEFIRSTORDER
 	0,				   				// WP_CLONECARBINE
@@ -440,6 +441,7 @@ const float defaultSplashRadius[] = {
 	0.0f,							// WP_TUSKEN_STAFF
 	0.0f,							// WP_SCEPTER
 	0.0f,							// WP_NOGHRI_STICK
+
 	0.0f,							// WP_BATTLEDROID
 	0.0f,							// WP_THEFIRSTORDER
 	0.0f,							// WP_CLONECARBINE
@@ -488,12 +490,13 @@ const int defaultAltSplashDamage[] = {
 	0,								// WP_TUSKEN_STAFF
 	0,								// WP_SCEPTER
 	0,								// WP_NOGHRI_STICK
+
 	0,								// WP_BATTLEDROID
 	0,								// WP_THEFIRSTORDER
 	0,								// WP_CLONECARBINE
 	0,								// WP_REBELBLASTER
 	0,				   				// WP_CLONERIFLE
-	0,				   				// WP_CLONECOMMANDO
+	CLONECOMMANDO_ALT_SPLASH_DAMAGE,// WP_CLONECOMMANDO
 	0,				   				// WP_REBELRIFLE
 	0,				   				// WP_REY
 	0,				   				// WP_JANGO
@@ -536,12 +539,13 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_TUSKEN_STAFF
 	0.0f,							// WP_SCEPTER
 	0.0f,							// WP_NOGHRI_STICK
+
 	0.0f,							// WP_BATTLEDROID
 	0.0f,							// WP_THEFIRSTORDER
 	0.0f,							// WP_CLONECARBINE
 	0.0f,							// WP_REBELBLASTER
 	0.0f,							// WP_CLONERIFLE
-	0.0f,							// WP_CLONECOMMANDO
+	CLONECOMMANDO_ALT_SPLASH_RADIUS,// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
 	0.0f,							// WP_REY
 	0.0f,							// WP_JANGO
@@ -589,6 +593,7 @@ wpnParms_t WpnParms[] =
 	{ "altmissileHitSound",	WPN_AltMissileHitSound },
 	{ "muzzleEffect",			WPN_MuzzleEffect },
 	{ "altmuzzleEffect",		WPN_AltMuzzleEffect },
+	{ "tertiarymuzzleEffect",	WPN_TertiaryMuzzleEffect },
 	// OPENJK NEW FIELDS
 	{ "damage",			WPN_Damage },
 	{ "altdamage",		WPN_AltDamage },
@@ -596,6 +601,16 @@ wpnParms_t WpnParms[] =
 	{ "splashRadius",		WPN_SplashRadius },
 	{ "altSplashDamage",	WPN_AltSplashDamage },
 	{ "altSplashRadius",	WPN_AltSplashRadius },
+
+	{ "tertiaryenergypershot",	WPN_TertiaryEnergyPerShot },
+	{ "tertiaryfiretime",		WPN_TertiaryFireTime },
+	{ "tertiaryrange",			WPN_TertiaryRange },
+
+	{ "scopeType",			WPN_ScopeType },
+
+	{ "mainfireopt",		WPN_MainFireOptions},
+	{ "altfireopt",			WPN_AltFireOptions},
+	{ "tertiaryfireopt",	WPN_TertiaryFireOptions},
 
 	// Old legacy files contain these, so we skip them to shut up warnings
 	{ "firingforce",		WPN_FuncSkip },
@@ -1522,6 +1537,28 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 }
 
 //--------------------------------------------
+void WPN_TertiaryMuzzleEffect(const char **holdBuf)
+{
+	const char	*tokenStr;
+
+	if ( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+	size_t len = strlen( tokenStr );
+
+	len++;
+	if (len > 64)
+	{
+		len = 64;
+		gi.Printf(S_COLOR_YELLOW"WARNING: TertiaryMuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
+	}
+
+	G_EffectIndex( tokenStr );
+	Q_strncpyz(weaponData[wpnParms.weaponNum].mTertiaryMuzzleEffect,tokenStr,len);
+}
+
+//--------------------------------------------
 
 void WPN_Damage(const char **holdBuf)
 {
@@ -1612,6 +1649,160 @@ void WPN_AltSplashRadius(const char **holdBuf)
 }
 
 //--------------------------------------------
+void WPN_TertiaryEnergyPerShot(const char **holdBuf)
+{
+	int		tokenInt;
+
+	if (COM_ParseInt(holdBuf, &tokenInt))
+	{
+		SkipRestOfLine(holdBuf);
+		return;
+	}
+
+	if ((tokenInt < 0) || (tokenInt > 1000))
+	{
+		gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryEnergyPerShot in external weapon data '%d'\n", tokenInt);
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].tertiaryEnergyPerShot = tokenInt;
+}
+
+//--------------------------------------------
+void WPN_TertiaryFireTime(const char **holdBuf)
+{
+	int		tokenInt;
+
+	if (COM_ParseInt(holdBuf, &tokenInt))
+	{
+		SkipRestOfLine(holdBuf);
+		return;
+	}
+
+	if ((tokenInt < 0) || (tokenInt > 10000))
+	{
+		gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryFireTime in external weapon data '%d'\n", tokenInt);
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].tertiaryFireTime = tokenInt;
+}
+
+//--------------------------------------------
+void WPN_TertiaryRange(const char **holdBuf)
+{
+	int		tokenInt;
+
+	if (COM_ParseInt(holdBuf, &tokenInt))
+	{
+		SkipRestOfLine(holdBuf);
+		return;
+	}
+
+	if ((tokenInt < 0) || (tokenInt > 10000))
+	{
+		gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryRange in external weapon data '%d'\n", tokenInt);
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].tertiaryRange = tokenInt;
+}
+
+//--------------------------------------------
+void WPN_ScopeType(const char **holdBuf)
+{
+    int        tokenInt;
+
+    if ( COM_ParseInt(holdBuf,&tokenInt))
+    {
+        SkipRestOfLine(holdBuf);
+        return;
+    }
+
+	// This is for cg.zoommode.
+	tokenInt += 3;
+
+    if ((tokenInt < ST_A280) || (tokenInt > ST_DLT_20A ))
+    {
+        gi.Printf(S_COLOR_YELLOW"WARNING: bad scopeType in external weapon data '%d'\n", tokenInt);
+        return;
+    }
+    weaponData[wpnParms.weaponNum].scopeType = tokenInt;
+}
+
+//--------------------------------------------
+void WPN_MainFireOptions(const char **holdBuf)
+{
+	int i;
+	int tokenInt;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (COM_ParseInt(holdBuf, &tokenInt))
+		{
+			SkipRestOfLine(holdBuf);
+			continue;
+		}
+
+		if ((tokenInt < 0) || (tokenInt > 10000 ))
+		{
+			gi.Printf(S_COLOR_YELLOW"WARNING: bad mainfireopt in external weapon data '%d'\n", tokenInt);
+			continue;
+		}
+
+		weaponData[wpnParms.weaponNum].mainFireOpt[i] = tokenInt;
+	}
+}
+
+//--------------------------------------------
+void WPN_AltFireOptions(const char **holdBuf)
+{
+	int i;
+	int tokenInt;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (COM_ParseInt(holdBuf, &tokenInt))
+		{
+			SkipRestOfLine(holdBuf);
+			continue;
+		}
+
+		if ((tokenInt < 0) || (tokenInt > 10000 ))
+		{
+			gi.Printf(S_COLOR_YELLOW"WARNING: bad altfireopt in external weapon data '%d'\n", tokenInt);
+			continue;
+		}
+
+		weaponData[wpnParms.weaponNum].altFireOpt[i] = tokenInt;
+	}
+}
+
+//--------------------------------------------
+void WPN_TertiaryFireOptions(const char **holdBuf)
+{
+	int i;
+	int tokenInt;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (COM_ParseInt(holdBuf, &tokenInt))
+		{
+			SkipRestOfLine(holdBuf);
+			continue;
+		}
+
+		if ((tokenInt < 0) || (tokenInt > 10000 ))
+		{
+			gi.Printf(S_COLOR_YELLOW"WARNING: bad tertiaryFireOpt in external weapon data '%d'\n", tokenInt);
+			continue;
+		}
+
+		weaponData[wpnParms.weaponNum].tertiaryFireOpt[i] = tokenInt;
+	}
+}
+
+//--------------------------------------------
 static void WP_ParseParms(const char *buffer)
 {
 	const char	*holdBuf;
@@ -1660,6 +1851,7 @@ void WP_LoadWeaponParms (void)
 		weaponData[i].altSplashDamage = defaultAltSplashDamage[i];
 		weaponData[i].splashRadius = defaultSplashRadius[i];
 		weaponData[i].altSplashRadius = defaultAltSplashRadius[i];
+		defaultDamageCopy[i] = defaultDamage[i];
 	}
 
 	WP_ParseParms(buffer);

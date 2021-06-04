@@ -85,6 +85,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	BASEGAME "base"
 #define OPENJKGAME "SWGL"
 
+#define SHOTS_TOGGLEBIT 0x00000080
+
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #define BASE_SAVE_COMPAT // this is defined to disable/fix some changes that break save compatibility
@@ -1924,6 +1926,11 @@ public:
 
 	int  		PlayerEffectFlags;
 #endif // !JK2_MODE
+	int			shotsRemaining;
+
+	qboolean	tertiaryMode;
+	int8_t		firing_attack;
+	int8_t		prev_firing_attack;
 
 
 	void sg_export(
@@ -2096,6 +2103,10 @@ public:
 		saved_game.write<int32_t>(electrifyTime);
 		saved_game.write<int32_t>(stasisTime);
 #endif // !JK2_MODE
+		saved_game.write<int32_t>(shotsRemaining);
+		saved_game.write<int32_t>(tertiaryMode);
+		saved_game.write<int8_t>(firing_attack);
+		saved_game.write<int8_t>(prev_firing_attack);
 	}
 
 	void sg_import(
@@ -2268,6 +2279,10 @@ public:
 		saved_game.read<int32_t>(electrifyTime);
 		saved_game.read<int32_t>(stasisTime);
 #endif // !JK2_MODE
+		saved_game.read<int32_t>(shotsRemaining);
+		saved_game.read<int32_t>(tertiaryMode);
+		saved_game.read<int8_t>(firing_attack);
+		saved_game.read<int8_t>(prev_firing_attack);
 	}
 }; // PlayerStateBase
 

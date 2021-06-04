@@ -186,3 +186,42 @@ void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid)
 {
 	theFxScheduler.PlayEffect(cgs.effects.cloneFleshImpactEffect, origin, normal);
 }
+
+/*
+-------------------------
+FX_CloneWeaponHitWall
+-------------------------
+*/
+void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal)
+{
+	theFxScheduler.PlayEffect("dc17/explosion", origin, normal);
+}
+
+/*
+---------------------------
+FX_CloneCommandoHitPlayer
+---------------------------
+*/
+
+void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid)
+{
+	theFxScheduler.PlayEffect("dc17/explosion", origin, normal);
+}
+
+/*
+---------------------------
+FX_CloneExplosionProjectileThink
+---------------------------
+*/
+void FX_CloneCommandoProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon)
+{
+	vec3_t forward;
+
+	if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
+	{
+		forward[2] = 1.0f;
+	}
+
+	theFxScheduler.PlayEffect("dc17/shot", cent->lerpOrigin, forward );
+}
+
