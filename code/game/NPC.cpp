@@ -2378,12 +2378,20 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	VectorCopy( self->client->ps.moveDir, oldMoveDir );
 	VectorClear( self->client->ps.moveDir );
 	// see if NPC ai is frozen
-	if ( debugNPCFreeze->integer || (NPC->svFlags&SVF_ICARUS_FREEZE) )
+	if ( debugNPCFreeze->integer || (NPC->svFlags&SVF_ICARUS_FREEZE) || (self && self->client && self->client->ps.stasisTime > level.time))
 	{
+		self->inStasis = qtrue;
 		NPC_UpdateAngles( qtrue, qtrue );
 		ClientThink(self->s.number, &ucmd);
 		VectorCopy(self->s.origin, self->s.origin2 );
 		return;
+	}
+	else
+	{
+		if(self->inStasis)
+			self->s.loopSound = 0;
+
+		self->inStasis = qfalse;
 	}
 
 	if(!self || !self->NPC || !self->client)
@@ -2627,6 +2635,11 @@ void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags, int 
 	}
 
 	if ( !setAnimParts )
+	{
+		return;
+	}
+
+	if (ent->client->ps.stasisTime > level.time)
 	{
 		return;
 	}

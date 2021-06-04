@@ -121,6 +121,24 @@ static void IN_UseGivenForce(void)
 	case FP_SEE:
 		genCmdNum = GENCMD_FORCE_SEEING;
 		break;
+	case FP_STASIS:
+		genCmdNum = GENCMD_FORCE_STASIS;
+		break;
+	case FP_BLAST:
+		genCmdNum = GENCMD_FORCE_BLAST;
+		break;
+	case FP_GRASP:
+		genCmdNum = GENCMD_FORCE_GRASP;
+		break;
+	case FP_DESTRUCTION:
+		genCmdNum = GENCMD_FORCE_DESTRUCTION;
+		break;
+	case FP_LIGHTNING_STRIKE:
+		genCmdNum = GENCMD_FORCE_LIGHTNING_STRIKE;
+		break;
+	case FP_FEAR:
+		genCmdNum = GENCMD_FORCE_FEAR;
+		break;
 #endif // !JK2_MODE
 
 	case FP_HEAL:

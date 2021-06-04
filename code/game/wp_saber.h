@@ -114,6 +114,11 @@ enum
 #define	FORCE_GRIP_DIST			512.0f//FIXME: vary by power level?
 #define	FORCE_GRIP_DIST_SQUARED	(FORCE_GRIP_DIST*FORCE_GRIP_DIST)
 
+#define	FORCE_STASIS_DIST_HIGH		2048.0f
+#define	FORCE_STASIS_DIST_LOW		1024.0f
+#define	FORCE_STASIS_DIST_SQUARED_LOW	(FORCE_STASIS_DIST_LOW*FORCE_STASIS_DIST_LOW)
+#define	FORCE_STASIS_DIST_SQUARED_HIGH	(FORCE_STASIS_DIST_HIGH*FORCE_STASIS_DIST_HIGH)
+
 #define	FORCE_DRAIN_DIST	64.0f//FIXME: vary by power level?
 #define	FORCE_DRAIN_DIST_SQUARED	(FORCE_DRAIN_DIST*FORCE_DRAIN_DIST)
 
@@ -194,7 +199,7 @@ enum
 
 #define FORCE_JUMP_CHARGE_TIME 1000.0f	//Force jump reaches maximum power in one second
 
-#define FORCE_POWERS_ROSH_FROM_TWINS ((1<<FP_SPEED)|(1<<FP_GRIP)|(1<<FP_RAGE)|(1<<FP_SABERTHROW))
+#define FORCE_POWERS_ROSH_FROM_TWINS ((1<<FP_SPEED)|(1<<FP_GRIP)|(1<<FP_RAGE)|(1<<FP_SABERTHROW)|(1<<FP_GRASP))
 
 extern void WP_InitForcePowers( gentity_t *ent );
 extern int WP_GetVelocityForForceJump( gentity_t *self, vec3_t jumpVel, usercmd_t *ucmd );

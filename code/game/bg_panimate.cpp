@@ -4576,6 +4576,7 @@ void PM_SaberStartTransAnim( int anim, int entNum, int saberOffenseLevel, float 
 }
 */
 extern qboolean		player_locked;
+extern qboolean PlayerAffectedByStasis(void);
 extern qboolean		MatrixMode;
 float PM_GetTimeScaleMod( gentity_t *gent )
 {
@@ -4586,7 +4587,7 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 			&& gent->client->ps.legsAnim != BOTH_FORCELONGLEAP_ATTACK
 			&& gent->client->ps.legsAnim != BOTH_FORCELONGLEAP_LAND )
 		{
-			if ( gent && gent->s.clientNum == 0 && !player_locked && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
+			if ( gent && gent->s.clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
 				return (1.0 / g_timescale->value);
 			}
@@ -5066,6 +5067,11 @@ void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blen
 		return;
 	}
 
+	if (pm->ps->stasisTime > level.time)
+	{
+		return;
+	}
+
 	if ( !pm->gent || pm->gent->health > 0 )
 	{//don't lock anims if the guy is dead
 		if ( pm->ps->torsoAnimTimer
@@ -5164,6 +5170,11 @@ void PM_TorsoAnimLightsaber()
 	// *********************************************************
 	if ( pm->ps->forcePowersActive&(1<<FP_GRIP) && pm->ps->forcePowerLevel[FP_GRIP] > FORCE_LEVEL_1 )
 	{//holding an enemy aloft with force-grip
+		return;
+	}
+
+	if (pm->ps->forcePowersActive&(1 << FP_GRASP) && pm->ps->forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+	{//holding an enemy aloft with force-grasp
 		return;
 	}
 
@@ -5634,6 +5645,10 @@ void PM_TorsoAnimation( void )
 		{
 			if ( pm->ps->forcePowersActive&(1<<FP_GRIP) && pm->ps->forcePowerLevel[FP_GRIP] > FORCE_LEVEL_1 )
 			{//holding an enemy aloft with force-grip
+				return;
+			}
+			if (pm->ps->forcePowersActive&(1 << FP_GRASP) && pm->ps->forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+			{//holding an enemy aloft with force-grasp
 				return;
 			}
 			if ( pm->ps->forcePowersActive&(1<<FP_LIGHTNING) && pm->ps->forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )

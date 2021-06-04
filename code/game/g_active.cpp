@@ -107,6 +107,8 @@ extern qboolean PM_LockedAnim( int anim );
 extern qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *defender, sabersLockMode_t lockMode );
 extern qboolean G_JediInNormalAI( gentity_t *ent );
 
+extern qboolean PlayerAffectedByStasis(void);
+
 extern bool		in_camera;
 extern qboolean	player_locked;
 extern qboolean	stop_icarus;
@@ -2550,7 +2552,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 	if ( ent->client->ps.saberMove == LS_A_LUNGE )
 	{//can't move during lunge
 		ucmd->rightmove = ucmd->upmove = 0;
-		if ( ent->client->ps.legsAnimTimer > 500 && (ent->s.number || !player_locked) )
+		if ( ent->client->ps.legsAnimTimer > 500 && (ent->s.number || (!player_locked && !PlayerAffectedByStasis())) )
 		{
 			ucmd->forwardmove = 127;
 		}
@@ -2581,7 +2583,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 
 	if ( ent->client->ps.saberMove == LS_A_JUMP_T__B_ )
 	{//can't move during leap
-		if ( ent->client->ps.groundEntityNum != ENTITYNUM_NONE || (!ent->s.number && player_locked) )
+		if ( ent->client->ps.groundEntityNum != ENTITYNUM_NONE || (!ent->s.number && (player_locked || PlayerAffectedByStasis())) )
 		{//hit the ground
 			ucmd->forwardmove = 0;
 		}
@@ -3891,6 +3893,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			|| (ucmd->buttons&BUTTON_FORCEGRIP)
 			|| (ucmd->buttons&BUTTON_FORCE_LIGHTNING)
 			|| (ucmd->buttons&BUTTON_FORCE_DRAIN)
+			|| (ucmd->buttons&BUTTON_FORCEGRASP)
 			|| ucmd->upmove )
 		{//stop the anim
 			if ( ent->client->ps.legsAnim == BOTH_MEDITATE
@@ -3967,7 +3970,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 
 	if ( PM_InRoll( &ent->client->ps ) )
 	{
-		if ( ent->s.number >= MAX_CLIENTS || !player_locked )
+		if ( ent->s.number >= MAX_CLIENTS || (!player_locked && !PlayerAffectedByStasis()) )
 		{
 			//FIXME: NPCs should try to face us during this roll, so they roll around us...?
 			PM_CmdForRoll( &ent->client->ps, ucmd );
@@ -3995,7 +3998,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			{//invalid now
 				VectorClear( ent->client->ps.moveDir );
 			}
-			if ( ent->s.number || !player_locked )
+			if ( ent->s.number || (!player_locked && !PlayerAffectedByStasis()) )
 			{
 				switch ( ent->client->ps.legsAnim )
 				{
@@ -4027,7 +4030,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			{//invalid now
 				VectorClear( ent->client->ps.moveDir );
 			}
-			if ( ent->s.number || !player_locked )
+			if ( ent->s.number || (!player_locked && !PlayerAffectedByStasis()) )
 			{
 				if ( ent->client->ps.legsAnimTimer > 450 )
 				{
@@ -4698,6 +4701,12 @@ extern void ForceSeeing(gentity_t *ent);
 extern void ForceTelepathy(gentity_t *ent);
 extern void ForceAbsorb(gentity_t *ent);
 extern void ForceHeal(gentity_t *ent);
+extern void ForceStasis(gentity_t *ent);
+extern void ForceBlast(gentity_t *ent);
+extern void ForceDestruction(gentity_t *ent);
+extern void ForceGrasp(gentity_t *ent);
+extern void ForceLightningStrike(gentity_t *ent);
+extern void ForceFear(gentity_t *ent);
 static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 {
 	switch(cmd) {
@@ -4738,6 +4747,24 @@ static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 		break;
 	case GENCMD_FORCE_SEEING:
 		ForceSeeing(ent);
+		break;
+	case GENCMD_FORCE_STASIS:
+		ForceStasis(ent);
+		break;
+	case GENCMD_FORCE_BLAST:
+		ForceBlast(ent);
+		break;
+	case GENCMD_FORCE_GRASP:
+		ForceGrasp(ent);
+		break;
+	case GENCMD_FORCE_DESTRUCTION:
+		ForceDestruction(ent);
+		break;
+	case GENCMD_FORCE_LIGHTNING_STRIKE:
+		ForceLightningStrike(ent);
+		break;
+	case GENCMD_FORCE_FEAR:
+		ForceFear(ent);
 		break;
 	}
 }
@@ -4895,6 +4922,7 @@ extern cvar_t	*g_skippingcin;
 		}
 
 		if ( (player_locked
+			|| PlayerAffectedByStasis()
 				|| (ent->client->ps.eFlags&EF_FORCE_GRIPPED)
 				|| (ent->client->ps.eFlags&EF_FORCE_DRAINED)
 				|| (ent->client->ps.legsAnim==BOTH_PLAYER_PA_1)
@@ -4902,7 +4930,7 @@ extern cvar_t	*g_skippingcin;
 				|| (ent->client->ps.legsAnim==BOTH_PLAYER_PA_3))
 			&& ent->client->ps.pm_type < PM_DEAD ) // unless dead
 		{//lock out player control
-			if ( !player_locked )
+			if ((!player_locked && !PlayerAffectedByStasis()))
 			{
 				VectorClearM( ucmd->angles );
 			}

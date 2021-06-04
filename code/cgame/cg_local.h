@@ -515,11 +515,11 @@ Ghoul2 Insert End
 } cg_t;
 
 
-#define MAX_SHOWPOWERS 12
+#define MAX_SHOWPOWERS 18
 extern int showPowers[MAX_SHOWPOWERS];
 extern const char *showPowersName[MAX_SHOWPOWERS];
 extern int force_icons[NUM_FORCE_POWERS];
-#define MAX_DPSHOWPOWERS 16
+#define MAX_DPSHOWPOWERS 22
 
 //==============================================================================
 
@@ -1125,6 +1125,21 @@ void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
 void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
 void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
 void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_DestructionProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_DestructionHitWall(vec3_t origin, vec3_t normal);
+void FX_DestructionHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_BlastProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_BlastHitWall(vec3_t origin, vec3_t normal);
+void FX_BlastHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_StrikeProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_StrikeHitWall(vec3_t origin, vec3_t normal);
+void FX_StrikeHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+
+void FX_LightningStrike(vec3_t start, vec3_t end);
 
 void FX_DisruptorMainShot( vec3_t start, vec3_t end );
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean full );

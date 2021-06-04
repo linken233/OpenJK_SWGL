@@ -758,6 +758,18 @@ typedef enum
 	FP_ABSORB,//duration - protect against dark force powers (grip, lightning, drain - maybe push/pull, too?)
 	FP_DRAIN,//hold/duration - drain force power for health
 	FP_SEE,//duration - detect/see hidden enemies
+	
+
+	// SWGL Powers
+	// Light Side
+	FP_STASIS,//Duration
+	FP_BLAST,//Instant
+	FP_GRASP,//hold/duration
+
+	// Dark Side
+	FP_DESTRUCTION,
+	FP_LIGHTNING_STRIKE,
+	FP_FEAR,
 #endif // !JK2_MODE
 
 	NUM_FORCE_POWERS
@@ -1859,6 +1871,7 @@ public:
 	float		forceJumpZStart;					//So when you land, you don't get hurt as much
 	float		forceJumpCharge;					//you're current forceJump charge-up level, increases the longer you hold the force jump button down
 	int			forceGripEntityNum;					//what entity I'm gripping
+	int			forceStasisEntityNum;
 	vec3_t		forceGripOrg;						//where the gripped ent should be lifted to
 
 #ifndef JK2_MODE
@@ -1904,6 +1917,12 @@ public:
 	//NOTE: not really used in SP, just for Fighter Vehicle damage stuff
 	int			brokenLimbs;
 	int			electrifyTime;
+	int			stasisTime;
+	int			stasisJediTime;
+	int			stunDamage;				// Amount of stun damage to be given
+	int			stunTime;				// When to apply stun damage
+
+	int  		PlayerEffectFlags;
 #endif // !JK2_MODE
 
 
@@ -2037,6 +2056,7 @@ public:
 		saved_game.write<float>(forceJumpZStart);
 		saved_game.write<float>(forceJumpCharge);
 		saved_game.write<int32_t>(forceGripEntityNum);
+		saved_game.write<int32_t>(forceStasisEntityNum);
 		saved_game.write<float>(forceGripOrg);
 
 #ifndef JK2_MODE
@@ -2074,6 +2094,7 @@ public:
 		saved_game.write<int32_t>(vehTurnaroundTime);
 		saved_game.write<int32_t>(brokenLimbs);
 		saved_game.write<int32_t>(electrifyTime);
+		saved_game.write<int32_t>(stasisTime);
 #endif // !JK2_MODE
 	}
 
@@ -2207,6 +2228,7 @@ public:
 		saved_game.read<float>(forceJumpZStart);
 		saved_game.read<float>(forceJumpCharge);
 		saved_game.read<int32_t>(forceGripEntityNum);
+		saved_game.read<int32_t>(forceStasisEntityNum);
 		saved_game.read<float>(forceGripOrg);
 
 #ifndef JK2_MODE
@@ -2244,6 +2266,7 @@ public:
 		saved_game.read<int32_t>(vehTurnaroundTime);
 		saved_game.read<int32_t>(brokenLimbs);
 		saved_game.read<int32_t>(electrifyTime);
+		saved_game.read<int32_t>(stasisTime);
 #endif // !JK2_MODE
 	}
 }; // PlayerStateBase
@@ -2272,6 +2295,8 @@ using playerState_t = PlayerStateBase<saberInfo_t>;
 
 #define	BUTTON_FORCE_FOCUS	256			// any key whatsoever
 
+#define BUTTON_FORCEGRASP	512			//
+
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set
 
@@ -2290,6 +2315,12 @@ typedef enum
 	GENCMD_FORCE_ABSORB,
 	GENCMD_FORCE_DRAIN,
 	GENCMD_FORCE_SEEING,
+	GENCMD_FORCE_STASIS,
+	GENCMD_FORCE_BLAST,
+	GENCMD_FORCE_GRASP,	
+	GENCMD_FORCE_DESTRUCTION,
+	GENCMD_FORCE_LIGHTNING_STRIKE,
+	GENCMD_FORCE_FEAR,
 } genCmds_t;
 
 
@@ -2759,6 +2790,13 @@ typedef enum
 	eForceReload_ALL
 
 } ForceReload_e;
+
+typedef enum
+{
+	PEF_BURNING,
+	PEF_FREEZING,
+
+} PlayerEffectFlags_e;
 
 qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte );
 void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );

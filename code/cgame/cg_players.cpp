@@ -5040,6 +5040,19 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 		cgi_R_AddRefEntityToScene( ent);
 	}
+
+	if (cent->gent->client->ps.stasisTime > (cg.time ? cg.time : level.time))
+	{ //stasis is represented by purple..
+		ent->shaderRGBA[0] = 255;
+		ent->shaderRGBA[1] = 0;
+		ent->shaderRGBA[2] = 255;
+		ent->shaderRGBA[3] = 254;
+		
+		ent->renderfx &= ~RF_RGB_TINT;
+		ent->customShader = cgs.media.playerShieldDamage;
+
+		cgi_R_AddRefEntityToScene(ent);
+	}
 }
 
 
@@ -8460,6 +8473,14 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 			{//doing the gripping
 				//FIXME: effect?
 				CG_ForcePushBlur( cent->gent->client->renderInfo.handLPoint, qtrue );
+			}
+
+			//This is now being done via an effect and the animevents.cfg
+			//if ( cent->gent->client->ps.powerups[PW_FORCE_PUSH] > cg.time ||
+			if ((cent->gent->client->ps.forcePowersActive & (1 << FP_GRASP)))
+			{//doing the gripping
+				//FIXME: effect?
+				CG_ForcePushBlur(cent->gent->client->renderInfo.handLPoint, qtrue);
 			}
 
 			if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED )

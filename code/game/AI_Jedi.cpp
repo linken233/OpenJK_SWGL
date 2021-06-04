@@ -47,6 +47,8 @@ extern void ForceHeal( gentity_t *self );
 extern void ForceRage( gentity_t *self );
 extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
+extern void ForceStasis(gentity_t *self);
+extern void ForceDestruction(gentity_t *self);
 extern qboolean ForceDrain2( gentity_t *self );
 extern int WP_MissileBlockForBlock( int saberBlock );
 extern qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -185,6 +187,12 @@ void Jedi_PlayBlockedPushSound( gentity_t *self )
 
 void Jedi_PlayDeflectSound( gentity_t *self )
 {
+
+
+	if (self->client->ps.stasisTime > level.time)
+	{
+		return;
+	}
 	if ( !self->s.number )
 	{
 		G_AddVoiceEvent( self, Q_irand( EV_DEFLECT1, EV_DEFLECT3 ), 3000 );
@@ -1381,6 +1389,11 @@ static void Jedi_CombatDistance( int enemy_dist )
 	{//when gripping, don't move
 		return;
 	}
+	if (NPC->client->ps.forcePowersActive&(1 << FP_GRASP) &&
+		NPC->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+	{//when grasping, don't move
+		return;
+	}
 	else if ( !TIMER_Done( NPC, "gripping" ) )
 	{//stopped gripping, clear timers just in case
 		TIMER_Set( NPC, "gripping", -level.time );
@@ -1752,6 +1765,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			NPC->enemy->client->ps.saberInFlight && NPC->enemy->client->ps.saber[0].Active() && //enemy throwing saber
 			!NPC->client->ps.weaponTime && //I'm not busy
 			WP_ForcePowerAvailable( NPC, FP_GRIP, 0 ) && //I can use the power
+			WP_ForcePowerAvailable(NPC, FP_GRASP, 0) && //I can use the power
 			!Q_irand( 0, 10 ) && //don't do it all the time, averages to 1 check a second
 			Q_irand( 0, 6 ) < g_spskill->integer && //more likely on harder diff
 			Q_irand( RANK_CIVILIAN, RANK_CAPTAIN ) < NPCInfo->rank //more likely against harder enemies
@@ -1778,7 +1792,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 		}
 		else
 		{
-			if ( NPC->enemy && NPC->enemy->client && (NPC->enemy->client->ps.forcePowersActive&(1<<FP_GRIP)) )
+			if ( NPC->enemy && NPC->enemy->client && ((NPC->enemy->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->enemy->client->ps.forcePowersActive&(1 << FP_GRASP)))
 			{//They're choking someone, probably an ally, run at them and do some sort of attack
 				if ( NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE )
 				{//they're on the ground, so advance
@@ -1852,7 +1866,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						)
 						&& (!Q_irand( 0, 1 ) || NPC->s.weapon != WP_SABER) )
 					{
-						if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) )
+						if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							//force pull the guy to me!
 							//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
@@ -1865,7 +1879,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							}
 						}
 						else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 )
-							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceLightning( NPC );
 							if ( NPC->client->ps.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1878,15 +1892,51 @@ static void Jedi_CombatDistance( int enemy_dist )
 						else if ( NPC->health < NPC->max_health * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
 							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 )
-							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceDrain2( NPC );
 							NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_spskill->integer*500) );
 							TIMER_Set( NPC, "draining", NPC->client->ps.weaponTime );
 							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
+
+						else if (WP_ForcePowerUsable(NPC, FP_GRASP, 0)
+							&& NPC->enemy && InFOV(NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							//taunt
+							if (TIMER_Done(NPC, "chatter") && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time)
+							{
+								G_AddVoiceEvent(NPC, Q_irand(EV_TAUNT1, EV_TAUNT3), 3000);
+								jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
+								if ((NPCInfo->aiFlags&NPCAI_ROSH))
+								{
+									TIMER_Set(NPC, "chatter", 6000);
+								}
+								else
+								{
+									TIMER_Set(NPC, "chatter", 3000);
+								}
+							}
+
+							//grip
+							TIMER_Set(NPC, "gripping", 3000);
+							TIMER_Set(NPC, "attackDelay", 3000);
+						}
+
+						else if (WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							ForceStasis(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							ForceDestruction(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
 						else if ( WP_ForcePowerUsable( NPC, FP_GRIP, 0 )
-							&& NPC->enemy && InFOV( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30 ) )
+							&& NPC->enemy && InFOV( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30 ) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							//taunt
 							if ( TIMER_Done( NPC, "chatter" ) && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time )
@@ -1906,6 +1956,28 @@ static void Jedi_CombatDistance( int enemy_dist )
 							//grip
 							TIMER_Set( NPC, "gripping", 3000 );
 							TIMER_Set( NPC, "attackDelay", 3000 );
+						}
+						else if (WP_ForcePowerUsable(NPC, FP_GRASP, 0)
+							&& NPC->enemy && InFOV(NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							//taunt
+							if (TIMER_Done(NPC, "chatter") && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time)
+							{
+								G_AddVoiceEvent(NPC, Q_irand(EV_TAUNT1, EV_TAUNT3), 3000);
+								jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
+								if ((NPCInfo->aiFlags&NPCAI_ROSH))
+								{
+									TIMER_Set(NPC, "chatter", 6000);
+								}
+								else
+								{
+									TIMER_Set(NPC, "chatter", 3000);
+								}
+							}
+
+							//grip
+							TIMER_Set(NPC, "gripping", 3000);
+							TIMER_Set(NPC, "attackDelay", 3000);
 						}
 						else
 						{
@@ -2217,6 +2289,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			{
 				self->client->ps.forceJumpCharge = 320;//FIXME: calc this intelligently?
 				WP_ForcePowerStop( self, FP_GRIP );
+				WP_ForcePowerStop(self, FP_GRASP);
 			}
 			return qtrue;
 		}
@@ -2303,6 +2376,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		}
 
 		WP_ForcePowerStop( self, FP_GRIP );
+		WP_ForcePowerStop(self, FP_GRASP);
 		if ( !self->enemy && G_ValidEnemy( self, shooter) )
 		{
 			G_SetEnemy( self, shooter );
@@ -3596,6 +3670,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	//stop gripping
 	TIMER_Set( self, "gripping", -level.time );
 	WP_ForcePowerStop( self, FP_GRIP );
+	WP_ForcePowerStop(self, FP_GRASP);
 	//stop draining
 	TIMER_Set( self, "draining", -level.time );
 	WP_ForcePowerStop( self, FP_DRAIN );
@@ -4654,6 +4729,13 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 
 	if ( NPC->client->ps.forcePowersActive & (1<<FP_GRIP) &&
 		NPC->client->ps.forcePowerLevel[FP_GRIP] > FORCE_LEVEL_1 )
+	{//don't update?
+		NPCInfo->desiredPitch = NPC->client->ps.viewangles[PITCH];
+		NPCInfo->desiredYaw = NPC->client->ps.viewangles[YAW];
+		return;
+	}
+	if (NPC->client->ps.forcePowersActive & (1 << FP_GRASP) &&
+		NPC->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
 	{//don't update?
 		NPCInfo->desiredPitch = NPC->client->ps.viewangles[PITCH];
 		NPCInfo->desiredYaw = NPC->client->ps.viewangles[YAW];
@@ -5818,7 +5900,8 @@ static void Jedi_Combat( void )
 
 	if ( TIMER_Done( NPC, "allyJediDelay" ) )
 	{
-		if ( !(NPC->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
+		if ( (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
+			&& (!(NPC->client->ps.forcePowersActive&(1 << FP_GRASP)) || NPC->client->ps.forcePowerLevel[FP_GRASP] < FORCE_LEVEL_2))
 		{//not gripping
 			//If we can't get straight at him
 			if ( !Jedi_ClearPathToSpot( enemy_dest, NPC->enemy->s.number ) )
@@ -5963,7 +6046,8 @@ static void Jedi_Combat( void )
 	if ( TIMER_Done( NPC, "allyJediDelay" ) )
 	{
 		if ( ( !NPC->client->ps.saberInFlight || (NPC->client->ps.saberAnimLevel == SS_DUAL && NPC->client->ps.saber[1].Active()) )
-			&& (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP))||NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2) )
+			&& (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP))||NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2) 
+			&& (!(NPC->client->ps.forcePowersActive&(1 << FP_GRASP)) || NPC->client->ps.forcePowerLevel[FP_GRASP] < FORCE_LEVEL_2))
 		{//not throwing saber or using force grip
 			//see if we can attack
 			if ( !Jedi_AttackDecide( enemy_dist ) )
@@ -6085,6 +6169,7 @@ void NPC_Jedi_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, con
 	self->NPC->enemyCheckDebounceTime = 0;
 
 	WP_ForcePowerStop( self, FP_GRIP );
+	WP_ForcePowerStop(self, FP_GRASP);
 
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
@@ -7437,6 +7522,7 @@ qboolean Jedi_InSpecialMove( void )
 					WP_ForcePowerStop( NPC, FP_LIGHTNING );
 					WP_ForcePowerStop( NPC, FP_DRAIN );
 					WP_ForcePowerStop( NPC, FP_GRIP );
+					WP_ForcePowerStop(NPC, FP_GRASP);
 					NPC_FaceEntity( NPC->client->leader, qtrue );
 					return qtrue;
 				}

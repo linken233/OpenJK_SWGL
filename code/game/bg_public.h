@@ -173,6 +173,9 @@ void Pmove( pmove_t *pmove );
 #define SETANIM_FLAG_RESTART	4//Allow restarting the anim if playing the same one (weapon fires)
 #define SETANIM_FLAG_HOLDLESS	8//Set the new timer
 
+//Switch to this animation and keep repeating this animation while updating its timers
+#define	SETANIM_AFLAG_PACE (SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD | SETANIM_FLAG_RESTART)
+
 #define SETANIM_BLEND_DEFAULT	100
 
 void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime=SETANIM_BLEND_DEFAULT);
@@ -258,6 +261,8 @@ typedef enum {
 	PW_INVINCIBLE,
 	PW_FORCE_PUSH,
 	PW_FORCE_PUSH_RHAND,
+
+	PW_FORCE_PROJECTILE,
 
 	PW_NUM_POWERUPS
 } powerup_t;
@@ -450,6 +455,8 @@ typedef enum {
 
 	EV_DEBUG_LINE,
 	EV_KOTHOS_BEAM,
+
+	EV_LIGHTNING_STRIKE,
 
 	EV_NUM_ENTITY_EVENTS
 } entity_event_t;
@@ -650,6 +657,10 @@ typedef enum {
 	MOD_SUICIDE,
 	MOD_TRIGGER_HURT,
 	MOD_GAS,
+
+	MOD_DESTRUCTION,
+	MOD_BLAST,
+	MOD_STRIKE,
 
 	NUM_MODS,
 

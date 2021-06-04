@@ -469,9 +469,33 @@ static void IT_Tag(const char **holdBuf)
 	{
 		tag = FP_LIGHTNING;
 	}
-	else if (!Q_stricmp(tokenStr,"FP_SABERTHROW"))
+	else if (!Q_stricmp(tokenStr, "FP_STASIS"))
 	{
-		tag = FP_SABERTHROW;
+	tag = FP_STASIS;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_BLAST"))
+	{
+	tag = FP_BLAST;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_GRASP"))
+	{
+	tag = FP_GRASP;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_LIGHTNING_STRIKE"))
+	{
+	tag = FP_LIGHTNING_STRIKE;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_DESTRUCTION"))
+	{
+	tag = FP_DESTRUCTION;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_LIGHTNING"))
+	{
+	tag = FP_LIGHTNING;
+	}
+	else if (!Q_stricmp(tokenStr,"FP_FEAR"))
+	{
+		tag = FP_FEAR;
 	}
 	else if (!Q_stricmp(tokenStr,"ITM_BATTERY_PICKUP"))
 	{

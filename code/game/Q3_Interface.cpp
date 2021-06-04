@@ -435,6 +435,12 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FORCE_ABSORB_LEVEL),
 	ENUM2STRING(SET_FORCE_DRAIN_LEVEL),
 	ENUM2STRING(SET_FORCE_SIGHT_LEVEL),
+	ENUM2STRING(SET_FORCE_STASIS_LEVEL),
+	ENUM2STRING(SET_FORCE_GRASP_LEVEL),
+	ENUM2STRING(SET_FORCE_BLAST_LEVEL),
+	ENUM2STRING(SET_FORCE_DESTRUCTION_LEVEL),
+	ENUM2STRING(SET_FORCE_FEAR_LEVEL),
+	ENUM2STRING(SET_FORCE_LIGHTNING_STRIKE_LEVEL),
 	ENUM2STRING(SET_SABER1_COLOR1),
 	ENUM2STRING(SET_SABER1_COLOR2),
 	ENUM2STRING(SET_SABER2_COLOR1),
@@ -9519,6 +9525,12 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_FORCE_RAGE_LEVEL:
 	case SET_FORCE_PROTECT_LEVEL:
 	case SET_FORCE_ABSORB_LEVEL:
+	case SET_FORCE_GRASP_LEVEL:
+	case SET_FORCE_BLAST_LEVEL:
+	case SET_FORCE_STASIS_LEVEL:
+	case SET_FORCE_DESTRUCTION_LEVEL:
+	case SET_FORCE_FEAR_LEVEL:
+	case SET_FORCE_LIGHTNING_STRIKE_LEVEL:
 	case SET_FORCE_DRAIN_LEVEL:
 	case SET_FORCE_SIGHT_LEVEL:
 		int_data = atoi((char *) data);
@@ -9608,6 +9620,24 @@ extern void Saboteur_Cloak( gentity_t *self );
 		break;
 	case SET_FORCE_LIGHTNING:
 		Q3_SetForcePower( entID, FP_LIGHTNING, (qboolean)(Q_stricmp("true",(char*)data)==0) );
+		break;
+	case SET_FORCE_STASIS:
+		Q3_SetForcePower(entID, FP_STASIS, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_GRASP:
+		Q3_SetForcePower(entID, FP_GRASP, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_BLAST:
+		Q3_SetForcePower(entID, FP_BLAST, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_DESTRUCTION:
+		Q3_SetForcePower(entID, FP_DESTRUCTION, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_FEAR:
+		Q3_SetForcePower(entID, FP_FEAR, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_LIGHTNING_STRIKE:
+		Q3_SetForcePower(entID, FP_LIGHTNING_STRIKE, (qboolean)(Q_stricmp("true", (char*)data) == 0));
 		break;
 	case SET_FORCE_SABERTHROW:
 		Q3_SetForcePower( entID, FP_SABERTHROW, (qboolean)(Q_stricmp("true",(char*)data)==0) );

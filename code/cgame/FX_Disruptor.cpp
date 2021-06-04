@@ -116,3 +116,15 @@ void FX_KothosBeam( vec3_t start, vec3_t end )
 						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ),
 						0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 }
+
+void FX_LightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+	G_PlayEffect("env\huge_lightning", start, end);
+}

@@ -119,6 +119,8 @@ extern void WP_SaberSwingSound( gentity_t *ent, int saberNum, swingType_t swingT
 extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel );
 extern qboolean WP_SaberStyleValidForSaber( gentity_t *ent, int saberAnimLevel );
 
+extern qboolean PlayerAffectedByStasis(void);
+
 qboolean PM_InKnockDown( playerState_t *ps );
 qboolean PM_InKnockDownOnGround( playerState_t *ps );
 qboolean PM_InGetUp( playerState_t *ps );
@@ -12870,7 +12872,7 @@ void PM_WeaponLightsaber(void)
 				{
 					if ( !MatrixMode )
 					{//Special test for Matrix Mode (tm)
-						if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+						if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 						{//player always fires at normal speed
 							addTime *= g_timescale->value;
 						}
@@ -14147,7 +14149,7 @@ static void PM_Weapon( void )
 		{
 			if ( !MatrixMode )
 			{//Special test for Matrix Mode (tm)
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{//player always fires at normal speed
 					addTime *= g_timescale->value;
 				}
@@ -14313,7 +14315,7 @@ static void PM_VehicleWeapon( void )
 		{
 			if ( !MatrixMode )
 			{//Special test for Matrix Mode (tm)
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{//player always fires at normal speed
 					addTime *= g_timescale->value;
 				}
@@ -14337,6 +14339,11 @@ extern void ForceRage( gentity_t *self );
 extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
 extern void ForceSeeing( gentity_t *self );
+extern void ForceStasis(gentity_t *self);
+extern void ForceBlast(gentity_t *self);
+extern void ForceDestruction(gentity_t *self);
+extern void ForceFear(gentity_t *self);
+extern void ForceLightningStrike(gentity_t *self);
 void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 {
 	if ( !ent )
@@ -14379,6 +14386,21 @@ void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 			case FP_SEE:		//duration - detect/see hidden enemies
 				ForceSeeing( ent );
 				break;
+			case FP_STASIS: // Instant
+				ForceStasis(ent);
+				break;
+			case FP_FEAR:
+				ForceFear(ent);
+				break;
+			case FP_DESTRUCTION:
+				ForceDestruction(ent);
+				break;
+			case FP_LIGHTNING_STRIKE:
+				ForceLightningStrike(ent);
+				break;
+			case FP_BLAST:
+				ForceBlast(ent);
+				break;
 			}
 		}
 		//these stay are okay to call every frame button is down
@@ -14386,6 +14408,9 @@ void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 		{
 		case FP_LEVITATION:
 			ucmd->upmove = 127;
+			break;
+		case FP_GRASP:
+			ucmd->buttons |= BUTTON_FORCEGRASP;
 			break;
 		case FP_GRIP:
 			ucmd->buttons |= BUTTON_FORCEGRIP;
@@ -14512,7 +14537,7 @@ void PM_SetSpecialMoveValues (void )
 		{
 			if ( !MatrixMode )
 			{
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{
 					pml.frametime *= (1.0f/g_timescale->value);
 				}
@@ -15248,12 +15273,16 @@ void Pmove( pmove_t *pmove )
 	else // TEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMP
 	{
 		// footstep events / legs animations
-		PM_Footsteps();
+		if (pm->ps->stasisTime < level.time) {
+			PM_Footsteps();
+		}
 	}
 	// torso animation
 	if ( !pVeh )
 	{//not riding a vehicle
-		PM_TorsoAnimation();
+		if (pm->ps->stasisTime < level.time) {
+			PM_TorsoAnimation();
+		}
 	}
 
 	// entering / leaving water splashes

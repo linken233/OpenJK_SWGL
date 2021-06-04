@@ -3657,7 +3657,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	int			cliff_fall = 0;
 
 	//FIXME: somehow people are sometimes not completely dying???
-	if ( self->client->ps.pm_type == PM_DEAD && (meansOfDeath != MOD_SNIPER || (self->flags & FL_DISINTEGRATED)) )
+	if ( self->client->ps.pm_type == PM_DEAD && ((meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION) || (self->flags & FL_DISINTEGRATED)) )
 	{//do dismemberment/twitching
 		if ( self->client->NPC_class == CLASS_MARK1 )
 		{
@@ -4120,7 +4120,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		TossClientItems( self );
 	}
 
-	if ( meansOfDeath == MOD_SNIPER )
+	if ( meansOfDeath == MOD_SNIPER || meansOfDeath == MOD_DESTRUCTION )
 	{//I was disintegrated
 		if ( self->message )
 		{//I was holding a key
@@ -4193,6 +4193,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			WP_StopForceHealEffects( self );
 		}
 	}
+	self->client->ps.stasisTime = 0;
 	VectorCopy( self->currentAngles, self->client->ps.viewangles );
 	//FACING==========================================================
 	if ( player && player->client && player->client->ps.viewEntity == self->s.number )
@@ -4355,7 +4356,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{//drowned
 				anim = BOTH_DEATH17;
 			}
-			else if ( meansOfDeath != MOD_SNIPER //disintegrates
+			else if ( (meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION) //disintegrates
 				&& meansOfDeath != MOD_CONC_ALT )//does its own death throw
 			{
 				cliff_fall = G_CheckLedgeDive( self, 128, self->client->ps.velocity, qtrue, qfalse );
@@ -4546,7 +4547,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				self->NPC->timeOfDeath = level.time + 10000;
 			}
 		}
-		else if ( meansOfDeath == MOD_SNIPER )
+		else if ( meansOfDeath == MOD_SNIPER 
+			|| (meansOfDeath == MOD_DESTRUCTION && !Q_irand(0,2)))
 		{
 			gentity_t	*tent;
 			vec3_t		spot;
@@ -4596,7 +4598,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				&& meansOfDeath!=MOD_LASERTRIP
 				&& meansOfDeath!=MOD_LASERTRIP_ALT
 				&& meansOfDeath!=MOD_EXPLOSIVE
-				&& meansOfDeath!=MOD_EXPLOSIVE_SPLASH )
+				&& meansOfDeath!=MOD_EXPLOSIVE_SPLASH 
+				&& meansOfDeath!= MOD_DESTRUCTION)
 			{//no sound when killed by headshot (explosions don't count)
 				G_AlertTeam( self, attacker, 512, 0 );
 				if ( gi.VoiceVolume[self->s.number] )
@@ -5141,7 +5144,8 @@ void G_CheckKnockdown( gentity_t *targ, gentity_t *attacker, vec3_t newDir, int 
 			&&mod!=MOD_LASERTRIP
 			&&mod!=MOD_LASERTRIP_ALT
 			&&mod!=MOD_EXPLOSIVE
-			&&mod!=MOD_EXPLOSIVE_SPLASH )
+			&&mod!=MOD_EXPLOSIVE_SPLASH
+			&&mod != MOD_DESTRUCTION)
 		{
 			return;
 		}
@@ -5485,7 +5489,8 @@ qboolean G_NonLocationSpecificDamage( int meansOfDeath )
 		|| meansOfDeath == MOD_FORCE_GRIP
 		|| meansOfDeath == MOD_KNOCKOUT
 		|| meansOfDeath == MOD_CRUSH
-		|| meansOfDeath == MOD_EXPLOSIVE_SPLASH )
+		|| meansOfDeath == MOD_EXPLOSIVE_SPLASH
+		|| meansOfDeath == MOD_DESTRUCTION)
 	{
 		return qtrue;
 	}
@@ -5583,7 +5588,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	if ( targ->health <= 0 && !targ->client )
 	{	// allow corpses to be disintegrated
-		if( mod != MOD_SNIPER || (targ->flags & FL_DISINTEGRATED) )
+		if( (mod != MOD_SNIPER && mod != MOD_DESTRUCTION) || (targ->flags & FL_DISINTEGRATED))
 		return;
 	}
 
@@ -5815,6 +5820,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				|| mod == MOD_LASERTRIP
 				|| mod == MOD_LASERTRIP_ALT
 				|| mod == MOD_EXPLOSIVE_SPLASH
+				|| mod == MOD_DESTRUCTION
 				|| mod == MOD_ENERGY_SPLASH
 				|| mod == MOD_SABER )
 			{//galak without shields takes quarter damage from explosives and lightsaber
@@ -5845,6 +5851,34 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		else if ( targ->s.weapon == WP_TURRET )
 		{
 			damage *= 6;// more damage to turret things
+		}
+
+		if (targ->s.number >= MAX_CLIENTS && mod == MOD_DESTRUCTION) //Destruction should do less damage to enemies
+		{
+			if (targ->s.weapon == WP_SABER && 
+				(targ->client->NPC_class == CLASS_KYLE
+				|| targ->client->NPC_class == CLASS_LUKE
+					|| targ->client->NPC_class == CLASS_TAVION
+					|| targ->client->NPC_class == CLASS_DESANN))
+			{
+				if (client)
+				{
+					switch (client->ps.forcePowerLevel[FP_SABER_DEFENSE])
+					{
+					case FORCE_LEVEL_3:
+						damage *= 0.4;
+						break;
+					case FORCE_LEVEL_2:
+						damage *= 0.6;
+						break;
+					case FORCE_LEVEL_1:
+						damage *= 0.8;
+						break;
+					default:
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -5971,6 +6005,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_EMPLACED:
 				case MOD_EXPLOSIVE:
 				case MOD_EXPLOSIVE_SPLASH:
+				case MOD_DESTRUCTION:
 				case MOD_SABER:
 				case MOD_DISRUPTOR:
 				case MOD_SNIPER:
@@ -6067,6 +6102,48 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			}
 		}
 		//absorb
+
+		if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
+		{
+			if (mod == MOD_DESTRUCTION)
+			{
+				switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
+				case FORCE_LEVEL_1:
+					damage *= 0.8f;
+					break;
+				case FORCE_LEVEL_2:
+					damage *= 0.6f;
+					break;
+				case FORCE_LEVEL_3:
+					damage *= 0.4f;
+					break;
+				default:
+					damage = 0;
+					break;
+				}
+			}
+		}
+
+			if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
+			{
+				if (mod == MOD_FORCE_LIGHTNING)
+				{
+					switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
+					case FORCE_LEVEL_1:
+						damage *= 0.9f;
+						break;
+					case FORCE_LEVEL_2:
+						damage *= 0.5f;
+						break;
+					case FORCE_LEVEL_3:
+						damage *= 0.25f;
+						break;
+					default:
+						damage = 0;
+						break;
+					}
+				}
+			}
 		/*
 		if ( (targ->client->ps.forcePowersActive & (1 << FP_ABSORB)) )
 		{

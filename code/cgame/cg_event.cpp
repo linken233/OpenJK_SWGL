@@ -544,6 +544,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin );
 		break;
 
+	case EV_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_LightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+
 	case EV_DISRUPTOR_SNIPER_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_SNIPER_SHOT");
 		FX_DisruptorAltShot( cent->currentState.origin2, cent->lerpOrigin, cent->gent->alt_fire );

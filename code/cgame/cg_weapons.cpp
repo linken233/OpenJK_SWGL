@@ -243,6 +243,18 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgs.effects.forceDrainWide	= theFxScheduler.RegisterEffect( "mp/drainwide" );
 		//cgs.effects.forceDrained	= theFxScheduler.RegisterEffect( "mp/drainhit");
 
+		cgs.effects.destructionProjectile = theFxScheduler.RegisterEffect("force/destruction");
+		cgs.effects.destructionHit = theFxScheduler.RegisterEffect("force/dest_explosion");
+		cgs.media.destructionSound = cgi_S_RegisterSound("sound/weapons/concussion/missleloop.wav");
+
+		cgs.effects.blastProjectile = theFxScheduler.RegisterEffect("repeater/alt_projectile");
+		cgs.effects.blastHit = theFxScheduler.RegisterEffect("force/blast");
+		cgs.media.blastSound = cgi_S_RegisterSound("sound/weapons/force/absorbloop.wav");
+
+		cgs.effects.strikeProjectile = theFxScheduler.RegisterEffect("env/huge_lightning");
+		cgs.effects.strikeHit = theFxScheduler.RegisterEffect("env/small_fire_blue");
+		cgs.media.strikeSound = cgi_S_RegisterSound("sound/weapons/explosions/explode5.wav");
+
 		//saber sounds
 		//cgi_S_RegisterSound( "sound/weapons/saber/saberon.wav" );
 		//cgi_S_RegisterSound( "sound/weapons/saber/enemy_saber_on.wav" );
@@ -3053,6 +3065,13 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		FX_BowcasterHitWall( origin, dir );
 		break;
 
+	case WP_DISRUPTOR:
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_StrikeHitWall(origin, dir);
+		}
+		break;
+
 	case WP_REPEATER:
 		if ( altFire )
 		{
@@ -3086,11 +3105,26 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		break;
 
 	case WP_ROCKET_LAUNCHER:
-		FX_RocketHitWall( origin, dir );
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_BlastHitWall(origin, dir);
+		}
+		else
+		{
+			FX_RocketHitWall(origin, dir);
+		}
+
 		break;
 
 	case WP_CONCUSSION:
-		FX_ConcHitWall( origin, dir );
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_DestructionHitWall(origin, dir);
+		}
+		else
+		{
+			FX_ConcHitWall(origin, dir);
+		}
 		break;
 
 	case WP_THERMAL:
@@ -3263,6 +3297,13 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		FX_BowcasterHitPlayer( origin, dir, humanoid );
 		break;
 
+	case WP_DISRUPTOR:
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_StrikeHitWall(origin, dir);
+		}
+		break;
+
 	case WP_REPEATER:
 		if ( altFire )
 		{
@@ -3300,11 +3341,25 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_ROCKET_LAUNCHER:
-		FX_RocketHitPlayer( origin, dir, humanoid );
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_BlastHitWall(origin, dir);
+		}
+		else
+		{
+			FX_RocketHitPlayer(origin, dir, humanoid);
+		}
 		break;
 
 	case WP_CONCUSSION:
-		FX_ConcHitPlayer( origin, dir, humanoid );
+		if (cent->currentState.powerups & (1 << PW_FORCE_PROJECTILE))
+		{
+			FX_DestructionHitPlayer(origin, dir, humanoid);
+		}
+		else
+		{
+			FX_ConcHitPlayer(origin, dir, humanoid);
+		}
 		break;
 
 	case WP_THERMAL:

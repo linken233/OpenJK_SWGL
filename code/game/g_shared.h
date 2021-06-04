@@ -1165,6 +1165,16 @@ Ghoul2 Insert End
 	team_t		noDamageTeam;
 
 // Ghoul2 Animation info
+	short			headModel;
+	short			headRootBone;
+	short			headMotionBone;
+	short			headCraniumBone;
+	short			headCervicalBone;
+	short			headThoracicBone;
+	short			headUpperLumbarBone;
+	short			headLowerLumbarBone;
+	short			headHipsBone;
+	short			headFaceBone;
 	short			playerModel;
 	short			weaponModel[MAX_INHAND_WEAPONS];
 	short			handRBolt;
@@ -1206,6 +1216,8 @@ Ghoul2 Insert End
 	short			genericBolt5;
 
 	qhandle_t		cinematicModel;
+	   
+	qboolean inStasis;
 
 //==========================================================================================
 

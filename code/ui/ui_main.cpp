@@ -1685,11 +1685,15 @@ static void UI_CalcForceStatus(void)
 	lightSide = pState->forcePowerLevel[FP_HEAL] +
 		pState->forcePowerLevel[FP_TELEPATHY] +
 		pState->forcePowerLevel[FP_PROTECT] +
+		pState->forcePowerLevel[FP_STASIS] +
+		pState->forcePowerLevel[FP_GRASP] +
 		pState->forcePowerLevel[FP_ABSORB];
 
 	darkSide = pState->forcePowerLevel[FP_GRIP] +
 		pState->forcePowerLevel[FP_LIGHTNING] +
 		pState->forcePowerLevel[FP_RAGE] +
+		pState->forcePowerLevel[FP_DESTRUCTION] +
+		pState->forcePowerLevel[FP_FEAR] +
 		pState->forcePowerLevel[FP_DRAIN];
 
 	total = lightSide + darkSide;
@@ -4599,7 +4603,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 }
 #endif // !JK2_MODE
 
-#define MAX_POWER_ENUMS 16
+#define MAX_POWER_ENUMS 22
 
 typedef struct {
 	const char	*title;
@@ -4617,6 +4621,8 @@ static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 
 #ifndef JK2_MODE
 	{ "protect",		FP_PROTECT },
+	{ "stasis",		FP_STASIS },
+	{ "grasp",		FP_GRASP },
 #endif // !JK2_MODE
 
 				// Core powers
@@ -4640,6 +4646,8 @@ static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 
 	{ "grip",			FP_GRIP },
 	{ "lightning",	FP_LIGHTNING },
+	{ "destruction", FP_DESTRUCTION},
+	{ "fear", FP_FEAR},
 
 #ifndef JK2_MODE
 	{ "rage",			FP_RAGE },
@@ -4911,6 +4919,9 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_DRAIN]=0;
 		uiInfo.forcePowerLevel[FP_LIGHTNING]=0;
 		uiInfo.forcePowerLevel[FP_RAGE]=0;
+		uiInfo.forcePowerLevel[FP_STASIS] = 0;
+		uiInfo.forcePowerLevel[FP_DESTRUCTION] = 0;
+		uiInfo.forcePowerLevel[FP_GRASP] = 0;
 	}
 	else
 	{
@@ -4936,6 +4947,12 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_ABSORB]=0;
 		uiInfo.forcePowerLevel[FP_DRAIN]=0;
 		uiInfo.forcePowerLevel[FP_RAGE]=0;
+		uiInfo.forcePowerLevel[FP_STASIS] = 0;
+		uiInfo.forcePowerLevel[FP_DESTRUCTION] = 0;
+		uiInfo.forcePowerLevel[FP_GRASP] = 0;
+		uiInfo.forcePowerLevel[FP_FEAR] = 0;
+		uiInfo.forcePowerLevel[FP_LIGHTNING_STRIKE] = 0;
+		uiInfo.forcePowerLevel[FP_BLAST] = 0;
 	}
 
 	if (pState)
@@ -4949,6 +4966,15 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_ABSORB]=Q_max(pState->forcePowerLevel[FP_ABSORB], uiInfo.forcePowerLevel[FP_ABSORB]);
 		uiInfo.forcePowerLevel[FP_DRAIN]=Q_max(pState->forcePowerLevel[FP_DRAIN], uiInfo.forcePowerLevel[FP_DRAIN]);
 		uiInfo.forcePowerLevel[FP_RAGE]=Q_max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
+		
+		uiInfo.forcePowerLevel[FP_STASIS] = Q_max(pState->forcePowerLevel[FP_STASIS], uiInfo.forcePowerLevel[FP_STASIS]);
+
+		uiInfo.forcePowerLevel[FP_DESTRUCTION] = Q_max(pState->forcePowerLevel[FP_DESTRUCTION], uiInfo.forcePowerLevel[FP_DESTRUCTION]);
+
+		uiInfo.forcePowerLevel[FP_GRASP] = Q_max(pState->forcePowerLevel[FP_GRASP], uiInfo.forcePowerLevel[FP_GRASP]);
+
+		uiInfo.forcePowerLevel[FP_FEAR] = Q_max(pState->forcePowerLevel[FP_FEAR], uiInfo.forcePowerLevel[FP_FEAR]);
+
 	}
 }
 #endif // !JK2_MODE

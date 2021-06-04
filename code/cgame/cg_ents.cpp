@@ -36,6 +36,7 @@ extern void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *sa
 extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles );
 extern void CG_ForcePushBlur( const vec3_t org, qboolean darkSide = qfalse );
 extern void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent );
+
 extern qboolean CG_PlayerCanSeeCent( centity_t *cent );
 extern cvar_t	*debug_subdivision;
 
@@ -1172,6 +1173,35 @@ static void CG_Missile( centity_t *cent ) {
 		if ( !g_vehWeaponInfo[s1->otherEntityNum2].iModel )
 		{
 			return;
+		}
+	}
+	else if (s1->powerups & (1 << PW_FORCE_PROJECTILE))
+	{
+		if (s1->weapon == WP_CONCUSSION)
+		{
+			FX_DestructionProjectileThink(cent, weapon);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
+				1.0, 0.65, 0.0);
+			cgi_S_AddLoopingSound(cent->currentState.number, cent->lerpOrigin, vec3_origin, cgs.media.destructionSound);
+			return;
+
+		}
+		else if (s1->weapon == WP_ROCKET_LAUNCHER)
+		{
+			FX_BlastProjectileThink(cent, weapon);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
+				1.0, 0.65, 0.0);
+			cgi_S_AddLoopingSound(cent->currentState.number, cent->lerpOrigin, vec3_origin, cgs.media.blastSound);
+			return;
+
+		}
+		else if (s1->weapon == WP_DISRUPTOR)
+		{
+			FX_StrikeProjectileThink(cent, weapon);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
+				1.0, 0.65, 0.0);
+			return;
+
 		}
 	}
 	else if ( cent->gent->alt_fire )

@@ -49,6 +49,7 @@ extern qboolean PM_InGetUpNoRoll( playerState_t *ps );
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 extern qboolean G_ControlledByPlayer( gentity_t *self );
+extern qboolean PlayerAffectedByStasis(void);
 
 extern qboolean cg_usingInFrontOf;
 extern qboolean		player_locked;
@@ -510,7 +511,7 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 		{//still a vertical wall there
 			//FIXME: don't pull around 90 turns
 			//FIXME: simulate stepping up steps here, somehow?
-			if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || !player_locked )
+			if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 			{
 				if ( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT )
 				{
@@ -536,7 +537,7 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 				SetClientViewAngle( ent, ent->client->ps.viewangles );
 			}
 			ucmd->angles[YAW] = ANGLE2SHORT( ent->client->ps.viewangles[YAW] ) - ent->client->ps.delta_angles[YAW];
-			if ( (ent->s.number&&!G_ControlledByPlayer(ent)) || !player_locked )
+			if ( (ent->s.number&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 			{
 				if ( doMove )
 				{
@@ -645,7 +646,7 @@ qboolean PM_AdjustAnglesForSpinningFlip( gentity_t *ent, usercmd_t *ucmd, qboole
 	//push me
 	if ( ent->client->ps.legsAnimTimer > 300 )//&& ent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 	{//haven't landed or reached end of anim yet
-		if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || !player_locked )
+		if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 		{
 			vec3_t pushDir, pushAngles = {0,ent->angle,0};
 			AngleVectors( pushAngles, pushDir, NULL, NULL );
@@ -893,7 +894,7 @@ qboolean PM_AdjustAngleForWallRunUp( gentity_t *ent, usercmd_t *ucmd, qboolean d
 			{//all clear, keep going
 				//FIXME: don't pull around 90 turns
 				//FIXME: simulate stepping up steps here, somehow?
-				if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || !player_locked )
+				if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 				{
 					ucmd->forwardmove = 127;
 				}
@@ -912,7 +913,7 @@ qboolean PM_AdjustAngleForWallRunUp( gentity_t *ent, usercmd_t *ucmd, qboolean d
 					SetClientViewAngle( ent, ent->client->ps.viewangles );
 				}
 				ucmd->angles[YAW] = ANGLE2SHORT( ent->client->ps.viewangles[YAW] ) - ent->client->ps.delta_angles[YAW];
-				if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || !player_locked )
+				if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 				{
 					if ( doMove )
 					{
@@ -1052,7 +1053,7 @@ qboolean PM_AdjustAngleForWallJump( gentity_t *ent, usercmd_t *ucmd, qboolean do
 				SetClientViewAngle( ent, ent->client->ps.viewangles );
 			}
 			ucmd->angles[YAW] = ANGLE2SHORT( ent->client->ps.viewangles[YAW] ) - ent->client->ps.delta_angles[YAW];
-			if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || !player_locked )
+			if ( (ent->s.number>=MAX_CLIENTS&&!G_ControlledByPlayer(ent)) || (!player_locked && !PlayerAffectedByStasis()))
 			{
 				if ( doMove )
 				{
@@ -1349,7 +1350,7 @@ qboolean G_OkayToLean( playerState_t *ps, usercmd_t *cmd, qboolean interruptOkay
 				&& !ps->legsAnimTimer//not in any held legs anim
 				&& !ps->torsoAnimTimer) //not in any held torso anim
 			)
-		&& !(cmd->buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK|BUTTON_FORCE_LIGHTNING|BUTTON_USE_FORCE|BUTTON_FORCE_DRAIN|BUTTON_FORCEGRIP))//not trying to attack
+		&& !(cmd->buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK|BUTTON_FORCE_LIGHTNING|BUTTON_USE_FORCE|BUTTON_FORCE_DRAIN|BUTTON_FORCEGRIP|BUTTON_FORCEGRASP))//not trying to attack
 		//&& (ps->forcePowersActive&(1<<FP_SPEED))
 		&& VectorCompare( ps->velocity, vec3_origin )//not moving
 		&& !cg_usingInFrontOf )//use button wouldn't be used for anything else
@@ -1394,6 +1395,12 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 	{
 		return;		// no view changes at all
 	}
+
+	if (ps->stasisTime > level.time)
+	{
+		return;
+	}
+
 
 //	if ( player_locked )
 //	{//can't turn
