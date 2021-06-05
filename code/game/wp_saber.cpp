@@ -12098,7 +12098,7 @@ qboolean CanBeFeared(gentity_t *self, gentity_t *traceEnt)
 	return qtrue;
 }
 
-void WP_FireStrike(gentity_t *ent, int forceLevel);
+static void WP_FireStrike(gentity_t *ent, int forceLevel);
 void ForceLightningStrike(gentity_t *self)
 {
 	int anim, soundIndex;
