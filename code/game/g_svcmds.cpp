@@ -878,13 +878,8 @@ static void Svcmd_Spawn_f(void)
 
 	gi.linkentity(NPCspawner);
 
-	
-
 	NPCspawner->NPC_type = g_NPCtype->string;
 	NPCspawner->NPC_skin = "default";
-
-
-	
 
 	if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
 	{
@@ -896,11 +891,7 @@ static void Svcmd_Spawn_f(void)
 		newSkin.append("|");
 		newSkin.append(g_NPClegs->string);
 
-		char *skinstr = new char[newSkin.length() + 1];
-		strcpy(skinstr, newSkin.c_str());
-		
-
-		NPCspawner->NPC_skin = skinstr;
+		NPCspawner->NPC_skin = G_NewString(newSkin.c_str());
 	}
 	else
 	{

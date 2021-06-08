@@ -74,6 +74,8 @@ static const save_field_t savefields_gEntity[] =
 	{strFOFS(NPC_targetname),	F_STRING},
 	{strFOFS(NPC_target),		F_STRING},
 	{strFOFS(ownername),		F_STRING},
+	{strFOFS(NPC_skin),			F_STRING},
+	{strFOFS(NPC_team),			F_STRING},
 	{strFOFS(lastEnemy),		F_GENTITY},
 	{strFOFS(behaviorSet),		F_BEHAVIORSET},
 	{strFOFS(script_targetname),F_STRING},

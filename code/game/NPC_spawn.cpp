@@ -1725,8 +1725,6 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	}
 
 	newent->classname = "NPC";
-	newent->NPC_skin = G_NewString(ent->NPC_skin);
-	newent->NPC_team = G_NewString(ent->NPC_team);
 	VectorCopy(ent->s.origin, newent->s.origin);
 	VectorCopy(ent->s.origin, newent->client->ps.origin);
 	VectorCopy(ent->s.origin, newent->currentOrigin);
@@ -1781,6 +1779,7 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	newent->opentarget = G_NewString(ent->opentarget);
 	newent->radius = ent->radius;
 	newent->NPC_skin = G_NewString(ent->NPC_skin);
+	newent->NPC_team = G_NewString(ent->NPC_team);
 
 	newent->NPC->eventualGoal = ent->enemy;
 
@@ -2594,7 +2593,7 @@ Ally Jedi NPC Buddy - tags along with player
 extern cvar_t	*g_char_model;
 void SP_NPC_Jedi(gentity_t *self)
 {
-	int npc_pick = rand() % 11;
+	int npc_pick = Q_irand(0, 11);
 	if (!self->NPC_type)
 	{
 		if (self->spawnflags & 4)
@@ -2684,7 +2683,7 @@ void SP_NPC_SWGL_Jedi(gentity_t *self)
 {
 	if (!self->NPC_type)
 	{
-		int npc_pick = rand() % 30;
+		int npc_pick = Q_irand(0, 30);
 		if (self->spawnflags & 1)
 		{//random!
 			int sanityCheck = 20;	//just in case
@@ -3231,7 +3230,7 @@ void SP_NPC_Human_Merc(gentity_t *self)
 				self->NPC_type = "human_merc_bow";
 			else
 			{
-				int npc_pick = rand() % 7;
+				int npc_pick = Q_irand(0, 6);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3264,7 +3263,8 @@ void SP_NPC_Human_Merc(gentity_t *self)
 			else
 			{
 			
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
+
 				switch (npc_pick)
 				{
 				case 0:
@@ -3289,7 +3289,7 @@ void SP_NPC_Human_Merc(gentity_t *self)
 				self->NPC_type = "human_merc_flc";
 			else
 			{
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3313,7 +3313,7 @@ void SP_NPC_Human_Merc(gentity_t *self)
 				self->NPC_type = "human_merc_cnc";
 			else
 			{
-				int npc_pick = rand() % 2;
+				int npc_pick = Q_irand(0, 1);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3368,7 +3368,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 		}
 		else
 		{
-			int npc_pick = rand() % 2;
+			int npc_pick = Q_irand(0, 2);
 			switch (npc_pick)
 				{
 				case 0:
@@ -3395,7 +3395,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 			self->NPC_type = "stcommander";
 		else
 		{
-			int npc_pick = rand() % 4;
+			int npc_pick = Q_irand(0, 3);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3426,7 +3426,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 		}
 		else
 		{
-			int npc_pick = rand() % 4;
+			int npc_pick = Q_irand(0, 3);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3465,7 +3465,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 		else
 		{
 
-			int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3510,7 +3510,7 @@ void SP_NPC_Snowtrooper(gentity_t *self)
 	}
 	else
 	{
-		int npc_pick = rand() % 2;
+		int npc_pick = Q_irand(0, 1);
 
 		switch (npc_pick)
 		{
@@ -3544,17 +3544,15 @@ void SP_NPC_Tie_Pilot(gentity_t *self)
 		self->NPC_type = "stormpilot";
 	else
 	{
-		int npc_pick = rand() % 3;
+		int npc_pick = Q_irand(0, 2);
 		switch (npc_pick)
 		{
 		case 0:
 			self->NPC_type = "stormpilot";
 			break;
-
 		case 1:
 			self->NPC_type = "ISB_Agent_F";
 			break;
-
 		case 2:
 			self->NPC_type = "ISB_Agent_M";
 			break;
@@ -3633,9 +3631,9 @@ void SP_NPC_HazardTrooper(gentity_t *self)
 		}
 		else
 		{
+			int npc_pick = Q_irand(0, 2);
 
-			int npc_pick = rand() % 3;
-			switch (Q_irand(0, 2))
+			switch (npc_pick)
 			{
 			case 0:
 				self->NPC_type = "hazardtrooper";
@@ -3769,7 +3767,7 @@ void SP_NPC_Rodian(gentity_t *self)
 			else
 			{
 
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3888,7 +3886,7 @@ void SP_NPC_Noghri(gentity_t *self)
 			self->NPC_type = "noghri";
 		else
 		{
-			int npc_pick = rand() % 2;
+			int npc_pick = Q_irand(0, 1);
 			switch (npc_pick)
 			{
 			case 0:
@@ -3958,7 +3956,7 @@ void SP_NPC_Imperial(gentity_t *self)
 				self->NPC_type = "impofficer";
 			else
 			{
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -3985,7 +3983,7 @@ void SP_NPC_Imperial(gentity_t *self)
 				self->NPC_type = "impcommander";
 			else
 			{
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -4010,7 +4008,7 @@ void SP_NPC_Imperial(gentity_t *self)
 				self->NPC_type = "imperial";
 			else
 			{
-				int npc_pick = rand() % 2;
+				int npc_pick = Q_irand(0, 1);
 				
 				switch (npc_pick)
 				{
@@ -4045,7 +4043,7 @@ void SP_NPC_ImpWorker(gentity_t *self)
 
 	else
 	{
-		int npc_pick = rand() % 2;
+		int npc_pick = Q_irand(0, 2);
 		switch (npc_pick)
 		{
 		case 0:
@@ -4138,7 +4136,7 @@ void SP_NPC_Reborn(gentity_t *self)
 		else
 		{
 
-			int npc_pick = rand() % 4;
+			int npc_pick = Q_irand(0, 3);
 			switch (npc_pick)
 			{
 			case 0:
@@ -4235,7 +4233,7 @@ void SP_NPC_Reborn_New(gentity_t *self)
 		else
 		{
 
-			int npc_pick = rand() % 9;
+			int npc_pick = Q_irand(0, 8);
 			switch (npc_pick)
 			{
 			case 0:
@@ -4348,7 +4346,7 @@ void SP_NPC_Cultist_Saber(gentity_t *self)
 		}
 		else
 		{
-				int npc_pick = rand() % 3;
+				int npc_pick = Q_irand(0, 2);
 				switch (npc_pick)
 				{
 				case 0:
@@ -4444,7 +4442,7 @@ void SP_NPC_Cultist_Saber_Powers(gentity_t *self)
 		else
 		{
 
-			int npc_pick = rand() % 3;
+			int npc_pick = Q_irand(0, 2);
 			switch (npc_pick)
 			{
 			case 0:
@@ -4533,7 +4531,7 @@ void SP_NPC_Cultist(gentity_t *self)
 		else
 		{
 
-			int npc_pick = rand() % 5;
+			int npc_pick = Q_irand(0, 4);
 			switch (npc_pick)
 			{
 			case 0:
@@ -4660,7 +4658,7 @@ void SP_NPC_Saboteur(gentity_t *self)
 		}
 		else
 		{
-			int npc_pick = rand() % 5;
+			int npc_pick = Q_irand(0, 4);
 			switch (npc_pick)
 			{
 			case 0:

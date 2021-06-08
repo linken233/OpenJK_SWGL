@@ -1006,7 +1006,7 @@ void G_FreeEntity(gentity_t *ed) {
 	{
 		gi.Free(ed->NPC_skin);
 	}
-	if (ed->NPC_skin && gi.bIsFromZone(ed->NPC_team, TAG_G_ALLOC))
+	if (ed->NPC_team && gi.bIsFromZone(ed->NPC_team, TAG_G_ALLOC))
 	{
 		gi.Free(ed->NPC_team);
 	}
