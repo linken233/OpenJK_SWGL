@@ -1117,15 +1117,6 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
 void FX_BlasterWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid );
 
-void FX_CloneProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
-void FX_CloneAltFireThink(centity_t *cent, const struct weaponInfo_s *weapon);
-void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
-void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
-void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
-void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
-void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal);
-void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
-
 void FX_DestructionProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_DestructionHitWall(vec3_t origin, vec3_t normal);
 void FX_DestructionHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
@@ -1137,7 +1128,6 @@ void FX_BlastHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
 void FX_StrikeProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
 void FX_StrikeHitWall(vec3_t origin, vec3_t normal);
 void FX_StrikeHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
-
 
 void FX_LightningStrike(vec3_t start, vec3_t end);
 
@@ -1185,6 +1175,17 @@ void FX_TuskenShotWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal,
 void FX_NoghriShotProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
 void FX_NoghriShotWeaponHitWall( vec3_t origin, vec3_t normal );
 void FX_NoghriShotWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid );
+
+void FX_CloneProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneAltFireThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
+void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoSniperShot(vec3_t start, vec3_t end);
+void FX_CloneCommandoSniperMiss( vec3_t origin, vec3_t normal );
 
 void CG_BounceEffect( centity_t *cent, int weapon, vec3_t origin, vec3_t normal );
 void CG_MissileStick( centity_t *cent, int weapon, vec3_t origin );
