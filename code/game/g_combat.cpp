@@ -4528,7 +4528,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			}
 		}
 		else if ( meansOfDeath == MOD_SNIPER 
-			|| (meansOfDeath == MOD_DESTRUCTION && !Q_irand(0,2)))
+			|| (meansOfDeath == MOD_DESTRUCTION))
 		{
 			gentity_t	*tent;
 			vec3_t		spot;

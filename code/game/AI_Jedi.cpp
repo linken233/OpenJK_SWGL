@@ -1929,7 +1929,19 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							ForceStasis(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (WP_ForcePowerUsable(NPC, FP_LIGHTNING_STRIKE, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							ForceStasis(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+											   
+						else if (WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceDestruction(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);

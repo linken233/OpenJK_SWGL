@@ -11688,7 +11688,7 @@ void WP_FireDestruction(gentity_t *ent, int forceLevel)
 	missile->splashMethodOfDeath = MOD_DESTRUCTION;// ?SPLASH;
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = damage / 3.0f;
+	missile->splashDamage = damage / 2.0f;
 	missile->splashRadius = DESTRUCTION_SPLASH_RADIUS * (1.0f + forceLevel) / 3.0f;
 
 	// we don't want it to ever bounce
@@ -11813,7 +11813,8 @@ void WP_FireBlast(gentity_t *ent, int forceLevel)
 	VectorScale(missile->maxs, -1, missile->mins);
 
 	missile->damage = damage;
-	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
+	missile->dflags = DAMAGE_EXTRA_KNOCKBACK;
 
 	missile->methodOfDeath = MOD_BLAST;
 	missile->splashMethodOfDeath = MOD_BLAST;// ?SPLASH;
