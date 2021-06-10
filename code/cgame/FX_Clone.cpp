@@ -28,6 +28,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_media.h"
 #include "FxScheduler.h"
 
+static vec3_t WHITE = {1.0f, 1.0f, 1.0f};
+
 /*
 -------------------------
 FX_CloneProjectileThink
@@ -225,3 +227,39 @@ void FX_CloneCommandoProjectileThink(centity_t *cent, const struct weaponInfo_s 
 	theFxScheduler.PlayEffect("dc17/shot", cent->lerpOrigin, forward );
 }
 
+/*
+---------------------------
+FX_CloneCommandoSniperShot
+---------------------------
+*/
+void FX_CloneCommandoSniperShot(vec3_t start, vec3_t end)
+{
+	FX_AddLine(-1, start, end, 0.1f, 10.0f, 0.0f,
+							1.0f, 0.0f, 0.0f,
+							WHITE, WHITE, 0.0f,
+							175, cgi_R_RegisterShader("gfx/effects/blueline"),
+							0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+}
+
+/*
+---------------------------
+FX_DisruptorAltMiss
+---------------------------
+*/
+
+void FX_CloneCommandoSniperMiss(vec3_t origin, vec3_t normal)
+{
+	vec3_t pos, c1, c2;
+
+	VectorMA(origin, 4.0f, normal, c1);
+	VectorCopy(c1, c2);
+	c1[2] += 4;
+	c2[2] += 12;
+
+	VectorAdd(origin, normal, pos);
+	pos[2] += 28;
+
+	FX_AddBezier(origin, pos, c1, vec3_origin, c2, vec3_origin, 6.0f, 6.0f, 0.0f, 0.0f, 0.2f, 0.5f, WHITE, WHITE, 0.0f, 4000, cgi_R_RegisterShader("gfx/effects/smokeTrail"), FX_ALPHA_WAVE);
+
+	theFxScheduler.PlayEffect("clone/wall_impact", origin, normal);
+}

@@ -27,6 +27,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "w_local.h"
 #include "../cgame/cg_local.h"
 
+static qboolean is_player_scoped(gentity_t *ent)
+{
+	return (qboolean)(cg.zoomMode >= ST_A280 && ent->s.clientNum == 0);
+}
+
 //---------------
 //	E-5 Carbine
 //---------------
@@ -271,7 +276,7 @@ void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (cg.zoomMode >= ST_A280)
+	else if (is_player_scoped(ent))
 	{
 		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
 		// angs[YAW] += Q_flrand(-0.25f, 0.25f) * 0.01;
@@ -309,7 +314,7 @@ void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (cg.zoomMode >= ST_A280)
+	if (is_player_scoped(ent))
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireFirstOrderMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -567,7 +572,7 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (cg.zoomMode >= ST_A280)
+	else if (is_player_scoped(ent))
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -602,7 +607,7 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (cg.zoomMode >= ST_A280)
+	if (is_player_scoped(ent))
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireRebelBlasterMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -760,6 +765,109 @@ void WP_FireCloneRifle(gentity_t *ent, qboolean alt_fire)
 //	DC-17
 //---------------
 
+static void WP_FireCloneCommandoBeam(gentity_t *ent)
+{
+	trace_t	tr;
+	gentity_t *trace_ent = NULL;
+	gentity_t *tent = NULL;
+
+	vec3_t start, end, forward_acc;
+	vec3_t dir, spot;
+
+	qboolean render_impact = qtrue;
+	qboolean hit_dodged = qfalse;
+
+	int shot_dist = 0;
+	int shot_range = 8192;
+
+	// Takes the angle where your eyes are looking at and copy it.
+	VectorCopy(ent->client->renderInfo.eyeAngles, forward_acc);
+
+	// Changes the accuracy.
+	forward_acc[PITCH] += Q_flrand(-0.15f, 0.15f);
+	forward_acc[YAW] += Q_flrand(-0.15f, 0.15f);
+
+	// Copy where your eyes are in space into a varible called start.
+	VectorCopy(ent->client->renderInfo.eyePoint, start);
+	// Takes the angle where your eyes are looking and converts it into a forward vector.
+	AngleVectors(forward_acc, forwardVec, NULL, NULL );
+
+	// Takes the starting point plus the shot_range times the forwardVec.
+	// Gets the end vector.
+	VectorMA(start, shot_range, forwardVec, end);
+
+	// Shooting a ray and checking where it hits.
+	gi.trace(&tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, G2_COLLIDE, 10);
+
+	// We didn't hit anything.
+	if ( tr.surfaceFlags & SURF_NOIMPACT )
+	{
+		render_impact = qfalse;
+	}
+
+	// The ent that you fired on.
+	trace_ent = &g_entities[tr.entityNum];
+
+	if (trace_ent && (trace_ent->s.weapon == WP_SABER
+		|| (trace_ent->client && (trace_ent->client->NPC_class == CLASS_BOBAFETT
+		|| trace_ent->client->NPC_class == CLASS_MANDALORIAN
+		|| trace_ent->client->NPC_class == CLASS_JANGO
+		|| trace_ent->client->NPC_class == CLASS_REBORN))))
+		{
+			// Acts like we didn't even hit him.
+			hit_dodged = Jedi_DodgeEvasion(trace_ent, ent, &tr, HL_NONE);
+		}
+
+	// They didn't dodge and we hit something.
+	if (!hit_dodged && render_impact)
+	{
+		// If the beam hits a NPC.
+		if ((tr.entityNum < ENTITYNUM_WORLD && trace_ent->takedamage)
+			|| !Q_stricmp(trace_ent->classname, "misc_model_breakable")
+			|| trace_ent->s.eType == ET_MOVER)
+		{
+			G_PlayEffect(G_EffectIndex("clone/flesh_impact"), tr.endpos, tr.plane.normal);
+
+			if (trace_ent->client && LogAccuracyHit(trace_ent, ent))
+			{
+				ent->client->ps.persistant[PERS_ACCURACY_HITS]++;
+			}
+
+			G_Damage(trace_ent, ent, ent, forwardVec, tr.endpos, CLONECOMMANDO_SCOPE_DAMAGE,
+					DAMAGE_DEATH_KNOCKBACK, MOD_CLONECOMMANDO, G_GetHitLocFromTrace(&tr, MOD_CLONECOMMANDO));
+		}
+		// If the beam hits a wall.
+		else
+		{
+			tent = G_TempEntity(tr.endpos, EV_CLONECOMMANDO_SNIPER_MISS);
+			tent->svFlags |= SVF_BROADCAST;
+			VectorCopy(tr.plane.normal, tent->pos1);
+		}
+	}
+
+	// Play the beam effect.
+	tent = G_TempEntity(tr.endpos, EV_CLONECOMMANDO_SNIPER_SHOT);
+	tent->svFlags |= SVF_BROADCAST;
+	VectorCopy(muzzle, tent->s.origin2);
+
+	// Getting the difference between you and the ent you hit.
+	VectorSubtract(tr.endpos, muzzle, dir);
+	
+	// Getting the magnitude between you and the ent.
+	shot_dist = VectorNormalize(dir);
+
+	// As the beam travles, alert the emenies to your location.
+	for (float dist = 0; dist < shot_dist; dist += 64)
+	{
+		VectorMA(muzzle, dist, dir, spot);
+		AddSightEvent(ent, spot, 256, AEL_DISCOVERED, 50);
+	}
+
+	// If they got spawned right in front you.
+	VectorMA(start, shot_dist-4, forwardVec, spot);
+	AddSightEvent(ent, spot, 256, AEL_DISCOVERED, 50);
+}
+
 //---------------------------------------------------------
 void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
@@ -880,14 +988,10 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (cg.zoomMode >= ST_A280)
+	else if (is_player_scoped(ent))
 	{
-		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
-		vectoangles(forwardVec, angs);
-
-		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_SCOPE_SPREAD;
-		angs[YAW] += Q_flrand(-1.0f, 1.0f) * CLONECOMMANDO_SCOPE_SPREAD;
-	} 
+		WP_FireCloneCommandoBeam(ent);
+	}
 	else if (!(ent->client->ps.forcePowersActive&(1 << FP_SEE))
 		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
 	{
@@ -908,12 +1012,7 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (cg.zoomMode >= ST_A280)
-	{
-		AngleVectors(angs, forwardVec, NULL, NULL);
-		WP_FireCloneCommandoMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
-	}
-	else
+	if (!(cg.zoomMode >= ST_A280))
 	{
 		AngleVectors(angs, dir, NULL, NULL);
 
@@ -1026,7 +1125,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (cg.zoomMode >= ST_A280)
+	else if (is_player_scoped(ent))
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -1072,7 +1171,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (cg.zoomMode >= ST_A280)
+	if (is_player_scoped(ent))
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireRebelRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -1433,7 +1532,7 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 	if ( ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{//no inherent aim screw up
 	}
-	else if (cg.zoomMode >= ST_A280)
+	else if (is_player_scoped(ent))
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -1479,7 +1578,7 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 		}
 	}
 
-	if (cg.zoomMode >= ST_A280)
+	if (is_player_scoped(ent))
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireBobaRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);

@@ -411,14 +411,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL: // enemy version
 	case WP_JAWA:
-		cgs.effects.bryarShotEffect			= theFxScheduler.RegisterEffect( "bryar/shot" );
-											theFxScheduler.RegisterEffect( "bryar/NPCshot" );
-		cgs.effects.bryarPowerupShotEffect	= theFxScheduler.RegisterEffect( "bryar/crackleShot" );
-		cgs.effects.bryarWallImpactEffect	= theFxScheduler.RegisterEffect( "bryar/wall_impact" );
-		cgs.effects.bryarWallImpactEffect2	= theFxScheduler.RegisterEffect( "bryar/wall_impact2" );
-		cgs.effects.bryarWallImpactEffect3	= theFxScheduler.RegisterEffect( "bryar/wall_impact3" );
-		cgs.effects.bryarFleshImpactEffect	= theFxScheduler.RegisterEffect( "bryar/flesh_impact" );
-
 	case WP_REY:
 		cgs.effects.bryarShotEffect			= theFxScheduler.RegisterEffect( "bryar/shot" );
 											theFxScheduler.RegisterEffect( "bryar/NPCshot" );
@@ -434,6 +426,12 @@ void CG_RegisterWeapon( int weaponNum ) {
 		break;
 
 	case WP_BLASTER:
+	case WP_BATTLEDROID:
+	case WP_THEFIRSTORDER:
+	case WP_REBELBLASTER:
+	case WP_REBELRIFLE:
+	case WP_JANGO:
+	case WP_BOBA:
 		cgs.effects.blasterShotEffect			= theFxScheduler.RegisterEffect( "blaster/shot" );
 													theFxScheduler.RegisterEffect( "blaster/NPCshot" );
 //		cgs.effects.blasterOverchargeEffect		= theFxScheduler.RegisterEffect( "blaster/overcharge" );
@@ -655,31 +653,16 @@ void CG_RegisterWeapon( int weaponNum ) {
 		theFxScheduler.RegisterEffect( "ships/imp_blastershot" );
 		break;
 
-	case WP_BATTLEDROID:
-	case WP_THEFIRSTORDER:
-	case WP_REBELBLASTER:
-	case WP_REBELRIFLE:
-	case WP_JANGO:
-	case WP_BOBA:
-		cgs.effects.blasterShotEffect = theFxScheduler.RegisterEffect( "blaster/shot" );
-		theFxScheduler.RegisterEffect("blaster/NPCshot");
-		cgs.effects.blasterWallImpactEffect	= theFxScheduler.RegisterEffect( "blaster/wall_impact" );
-		cgs.effects.blasterFleshImpactEffect = theFxScheduler.RegisterEffect( "blaster/flesh_impact" );
-		theFxScheduler.RegisterEffect("blaster/deflect");
-		theFxScheduler.RegisterEffect("blaster/smoke_bolton");
-		break;
-
 	case WP_CLONECARBINE:
 	case WP_CLONERIFLE:
-	case WP_CLONEPISTOL:
-		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
-		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
-		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");
-		break;
-
 	case WP_CLONECOMMANDO:
-		theFxScheduler.RegisterEffect("dc17/shot");
-		theFxScheduler.RegisterEffect("dc17/explosion");
+	case WP_CLONEPISTOL:
+		if (weaponNum == WP_CLONECOMMANDO)
+		{
+			theFxScheduler.RegisterEffect("dc17/shot");
+			theFxScheduler.RegisterEffect("dc17/explosion");
+			cgi_R_RegisterShader("gfx/effects/blueline");
+		}
 		cgs.effects.cloneShotEffect = theFxScheduler.RegisterEffect("clone/projectile");
 		cgs.effects.cloneWallImpactEffect = theFxScheduler.RegisterEffect("clone/wall_impact");
 		cgs.effects.cloneFleshImpactEffect = theFxScheduler.RegisterEffect("clone/flesh_impact");

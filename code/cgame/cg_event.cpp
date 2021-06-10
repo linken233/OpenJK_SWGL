@@ -573,6 +573,16 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		FX_ConcAltMiss( cent->lerpOrigin, cent->gent->pos1 );
 		break;
 
+	case EV_CLONECOMMANDO_SNIPER_SHOT:
+		DEBUGNAME("EV_CLONECOMMANDO_SNIPER_SHOT");
+		FX_CloneCommandoSniperShot(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+
+	case EV_CLONECOMMANDO_SNIPER_MISS:
+		DEBUGNAME("EV_CLONECOMMANDO_SNIPER_MISS");
+		FX_CloneCommandoSniperMiss(cent->lerpOrigin, cent->gent->pos1);
+		break;
+
 //	case EV_POWERUP_SEEKER_FIRE:
 //		DEBUGNAME("EV_POWERUP_SEEKER_FIRE");
 //		CG_FireSeeker( cent );
