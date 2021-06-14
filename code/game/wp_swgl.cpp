@@ -29,7 +29,23 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 static qboolean is_player_scoped(gentity_t *ent)
 {
-	return (qboolean)(cg.zoomMode >= ST_A280 && ent->s.clientNum == 0);
+	return (qboolean)(cg.zoomMode >= ST_A280 && ent->client->ps.clientNum == 0);
+}
+
+static void is_player_alt_firing(gentity_t *ent, weapon_t weapon_num, qboolean *alt_fire)
+{
+	if (ent->client->ps.clientNum == 0)
+	{
+		if (ent->client->ps.firing_attack & TERTIARY_ATTACK
+			&& weaponData[weapon_num].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
+		{
+			*alt_fire = qfalse;
+		}
+		else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
+		{
+			*alt_fire = qtrue;
+		}
+	}
 }
 
 //---------------
@@ -120,18 +136,10 @@ void WP_FireBattleDroidMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 void WP_FireBattleDroid(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_BATTLEDROID].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_BATTLEDROID, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
@@ -260,23 +268,16 @@ void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_THEFIRSTORDER].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
+	qboolean scoped = is_player_scoped(ent);
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_THEFIRSTORDER, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (is_player_scoped(ent))
+	else if (scoped)
 	{
 		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
 		// angs[YAW] += Q_flrand(-0.25f, 0.25f) * 0.01;
@@ -314,7 +315,7 @@ void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (is_player_scoped(ent))
+	if (scoped)
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireFirstOrderMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -333,7 +334,7 @@ void WP_FireFirstOrder(gentity_t *ent, qboolean alt_fire)
 //---------------
 
 //---------------------------------------------------------
-void WP_FireCloneMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
+void WP_FireCloneCarbineMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
 {
 	int velocity = CLONECARBINE_VELOCITY;
@@ -413,21 +414,13 @@ void WP_FireCloneMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altF
 }
 
 //---------------------------------------------------------
-void WP_FireClone(gentity_t *ent, qboolean alt_fire)
+void WP_FireCloneCarbine(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_CLONECARBINE].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_CLONECARBINE, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
@@ -465,7 +458,7 @@ void WP_FireClone(gentity_t *ent, qboolean alt_fire)
 	AngleVectors(angs, dir, NULL, NULL);
 
 	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	WP_FireCloneMissile(ent, muzzle, dir, alt_fire);
+	WP_FireCloneCarbineMissile(ent, muzzle, dir, alt_fire);
 }
 
 //---------------
@@ -556,23 +549,16 @@ void WP_FireRebelBlasterMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboole
 void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_REBELBLASTER].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
+	qboolean scoped = is_player_scoped(ent);
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_REBELBLASTER, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (is_player_scoped(ent))
+	else if (scoped)
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -607,7 +593,7 @@ void WP_FireRebelBlaster(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (is_player_scoped(ent))
+	if (scoped)
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireRebelBlasterMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -709,18 +695,10 @@ void WP_FireCloneRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 void WP_FireCloneRifle(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_CLONERIFLE].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_CLONERIFLE, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
@@ -851,10 +829,8 @@ static void WP_FireCloneCommandoBeam(gentity_t *ent)
 	VectorCopy(muzzle, tent->s.origin2);
 
 	// Getting the difference between you and the ent you hit.
-	VectorSubtract(tr.endpos, muzzle, dir);
-	
 	// Getting the magnitude between you and the ent.
-	shot_dist = VectorNormalize(dir);
+	shot_dist = Distance(tr.endpos, muzzle);
 
 	// As the beam travles, alert the emenies to your location.
 	for (float dist = 0; dist < shot_dist; dist += 64)
@@ -872,8 +848,9 @@ static void WP_FireCloneCommandoBeam(gentity_t *ent)
 void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire)
 //---------------------------------------------------------
 {
-	int velocity = altFire ? CLONECOMMANDO_ALT_VELOCITY : CLONECOMMANDO_VELOCITY;
 	int	damage = 0;
+	int velocity = altFire ? CLONECOMMANDO_ALT_VELOCITY : CLONECOMMANDO_VELOCITY;
+	float kick = (ent->client->usercmd.upmove < 0.0f) ? -100.0f : -300.0f;
 
 	if (cg.zoomMode >= ST_A280)
 	{
@@ -949,14 +926,17 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	if (altFire)
 	{
-		VectorSet( missile->maxs, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE, REPEATER_ALT_SIZE);
-		VectorScale( missile->maxs, -1, missile->mins );
+		VectorSet(missile->maxs, CLONECOMMANDO_ALT_SIZE, CLONECOMMANDO_ALT_SIZE, CLONECOMMANDO_ALT_SIZE);
+		VectorScale(missile->maxs, -1, missile->mins);
 
 		missile->s.pos.trType = TR_GRAVITY;
 		missile->s.pos.trDelta[2] += 200.0f;
 		missile->methodOfDeath = MOD_CLONECOMMANDO_ALT;
 		missile->splashDamage = weaponData[WP_CLONECOMMANDO].altSplashDamage;
 		missile->splashRadius = weaponData[WP_CLONECOMMANDO].altSplashRadius;
+
+		// Shove us backwards.
+		VectorMA(ent->client->ps.velocity, kick, forwardVec, ent->client->ps.velocity);
 	}
 	else
 	{
@@ -972,7 +952,7 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (cg.zoomMode >= ST_A280)
+	if (cg.zoomMode >= ST_A280 || ent->client->ps.clientNum != 0)
 	{
 		alt_fire = qfalse;
 	}
@@ -1012,7 +992,7 @@ void WP_FireCloneCommando(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (!(cg.zoomMode >= ST_A280))
+	if (!(cg.zoomMode >= ST_A280) || ent->client->ps.clientNum != 0)
 	{
 		AngleVectors(angs, dir, NULL, NULL);
 
@@ -1109,23 +1089,16 @@ void WP_FireRebelRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_REBELRIFLE].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
+	qboolean scoped = is_player_scoped(ent);
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_REBELRIFLE, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
 	}
-	else if (is_player_scoped(ent))
+	else if (scoped)
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -1171,7 +1144,7 @@ void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire)
 		}
 	}
 
-	if (is_player_scoped(ent))
+	if (scoped)
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireRebelRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -1226,7 +1199,7 @@ void WP_FireReyPistol( gentity_t *ent, qboolean alt_fire )
 
 	WP_MissileTargetHint(ent, start, forwardVec);
 
-	gentity_t	*missile = CreateMissile( start, forwardVec, BRYAR_PISTOL_VEL, 10000, ent, alt_fire );
+	gentity_t	*missile = CreateMissile( start, forwardVec, REY_VEL, 10000, ent, alt_fire );
 
 	missile->classname = "bryar_proj";
 	if ( ent->s.weapon == WP_BLASTER_PISTOL
@@ -1374,18 +1347,10 @@ void WP_FireJangoPistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 void WP_FireJangoPistol(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_JANGO].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_JANGO, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up
@@ -1515,24 +1480,17 @@ void WP_FireBobaRifleMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 //---------------------------------------------------------
 void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
-{	
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_BOBA].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
+{
 	vec3_t	dir, angs;
+	qboolean scoped = is_player_scoped(ent);
 
 	vectoangles( forwardVec, angs );
+	is_player_alt_firing(ent, WP_BOBA, &alt_fire);
 
 	if ( ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{//no inherent aim screw up
 	}
-	else if (is_player_scoped(ent))
+	else if (scoped)
 	{
 		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
 		vectoangles(forwardVec, angs);
@@ -1578,7 +1536,7 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 		}
 	}
 
-	if (is_player_scoped(ent))
+	if (scoped)
 	{
 		AngleVectors(angs, forwardVec, NULL, NULL);
 		WP_FireBobaRifleMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, alt_fire);
@@ -1672,18 +1630,10 @@ void WP_FireClonePistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 void WP_FireClonePistol(gentity_t *ent, qboolean alt_fire)
 //---------------------------------------------------------
 {
-	if (ent->client->ps.firing_attack & TERTIARY_ATTACK && weaponData[WP_CLONEPISTOL].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
-	{
-		alt_fire = qfalse;
-	}
-	else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
-	{
-		alt_fire = qtrue;
-	}
-
 	vec3_t	dir, angs;
 
 	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_CLONEPISTOL, &alt_fire);
 
 	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
 	{//no inherent aim screw up

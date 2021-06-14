@@ -8915,6 +8915,8 @@ static void PM_BeginWeaponChange( int weapon ) {
 		PM_AddEvent( EV_CHANGE_WEAPON );
 	}
 
+	pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
 	if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
@@ -13499,7 +13501,6 @@ static void PM_Weapon( void )
 	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
 		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
-			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 		}
 	}
 
@@ -14801,7 +14802,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		&& !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280
 		&& pm->ps->tertiaryMode == qfalse && alt_firing_type >= FT_AUTOMATIC)
 	{
-		// Don't let the alt-fite get through.
+		// Don't let the alt-fire get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 		// Switch the flag.
 		pm->cmd.buttons |= BUTTON_ATTACK;
