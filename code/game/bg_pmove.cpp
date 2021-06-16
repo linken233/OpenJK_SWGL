@@ -8915,6 +8915,8 @@ static void PM_BeginWeaponChange( int weapon ) {
 		PM_AddEvent( EV_CHANGE_WEAPON );
 	}
 
+	pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
 	if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
@@ -10597,7 +10599,9 @@ qboolean PM_SaberLocked( void )
 #endif
 						gi.G2API_GetBoneAnimIndex( &gent->ghoul2[gent->playerModel], gent->lowerLumbarBone,
 						(cg.time?cg.time:level.time), &currentFrame, &junk, &junk, &junk, &junk2, NULL );
+#ifdef _DEBUG
 					assert( ret ); // this would be pretty bad, the below code seems to assume the call succeeds. -gil
+#endif
 
 					strength = G_SaberLockStrength( gent );
 					if ( PM_InSaberLockOld( pm->ps->torsoAnim ) )
@@ -13499,7 +13503,6 @@ static void PM_Weapon( void )
 	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
 		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
-			pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 		}
 	}
 
@@ -14171,14 +14174,11 @@ static void PM_Weapon( void )
 	{
 		weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
 	}
-	else
+	// If the damages are different.
+	else if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
 	{
-		// If the damages are different.
-		if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
-		{
-			// Load back the default damage of that weapon.
-			weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
-		}
+		// Load back the default damage of that weapon.
+		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
 	}
 
 	if ( g_timescale != NULL )
@@ -14727,14 +14727,16 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	if ( pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) && pm->ps->weaponstate != WEAPON_DROPPING && weaponData[pm->ps->weapon].scopeType >= ST_A280 )
 	{
-		// If you are not currently firing, you press the alt key, and the alt firing type is not high powered.
-		if (!(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK 
+		// If you are not holding down main, you are not currently alt-firing,
+		// you press the alt key, and the alt firing type is not high powered.
+		if (!(pm->cmd.buttons & BUTTON_ATTACK)
+			&& !(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK 
 			&& (main_firing_type != FT_HIGH_POWERED && alt_firing_type != FT_HIGH_POWERED)
 			&& !(pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode))
 		{
 			if (cg.zoomMode == 0)
 			{
-				switch ( weaponData[pm->ps->weapon].scopeType )
+				switch (weaponData[pm->ps->weapon].scopeType)
 				{
 					case ST_A280:
 						cg.zoomMode = ST_A280;
@@ -14754,12 +14756,14 @@ void PM_AdjustAttackStates( pmove_t *pm )
 						break;
 				}
 			}
-			else if ( cg.zoomMode >= ST_A280 )
+			else if (cg.zoomMode >= ST_A280)
 			{
 				cg.zoomMode = 0;
 			}
 		}
-		// I think this is to avoid a glitch?
+		// If you are holding down main while trying to
+		// scope, stop firing. This is to avoid main firing
+		// while scoped.
 		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining))
 		{
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
@@ -14793,7 +14797,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
 	}
 
-	// If main click is not pressed(this is to avoid one overriding the other), 
+	// If main click is not pressed(this is to avoid main overriding alt), 
 	// you pressed alt click, alt-fire is not currently firing,
 	// you have no scope, tertiary mode is not enabled, and you have an alt firing type.
 	// When you have a scope, alt click doesn't get through.
@@ -14801,7 +14805,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		&& !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280
 		&& pm->ps->tertiaryMode == qfalse && alt_firing_type >= FT_AUTOMATIC)
 	{
-		// Don't let the alt-fite get through.
+		// Don't let the alt-fire get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 		// Switch the flag.
 		pm->cmd.buttons |= BUTTON_ATTACK;
@@ -14820,8 +14824,9 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		// If you have tertiaryMode on regardless if you are scoped or not.
 		if (pm->ps->tertiaryMode)
 		{
-			// If you are not scope and you have the firing type of high powered, you can not use main click. 
-			if (cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED)
+			// If you are not scope and you have the firing type of high powered, you can not use main click,
+			// and you should still be able to turbo boost while you are in noclip.
+			if (cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED && pm->ps->pm_type != PM_NOCLIP)
 			{
 				pm->cmd.buttons &= ~BUTTON_ATTACK;
 			}
@@ -14829,6 +14834,13 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			{
 				burst_shots = weaponData[pm->ps->weapon].tertiaryFireOpt[SHOTS_PER_BURST];
 				pm->ps->firing_attack |= TERTIARY_ATTACK;
+
+				// I don't want an extra shot to get through right after
+				// you turn off noclip.
+				if (pm->ps->pm_type == PM_NOCLIP)
+				{
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
 			}
 		}
 		// If you are scoped.
@@ -14847,13 +14859,13 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	else if (weaponData[pm->ps->weapon].scopeType < ST_A280 
 		&& (tertiary_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
 	{
-		// Don't let the alt-fite get through.
+		// Don't let the alt-fire get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
 	if (pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode)
 	{
-		// Don't let the alt-fite get through.
+		// Don't let the alt-fire get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
