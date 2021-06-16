@@ -14761,7 +14761,9 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				cg.zoomMode = 0;
 			}
 		}
-		// I think this is to avoid a glitch?
+		// If you are holding down main while trying to
+		// scope, stop firing. This is to avoid main firing
+		// while scoped.
 		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining))
 		{
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
