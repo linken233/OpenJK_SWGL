@@ -8316,13 +8316,11 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 						}
 					}
 				}
-				else if ( cent->gent->client && cent->gent->NPC//client NPC
+				else if ( /*cent->gent->client && cent->gent->NPC//client NPC
 					/*
 					&& cent->gent->client->NPC_class == CLASS_REBORN//cultist
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
-					*/
-					&& cent->gent->s.weapon == WP_BLASTER_PISTOL//using blaster pistol
-					&& cent->gent->s.weapon == WP_REY//using blaster pistol
+					&& */(cent->gent->s.weapon == WP_BLASTER_PISTOL || cent->gent->s.weapon == WP_CLONEPISTOL)//using blaster pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
 
@@ -8443,7 +8441,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 
 				if (/*( cent->currentState.eFlags & EF_FIRING || cent->currentState.eFlags & EF_ALT_FIRING ) &&*/ effect )
 				{
-					if ( cent->gent && cent->gent->NPC )
+					if ( (cent->gent && cent->gent->NPC) || cent->gent->s.weapon == WP_CLONEPISTOL )
 					{
 						if ( !VectorCompare( oldMP, vec3_origin )
 							&& !VectorCompare( oldMD, vec3_origin ) )

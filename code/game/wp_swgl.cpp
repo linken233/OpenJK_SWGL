@@ -1624,6 +1624,11 @@ void WP_FireClonePistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	if (ent->weaponModel[1] > 0)
+	{
+		ent->count = (ent->count) ? 0 : 1;
+	}
 }
 
 //---------------------------------------------------------
