@@ -150,6 +150,8 @@ extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
 extern int defaultDamageCopy[WP_NUM_WEAPONS];
 
+extern vmCvar_t	cg_dualWielding;
+
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
 #define		FLY_NONE	0
@@ -9088,11 +9090,6 @@ static void PM_FinishWeaponChange( void ) {
 			G_RemoveWeaponModels( pm->gent );
 			if (weaponData[weapon].weaponMdl[0]) {	//might be NONE, so check if it has a model
 				G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handRBolt, 0 );
-
-				if (pm->ps->weapon == WP_CLONEPISTOL)
-				{
-					G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handLBolt, 1 );
-				}
 			}
 		}
 
@@ -13578,6 +13575,28 @@ static void PM_Weapon( void )
 				{//this way we don't get that annoying change weapon sound every time a map starts
 					PM_AddEvent( EV_CHANGE_WEAPON );
 				}
+			}
+		}
+	}
+
+	qboolean is_pistol = (qboolean)(pm->ps->weapon == WP_BLASTER_PISTOL
+									|| pm->ps->weapon == WP_REY
+									|| pm->ps->weapon == WP_JANGO
+									|| pm->ps->weapon == WP_CLONEPISTOL);
+
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		if (is_pistol)
+		{
+			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
+			{
+				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
+			}
+			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
+			{
+				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
+				pm->gent->weaponModel[1] = -1;
+				pm->gent->count = 0;
 			}
 		}
 	}

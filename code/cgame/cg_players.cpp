@@ -8207,6 +8207,11 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 			vec3_t oldMP = {0,0,0};
 			vec3_t oldMD = {0,0,0};
 
+			qboolean is_pistol = (qboolean)(cent->gent->s.weapon == WP_BLASTER_PISTOL
+									|| cent->gent->s.weapon == WP_REY
+									|| cent->gent->s.weapon == WP_JANGO
+									|| cent->gent->s.weapon == WP_CLONEPISTOL);
+
 			if( !calcedMp )
 			{
 				if ( cent->gent && cent->gent->client && cent->gent->client->NPC_class == CLASS_ATST)
@@ -8320,7 +8325,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 					/*
 					&& cent->gent->client->NPC_class == CLASS_REBORN//cultist
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
-					&& */(cent->gent->s.weapon == WP_BLASTER_PISTOL || cent->gent->s.weapon == WP_CLONEPISTOL)//using blaster pistol
+					&& */is_pistol//using blaster pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
 
