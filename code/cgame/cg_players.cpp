@@ -8967,7 +8967,7 @@ SkipTrueView:
 
 				if (/*( cent->currentState.eFlags & EF_FIRING || cent->currentState.eFlags & EF_ALT_FIRING ) &&*/ effect )
 				{
-					if ( (cent->gent && cent->gent->NPC) || cent->gent->s.weapon == WP_CLONEPISTOL )
+					if ( (cent->gent && cent->gent->NPC) || is_pistol )
 					{
 						if ( !VectorCompare( oldMP, vec3_origin )
 							&& !VectorCompare( oldMD, vec3_origin ) )
