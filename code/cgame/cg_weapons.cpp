@@ -38,6 +38,12 @@ const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHei
 								const char *psText, int iFontHandle, float fScale,
 								const vec4_t v4Color);
 
+qboolean is_dual_wielding(int weapon)
+{
+	return (qboolean)(cg_dualWielding.integer && (weapon == WP_BLASTER_PISTOL
+					|| weapon == WP_REY || weapon == WP_JANGO || weapon == WP_CLONEPISTOL));
+}
+
 /*
 =================
 CG_RegisterWeapon
@@ -1046,7 +1052,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	if ( cg.renderingThirdPerson )
 		return;
 	
-	if ( cg_trueguns.integer && !cg.zoomMode )
+	if ( (cg_trueguns.integer || is_dual_wielding(ps->weapon)) && !cg.zoomMode )
 		return;
 
 	if ( ps->pm_type == PM_INTERMISSION )

@@ -668,6 +668,9 @@ extern	vmCvar_t		cg_trueinvertsaber;
 extern	vmCvar_t		cg_truefov;
 extern  vmCvar_t        cg_truebobbing;
 
+extern	vmCvar_t		cg_dualWielding;
+extern	qboolean 		is_dual_wielding(int weapon);
+
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c

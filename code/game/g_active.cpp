@@ -4293,7 +4293,7 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 	{
 		return;
 	}
-	if ( !ent->s.number && (cg_trueguns.integer || (!cg.renderingThirdPerson && (ent->client->ps.weapon == WP_SABER || ent->client->ps.weapon == WP_MELEE)) ) )
+	if ( !ent->s.number && ((cg_trueguns.integer || is_dual_wielding(ent->client->ps.weapon)) || (!cg.renderingThirdPerson && (ent->client->ps.weapon == WP_SABER || ent->client->ps.weapon == WP_MELEE)) ) )
 	{
 		return;
 	}
