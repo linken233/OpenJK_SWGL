@@ -669,7 +669,6 @@ extern	vmCvar_t		cg_truefov;
 extern  vmCvar_t        cg_truebobbing;
 
 extern	vmCvar_t		cg_dualWielding;
-extern	qboolean 		is_dual_wielding(int weapon);
 
 void CG_NewClientinfo( int clientNum );
 //
@@ -847,6 +846,8 @@ void CG_AddViewWeapon (playerState_t *ps);
 void CG_DrawWeaponSelect( void );
 
 void CG_OutOfAmmoChange( void );	// should this be in pmove?
+
+qboolean CG_PlayerIsDualWielding(int weapon);
 
 //
 // cg_marks.c

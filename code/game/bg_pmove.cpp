@@ -150,8 +150,6 @@ extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
 extern int defaultDamageCopy[WP_NUM_WEAPONS];
 
-extern vmCvar_t	cg_dualWielding;
-
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
 #define		FLY_NONE	0
@@ -229,7 +227,7 @@ qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 
 qboolean BG_AllowThirdPersonSpecialMove( playerState_t *ps )
 {
-	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || is_dual_wielding(ps->weapon)) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
+	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || CG_PlayerIsDualWielding(ps->weapon)) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
 }
 /*
 ===============
