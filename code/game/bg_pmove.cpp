@@ -13370,6 +13370,10 @@ static void PM_Weapon( void )
 	int fire_time = 0;
 	int burst_fire_delay = 0;
 	int burst_shots = 0;
+	qboolean is_pistol = (qboolean)(pm->ps->weapon == WP_BLASTER_PISTOL
+									|| pm->ps->weapon == WP_REY
+									|| pm->ps->weapon == WP_JANGO
+									|| pm->ps->weapon == WP_CLONEPISTOL);
 
 	if (pm->cmd.buttons & BUTTON_ATTACK)
 	{	
@@ -13500,6 +13504,23 @@ static void PM_Weapon( void )
 		}
 	}
 
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		if (is_pistol)
+		{
+			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
+			{
+				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
+			}
+			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
+			{
+				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
+				pm->gent->weaponModel[1] = -1;
+				pm->gent->count = 0;
+			}
+		}
+	}
+
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
 	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
@@ -13576,28 +13597,6 @@ static void PM_Weapon( void )
 				{//this way we don't get that annoying change weapon sound every time a map starts
 					PM_AddEvent( EV_CHANGE_WEAPON );
 				}
-			}
-		}
-	}
-
-	qboolean is_pistol = (qboolean)(pm->ps->weapon == WP_BLASTER_PISTOL
-									|| pm->ps->weapon == WP_REY
-									|| pm->ps->weapon == WP_JANGO
-									|| pm->ps->weapon == WP_CLONEPISTOL);
-
-	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
-	{
-		if (is_pistol)
-		{
-			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
-			{
-				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
-			}
-			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
-			{
-				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
-				pm->gent->weaponModel[1] = -1;
-				pm->gent->count = 0;
 			}
 		}
 	}
