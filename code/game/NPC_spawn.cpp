@@ -1725,6 +1725,8 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	}
 
 	newent->classname = "NPC";
+	newent->NPC_skin = G_NewString(ent->NPC_skin);
+	newent->NPC_team = G_NewString(ent->NPC_team);
 	VectorCopy(ent->s.origin, newent->s.origin);
 	VectorCopy(ent->s.origin, newent->client->ps.origin);
 	VectorCopy(ent->s.origin, newent->currentOrigin);
@@ -1778,8 +1780,6 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	newent->paintarget = G_NewString(ent->paintarget);
 	newent->opentarget = G_NewString(ent->opentarget);
 	newent->radius = ent->radius;
-	newent->NPC_skin = G_NewString(ent->NPC_skin);
-	newent->NPC_team = G_NewString(ent->NPC_team);
 
 	newent->NPC->eventualGoal = ent->enemy;
 
