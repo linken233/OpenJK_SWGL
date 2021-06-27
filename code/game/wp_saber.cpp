@@ -11249,7 +11249,7 @@ qboolean ToBeAffectedByStasis(gentity_t *self, gentity_t *traceEnt)
 		Jedi_PlayDeflectSound(traceEnt);
 		return qfalse;
 	}
-	
+
 	// Like it or not, some npcs should be immune
 	else if (traceEnt->client->NPC_class == CLASS_GALAKMECH
 			|| traceEnt->client->ps.weapon == WP_CONCUSSION
@@ -11267,6 +11267,17 @@ qboolean ToBeAffectedByStasis(gentity_t *self, gentity_t *traceEnt)
 		|| traceEnt->client->NPC_class == CLASS_RANCOR))
 	{
 		return qfalse;
+	}
+
+	// Force Absorb is still a thing, just saying
+	if (traceEnt->client->ps.forcePowersActive& (1 << FP_ABSORB))
+	{
+		if (Q_irand(1, traceEnt->client->ps.forcePowerLevel[FP_ABSORB]) >= Q_irand(1, self->client->ps.forcePowerLevel[FP_STASIS]))
+		{
+			WP_ResistForcePush(traceEnt, self, qtrue);
+			Jedi_PlayDeflectSound(traceEnt);
+			return qfalse;
+		}
 	}
 
 	// All other NPCs should just be affected
