@@ -45,12 +45,13 @@ CG_RegisterWeapon
 The server says this item is used on this level
 =================
 */
-void CG_RegisterWeapon( int weaponNum ) {
+void CG_RegisterWeapon( int weaponNum, qboolean secondaryMdl ) {
 	weaponInfo_t	*weaponInfo;
 	gitem_t			*item, *ammo;
 	char			path[MAX_QPATH];
 	vec3_t			mins, maxs;
 	int				i;
+	char			*currWeaponMdl;
 
 	weaponInfo = &cg_weapons[weaponNum];
 
@@ -80,12 +81,14 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 	CG_RegisterItemVisuals( item - bg_itemlist );
 
+	currWeaponMdl = (secondaryMdl) ? weaponData[weaponNum].weaponMdl2 : weaponData[weaponNum].weaponMdl;
+
 	// set up in view weapon model
-	weaponInfo->weaponModel = cgi_R_RegisterModel( weaponData[weaponNum].weaponMdl );
+	weaponInfo->weaponModel = cgi_R_RegisterModel( currWeaponMdl );
 	{//in case the weaponmodel isn't _w, precache the _w.glm
 		char weaponModel[64];
 
-		Q_strncpyz (weaponModel, weaponData[weaponNum].weaponMdl, sizeof(weaponModel));
+		Q_strncpyz (weaponModel, currWeaponMdl, sizeof(weaponModel));
 		if (char *spot = strstr(weaponModel, ".md3") )
 		{
 			*spot = 0;
@@ -101,7 +104,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 
 	if ( weaponInfo->weaponModel == 0 )
 	{
-		CG_Error( "Couldn't find weapon model %s for weapon %s\n", weaponData[weaponNum].weaponMdl, weaponData[weaponNum].classname);
+		CG_Error( "Couldn't find weapon model %s for weapon %s\n", currWeaponMdl, weaponData[weaponNum].classname);
 		return;
 	}
 
@@ -129,7 +132,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	for (i=0; i< weaponData[weaponNum].numBarrels; i++) {
-		Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+		Q_strncpyz( path, currWeaponMdl, sizeof(path) );
 		COM_StripExtension( path, path, sizeof(path) );
 		if (i)
 		{
@@ -151,7 +154,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	// set up the hand that holds the in view weapon - assuming we have one
-	Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+	Q_strncpyz( path, currWeaponMdl, sizeof(path) );
 	COM_StripExtension( path, path, sizeof(path) );
 	Q_strcat( path, sizeof(path), "_hand.md3" );
 	weaponInfo->handsModel = cgi_R_RegisterModel( path );
@@ -704,7 +707,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 
 	if ( item->giType == IT_WEAPON )
 	{
-		CG_RegisterWeapon( item->giTag );
+		CG_RegisterWeapon( item->giTag, qfalse );
 	}
 
 	// some ammo types are actually the weapon, like in the case of explosives
@@ -713,13 +716,13 @@ void CG_RegisterItemVisuals( int itemNum ) {
 		switch( item->giTag )
 		{
 		case AMMO_THERMAL:
-			CG_RegisterWeapon( WP_THERMAL );
+			CG_RegisterWeapon( WP_THERMAL, qfalse );
 			break;
 		case AMMO_TRIPMINE:
-			CG_RegisterWeapon( WP_TRIP_MINE );
+			CG_RegisterWeapon( WP_TRIP_MINE, qfalse );
 			break;
 		case AMMO_DETPACK:
-			CG_RegisterWeapon( WP_DET_PACK );
+			CG_RegisterWeapon( WP_DET_PACK, qfalse );
 			break;
 		}
 	}
@@ -735,11 +738,11 @@ void CG_RegisterItemVisuals( int itemNum ) {
 			cgi_S_RegisterSound( "sound/chars/seeker/misc/hiss.wav");
 			theFxScheduler.RegisterEffect( "env/small_explode");
 
-			CG_RegisterWeapon( WP_BLASTER );
+			CG_RegisterWeapon( WP_BLASTER, qfalse );
 			break;
 
 		case INV_SENTRY:
-			CG_RegisterWeapon( WP_TURRET );
+			CG_RegisterWeapon( WP_TURRET, qfalse );
 			cgi_S_RegisterSound( "sound/player/use_sentry" );
 			break;
 
@@ -1112,7 +1115,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 //		CG_LightningBolt( cent, origin );
 
 		// We should still do muzzle flashes though...
-		CG_RegisterWeapon( ps->weapon );
+		CG_RegisterWeapon( ps->weapon, qfalse );
 		weapon = &cg_weapons[ps->weapon];
 		wData =  &weaponData[ps->weapon];
 
@@ -1156,7 +1159,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 		leanOffset = 0;
 	}
 
-	CG_RegisterWeapon( ps->weapon );
+	CG_RegisterWeapon( ps->weapon, qfalse );
 	weapon = &cg_weapons[ps->weapon];
 	wData =  &weaponData[ps->weapon];
 
@@ -1657,7 +1660,7 @@ void CG_DrawDataPadWeaponSelect( void )
 		if (weaponData[weaponSelectI].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( weaponSelectI );
+			CG_RegisterWeapon( weaponSelectI, qfalse );
 			weaponInfo = &cg_weapons[weaponSelectI];
 
 			if (!CG_WeaponCheck(weaponSelectI))
@@ -1685,7 +1688,7 @@ void CG_DrawDataPadWeaponSelect( void )
 	if (weaponData[cg.DataPadWeaponSelect].weaponIcon[0])
 	{
 		weaponInfo_t	*weaponInfo;
-		CG_RegisterWeapon( cg.DataPadWeaponSelect );
+		CG_RegisterWeapon( cg.DataPadWeaponSelect, qfalse );
 		weaponInfo = &cg_weapons[cg.DataPadWeaponSelect];
 
 			// Draw graphic to show weapon has ammo or no ammo
@@ -1747,7 +1750,7 @@ void CG_DrawDataPadWeaponSelect( void )
 		if (weaponData[weaponSelectI].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( weaponSelectI );
+			CG_RegisterWeapon( weaponSelectI, qfalse );
 			weaponInfo = &cg_weapons[weaponSelectI];
 
 			// Draw graphic to show weapon has ammo or no ammo
@@ -2019,7 +2022,7 @@ void CG_DrawWeaponSelect( void )
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i );
+			CG_RegisterWeapon( i, qfalse );
 			weaponInfo = &cg_weapons[i];
 
 			if (!CG_WeaponCheck(i))
@@ -2046,7 +2049,7 @@ void CG_DrawWeaponSelect( void )
 	if (weaponData[cg.weaponSelect].weaponIcon[0])
 	{
 		weaponInfo_t	*weaponInfo;
-		CG_RegisterWeapon( cg.weaponSelect );
+		CG_RegisterWeapon( cg.weaponSelect, qfalse );
 		weaponInfo = &cg_weapons[cg.weaponSelect];
 
 		if (!CG_WeaponCheck(cg.weaponSelect))
@@ -2120,7 +2123,7 @@ void CG_DrawWeaponSelect( void )
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i );
+			CG_RegisterWeapon( i, qfalse );
 			weaponInfo = &cg_weapons[i];
 			// No ammo for this weapon?
 			if (!CG_WeaponCheck(i))

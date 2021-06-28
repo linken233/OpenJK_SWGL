@@ -13354,6 +13354,37 @@ void PM_WeaponWampa( void )
 		pm->ps->saberMoveNext = LS_NONE;
 	}
 }
+
+/*
+==============
+PM_SecondaryMdlChange
+==============
+*/
+static void PM_SecondaryMdlChange(qboolean secondaryMdl)
+{
+	char *currWeaponMdl = (secondaryMdl) ? weaponData[pm->ps->weapon].weaponMdl2 : weaponData[pm->ps->weapon].weaponMdl;
+
+	// Reregister the same weapon with a different model.
+	cg_weapons[pm->ps->weapon].registered = qfalse;
+	CG_RegisterWeapon(pm->ps->weapon, secondaryMdl);
+	
+	// Remove the weapon you have currently with a different model.
+	G_RemoveWeaponModels(pm->gent);
+	G_CreateG2AttachedWeaponModel(pm->gent, currWeaponMdl, pm->gent->handRBolt, 0);
+
+	// Set weaponstate and play the animation.
+	pm->ps->weaponstate = WEAPON_RAISING;
+	pm->ps->weaponTime += 500;
+
+	if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+	{
+		PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_HOLD);
+	}
+
+	// Set secondaryMdl.
+	weaponData[pm->ps->weapon].secondaryMdl = secondaryMdl;
+}
+
 /*
 ==============
 PM_Weapon
@@ -13508,12 +13539,16 @@ static void PM_Weapon( void )
 	{
 		if (is_pistol)
 		{
+			// If you don't have a weapon in your left hand and you just turned dual wielding on.
 			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
 			{
+				// Add the model you have in your right hand to your left hand.
 				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
 			}
+			// If you do have a weapon in your left hand and you just turned dual wielding off.
 			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
 			{
+				// Remove the weapon from your left hand.
 				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
 				pm->gent->weaponModel[1] = -1;
 				pm->gent->count = 0;
@@ -13526,6 +13561,23 @@ static void PM_Weapon( void )
 	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
 		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
+		}
+	}
+
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		// If the weapon has two model paths.
+		if (weaponData[pm->ps->weapon].weaponMdl[0] && weaponData[pm->ps->weapon].weaponMdl2[0]
+			&& pm->ps->weaponstate != WEAPON_DROPPING)
+		{
+			if (pm->ps->tertiaryMode && weaponData[pm->ps->weapon].secondaryMdl == qfalse)
+			{
+				PM_SecondaryMdlChange(qtrue);
+			}
+			else if (pm->ps->tertiaryMode == 0 && weaponData[pm->ps->weapon].secondaryMdl)
+			{
+				PM_SecondaryMdlChange(qfalse);
+			}
 		}
 	}
 

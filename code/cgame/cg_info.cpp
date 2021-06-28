@@ -530,7 +530,7 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i );
+			CG_RegisterWeapon( i, qfalse );
 			weaponInfo = &cg_weapons[i];
 			endIndex = i;
 

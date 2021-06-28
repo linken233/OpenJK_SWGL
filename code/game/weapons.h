@@ -182,6 +182,9 @@ typedef struct weaponData_s
 	int		altFireOpt[3];
 	int 	tertiaryFireOpt[3];
 
+	char	weaponMdl2[64];
+	qboolean secondaryMdl;
+
 } weaponData_t;
 
 

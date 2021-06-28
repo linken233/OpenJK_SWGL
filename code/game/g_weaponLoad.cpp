@@ -247,6 +247,8 @@ void WPN_MainFireOptions(const char **holdBuf);
 void WPN_AltFireOptions(const char **holdBuf);
 void WPN_TertiaryFireOptions(const char **holdBuf);
 
+void WPN_WeaponModel2(const char **holdBuf);
+
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
 
@@ -611,6 +613,8 @@ wpnParms_t WpnParms[] =
 	{ "mainfireopt",		WPN_MainFireOptions},
 	{ "altfireopt",			WPN_AltFireOptions},
 	{ "tertiaryfireopt",	WPN_TertiaryFireOptions},
+
+	{ "weaponmodel2",		WPN_WeaponModel2 },
 
 	// Old legacy files contain these, so we skip them to shut up warnings
 	{ "firingforce",		WPN_FuncSkip },
@@ -1800,6 +1804,29 @@ void WPN_TertiaryFireOptions(const char **holdBuf)
 
 		weaponData[wpnParms.weaponNum].tertiaryFireOpt[i] = tokenInt;
 	}
+}
+
+
+//--------------------------------------------
+void WPN_WeaponModel2(const char **holdBuf)
+{
+	int len;
+	const char	*tokenStr;
+
+	if ( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	len = strlen(tokenStr);
+	len++;
+	if (len > 64)
+	{
+		len = 64;
+		gi.Printf(S_COLOR_YELLOW"WARNING: weaponMdl too long in external WEAPONS.DAT '%s'\n", tokenStr);
+	}
+
+	Q_strncpyz(weaponData[wpnParms.weaponNum].weaponMdl2,tokenStr,len);
 }
 
 //--------------------------------------------
