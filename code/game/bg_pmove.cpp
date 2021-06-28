@@ -225,7 +225,10 @@ qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 	return qfalse;
 }
 
-
+qboolean BG_AllowThirdPersonSpecialMove( playerState_t *ps )
+{
+	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || CG_PlayerIsDualWielding(ps->weapon)) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
+}
 /*
 ===============
 PM_AddEvent
@@ -1272,7 +1275,7 @@ static qboolean PM_CheckJump( void )
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_1 &&
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_2 &&
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_3
-								&& cg.renderingThirdPerson//third person only
+								&& BG_AllowThirdPersonSpecialMove( pm->ps )//third person only
 								&& !cg.zoomMode //not zoomed in
 								&& !(pm->ps->saber[0].saberFlags&SFL_NO_FLIPS)//okay to do flips with this saber
 								&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_FLIPS) )//okay to do flips with this saber
@@ -1486,7 +1489,7 @@ static qboolean PM_CheckJump( void )
 		//&& !PM_InKnockDown( pm->ps )//not in a knockdown
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
 		&& pm->gent && WP_ForcePowerAvailable( pm->gent, FP_LEVITATION, 0 ) //have enough force power to jump
-		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode	&& !(pm->gent->flags&FL_LOCK_PLAYER_WEAPONS) )) )// yes this locked weapons check also includes force powers, if we need a separate check later I'll make one
+		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode	&& !(pm->gent->flags&FL_LOCK_PLAYER_WEAPONS) )) )// yes this locked weapons check also includes force powers, if we need a separate check later I'll make one
 	{
 		if ( pm->gent->NPC && pm->gent->NPC->rank != RANK_CREWMAN && pm->gent->NPC->rank <= RANK_LT_JG )
 		{//reborn who are not acrobats can't do any of these acrobatics
@@ -2363,7 +2366,7 @@ static qboolean PM_CheckJump( void )
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
 		&& pm->ps->weapon == WP_SABER
 		&& (pm->ps->weaponTime > 0||(pm->cmd.buttons&BUTTON_ATTACK))
-		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode)) )
+		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode)) )
 	{//okay, we just jumped and we're in an attack
 		if ( !PM_RollingAnim( pm->ps->legsAnim )
 			&& !PM_InKnockDown( pm->ps )
@@ -3127,7 +3130,7 @@ static void PM_WalkMove( void ) {
 	if ( g_debugMelee->integer )
 	{
 		if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())//player
-			&& cg.renderingThirdPerson//in third person
+			&& BG_AllowThirdPersonSpecialMove( pm->ps )//in third person
 			&& ((pm->cmd.buttons&BUTTON_USE)||pm->ps->leanStopDebounceTime)//holding use or leaning
 			//&& (pm->ps->forcePowersActive&(1<<FP_SPEED))
 			&& pm->ps->groundEntityNum != ENTITYNUM_NONE//on ground
@@ -3797,7 +3800,7 @@ static qboolean PM_TryRoll( void )
 			return qfalse;
 		}
 	}
-	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (!cg.renderingThirdPerson || cg.zoomMode) )
+	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (!BG_AllowThirdPersonSpecialMove( pm->ps )) )
 	{//player can't do this in 1st person
 		return qfalse;
 	}
@@ -5704,7 +5707,7 @@ static void PM_CheckDuck (void)
 
 		if ( pm->ps->clientNum < MAX_CLIENTS
 			&& (pm->gent->client->NPC_class == CLASS_ATST ||pm->gent->client->NPC_class == CLASS_RANCOR)
-			&& !cg.renderingThirdPerson )
+			&& !BG_AllowThirdPersonSpecialMove( pm->ps ) )
 		{
 			standheight = crouchheight = 128;
 		}
@@ -7459,7 +7462,7 @@ qboolean PM_AdjustStandAnimForSlope( void )
 		return qfalse;
 	}
 	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
-		&& (!cg.renderingThirdPerson || cg.zoomMode) )
+		&& (!BG_AllowThirdPersonSpecialMove( pm->ps )) )
 	{//first person doesn't do this
 		return qfalse;
 	}
@@ -9088,7 +9091,6 @@ static void PM_FinishWeaponChange( void ) {
 			G_RemoveWeaponModels( pm->gent );
 			if (weaponData[weapon].weaponMdl[0]) {	//might be NONE, so check if it has a model
 				G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handRBolt, 0 );
-				// G_CreateG2AttachedWeaponModel( pm->gent, weaponData[weapon].weaponMdl, pm->gent->handLBolt, 1 );
 			}
 		}
 
@@ -13368,6 +13370,10 @@ static void PM_Weapon( void )
 	int fire_time = 0;
 	int burst_fire_delay = 0;
 	int burst_shots = 0;
+	qboolean is_pistol = (qboolean)(pm->ps->weapon == WP_BLASTER_PISTOL
+									|| pm->ps->weapon == WP_REY
+									|| pm->ps->weapon == WP_JANGO
+									|| pm->ps->weapon == WP_CLONEPISTOL);
 
 	if (pm->cmd.buttons & BUTTON_ATTACK)
 	{	
@@ -13495,6 +13501,23 @@ static void PM_Weapon( void )
 		if ( pm->ps->weaponTime <= 0 )
 		{
 			pm->ps->weaponTime = 0;
+		}
+	}
+
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		if (is_pistol)
+		{
+			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
+			{
+				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
+			}
+			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
+			{
+				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
+				pm->gent->weaponModel[1] = -1;
+				pm->gent->count = 0;
+			}
 		}
 	}
 
@@ -13927,7 +13950,7 @@ static void PM_Weapon( void )
 				}
 				else
 				{
-					if ( cg.renderingThirdPerson )
+					if ( BG_AllowThirdPersonSpecialMove( pm->ps ) )
 					{
 						if ( PM_StandingAnim( pm->ps->legsAnim )
 							|| pm->ps->legsAnim == BOTH_THERMAL_READY )

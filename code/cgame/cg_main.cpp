@@ -345,6 +345,21 @@ vmCvar_t	cg_SFXSabers;
 vmCvar_t	cg_SFXSabersGlowSize;
 vmCvar_t	cg_SFXSabersCoreSize;
 
+vmCvar_t	cg_dualWielding;
+
+vmCvar_t	cg_trueguns;
+vmCvar_t	cg_fpls;
+
+vmCvar_t		cg_trueroll;
+vmCvar_t		cg_trueflip;
+vmCvar_t		cg_truespin;
+vmCvar_t		cg_truemoveroll;
+vmCvar_t		cg_truesaberonly;
+vmCvar_t		cg_trueeyeposition;
+vmCvar_t		cg_trueinvertsaber;
+vmCvar_t		cg_truefov;
+vmCvar_t        cg_truebobbing;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	const char	*cvarName;
@@ -468,7 +483,20 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", CVAR_ARCHIVE },
 	{ &cg_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", CVAR_ARCHIVE },
 
+	{ &cg_dualWielding,	"cg_dualWielding",	"0", CVAR_ARCHIVE },
 
+	//True View Control cvars
+	{ &cg_trueguns, "cg_trueguns", "0", CVAR_ARCHIVE },
+	{ &cg_fpls, "cg_fpls", "1", CVAR_ARCHIVE },
+	{ &cg_trueroll,	"cg_trueroll",	"0", CVAR_ARCHIVE },
+	{ &cg_trueflip,	"cg_trueflip",	"0", CVAR_ARCHIVE },
+	{ &cg_truespin,	"cg_truespin",	"0", CVAR_ARCHIVE },
+	{ &cg_truemoveroll,	"cg_truemoveroll",	"0", CVAR_ARCHIVE },
+	{ &cg_truesaberonly,	"cg_truesaberonly",	"0", CVAR_ARCHIVE },
+	{ &cg_trueeyeposition,	"cg_trueeyeposition",	"0.0", 0},
+	{ &cg_trueinvertsaber,	"cg_trueinvertsaber",	"0", CVAR_ARCHIVE},
+	{ &cg_truefov,	"cg_truefov",	"80", CVAR_ARCHIVE},
+    { &cg_truebobbing,	"cg_truebobbing",	"1", CVAR_ARCHIVE},
 };
 
 static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
@@ -549,6 +577,12 @@ int CG_GetCameraPos( vec3_t camerapos ) {
 	}
 	else if (cg.snap && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//implied: !cg.renderingThirdPerson
 	{//first person saber hack
+		VectorCopy( cg.refdef.vieworg, camerapos );
+		return 1;
+	}
+	else if ( cg_trueguns.integer && !cg.zoomMode )
+	{//in third person
+		//FIXME: what about hacks that render in third person regardless of this value?
 		VectorCopy( cg.refdef.vieworg, camerapos );
 		return 1;
 	}
@@ -2184,6 +2218,8 @@ void CG_Init( int serverCommandSequence ) {
 	CG_GameStateReceived();
 
 	CG_InitConsoleCommands();
+	
+	CG_TrueViewInit();
 
 	cg.weaponPickupTextTime = 0;
 

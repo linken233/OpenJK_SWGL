@@ -1045,6 +1045,9 @@ void CG_AddViewWeapon( playerState_t *ps )
 	// no gun if in third person view
 	if ( cg.renderingThirdPerson )
 		return;
+	
+	if ( (cg_trueguns.integer || CG_PlayerIsDualWielding(ps->weapon)) && !cg.zoomMode )
+		return;
 
 	if ( ps->pm_type == PM_INTERMISSION )
 		return;
@@ -2829,6 +2832,16 @@ void CG_OutOfAmmoChange( void ) {
 	}
 }
 
+/*
+=================
+CG_PlayerIsDualWielding
+=================
+*/
+qboolean CG_PlayerIsDualWielding(int weapon)
+{
+	return (qboolean)(cg_dualWielding.integer && (weapon == WP_BLASTER_PISTOL
+					|| weapon == WP_REY || weapon == WP_JANGO || weapon == WP_CLONEPISTOL));
+}
 
 
 /*
