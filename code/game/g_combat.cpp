@@ -129,8 +129,10 @@ gentity_t *TossClientItems( gentity_t *self )
 {
 	//FIXME: drop left-hand weapon, too?
 	gentity_t	*dropped = NULL;
+	gentity_t	*dropped2 = NULL;
 	gitem_t		*item = NULL;
 	int			weapon;
+	qboolean 	is_pistol = qfalse;
 
 	if ( self->client->NPC_class == CLASS_SEEKER
 		|| self->client->NPC_class == CLASS_REMOTE
@@ -144,6 +146,11 @@ gentity_t *TossClientItems( gentity_t *self )
 
 	// drop the weapon if not a saber or enemy-only weapon
 	weapon = self->s.weapon;
+	is_pistol = (qboolean)(self->weaponModel[1] > 0 && (weapon == WP_BLASTER_PISTOL
+							|| weapon == WP_REY
+							|| weapon == WP_JANGO
+							|| weapon == WP_CLONEPISTOL));
+
 	if ( weapon == WP_SABER )
 	{
 		if ( self->weaponModel[0] < 0 )
@@ -179,9 +186,10 @@ gentity_t *TossClientItems( gentity_t *self )
 			}
 		}
 	}
-	else if ( weapon == WP_BLASTER_PISTOL )
+	/*else if ( weapon == WP_BLASTER_PISTOL )
 	{//FIXME: either drop the pistol and make the pickup only give ammo or drop ammo
 	}
+	*/
 	else if ( weapon == WP_STUN_BATON
 		|| weapon == WP_MELEE )
 	{//never drop these
@@ -289,6 +297,38 @@ gentity_t *TossClientItems( gentity_t *self )
 				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 				dropped->s.radius = 10;
 			}
+		}
+
+		if (item && !dropped2 && is_pistol)
+		{
+			dropped2 = Drop_Item(self, item, 45, qtrue);
+			dropped2->e_ThinkFunc = thinkF_NULL;
+			dropped2->nextthink = -1;
+
+			if (!self->s.number)
+			{
+				dropped2->count = 0;
+			}
+			else
+			{
+				switch (weapon)
+				{
+					case WP_BLASTER_PISTOL:
+						dropped2->count = 20;
+						break;
+					case WP_REY:
+					case WP_JANGO:
+					case WP_CLONEPISTOL:
+						dropped2->count = 50;
+						break;
+					default:
+						dropped2->count = 0;
+						break;
+				}
+			}
+
+			gi.G2API_InitGhoul2Model(dropped2->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
+			dropped2->s.radius = 10;
 		}
 	}
 //	else if (( self->client->NPC_class == CLASS_SENTRY ) || ( self->client->NPC_class == CLASS_PROBE )) // Looks dumb, Steve told us to take it out.
