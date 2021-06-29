@@ -12464,7 +12464,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 				Jedi_PlayDeflectSound( traceEnt );
 				dmg = Q_irand(0,1);
 			}
-			else if ( traceEnt->s.weapon == WP_SABER )
+			else if ( traceEnt->s.weapon == WP_SABER && traceEnt->client->ps.SaberActive())
 			{//saber can block lightning
 				if ( traceEnt->client //a client
 					&& !traceEnt->client->ps.saberInFlight//saber in hand
@@ -12488,7 +12488,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 					else
 					{
 						//make them do a parry
-						traceEnt->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
+						traceEnt->client->ps.saberBlocked = BLOCKED_TOP;
 						int parryReCalcTime = Jedi_ReCalcParryTime( traceEnt, EVASION_PARRY );
 						if ( traceEnt->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] < level.time + parryReCalcTime )
 						{
@@ -13998,7 +13998,9 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		atPower != FP_PULL &&
 		atPower != FP_GRASP &&
 		atPower != FP_DESTRUCTION &&
-		atPower != FP_STASIS)
+		atPower != FP_STASIS &&
+		atPower != FP_BLAST &&
+		atPower != FP_LIGHTNING_STRIKE)
 	{ //Only these powers can be absorbed
 		return -1;
 	}
