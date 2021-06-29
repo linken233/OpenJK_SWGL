@@ -14186,7 +14186,7 @@ static void PM_Weapon( void )
 					// The delay between each shot.
 					addTime = burst_fire_delay;
 					// Minus it by 1 to call the above if statement.
-					pm->ps->shotsRemaining -= 1;
+					pm->ps->shotsRemaining--;
 				}
 				break;
 		}

@@ -8727,6 +8727,10 @@ SkipTrueView:
 			//NOTE: I'm only doing this for the saboteur right now - AT-STs might need this... others?
 			vec3_t oldMP = {0,0,0};
 			vec3_t oldMD = {0,0,0};
+			qboolean is_pistol = (qboolean)(cent->gent->s.weapon == WP_BLASTER_PISTOL
+											|| cent->gent->s.weapon == WP_REY
+											|| cent->gent->s.weapon == WP_JANGO
+											|| cent->gent->s.weapon == WP_CLONEPISTOL);
 
 			if( !calcedMp )
 			{
@@ -8837,11 +8841,12 @@ SkipTrueView:
 						}
 					}
 				}
-				else if ( /*cent->gent->client && cent->gent->NPC//client NPC
+				else if ( ((cent->gent->client && cent->gent->NPC) || cg_dualWielding.integer)//client NPC
 					/*
 					&& cent->gent->client->NPC_class == CLASS_REBORN//cultist
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
-					&& */CG_PlayerIsDualWielding(cg.snap->ps.weapon)//using blaster pistol
+					*/
+					&& is_pistol//using pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
 
