@@ -12481,25 +12481,64 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 					{
 						dmg = 0;
 					}
-					if ( (traceEnt->client->ps.forcePowersActive&(1<<FP_ABSORB))
-						&& traceEnt->client->ps.forcePowerLevel[FP_ABSORB] > FORCE_LEVEL_2 )
-					{//no parry, just absorb
-					}
-					else
+					if (traceEnt->client->ps.forcePower > 0)
 					{
+						int forcePowerLoss = 0;
+
+						switch (traceEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE])
+						{
+						case FORCE_LEVEL_1:
+							forcePowerLoss = 10;
+							break;
+						case FORCE_LEVEL_2:
+							forcePowerLoss = 5;
+							break;
+						case FORCE_LEVEL_3:
+						default:
+							forcePowerLoss = 1;
+							break;
+						}
+						
+						if (traceEnt->client->ps.forcePowersActive&(1 << FP_ABSORB))
+						{
+							switch (traceEnt->client->ps.forcePowerLevel[FP_ABSORB])
+							{
+							case FORCE_LEVEL_1:
+								forcePowerLoss -= 1;
+								break;
+							case FORCE_LEVEL_2:
+								forcePowerLoss -= 5;
+								break;
+							case FORCE_LEVEL_3:
+							default:
+								forcePowerLoss -= 10;
+								break;
+							}
+
+						}
+							
+						dmg = 0;
+
+						vec3_t	end; /*normal = {0,0,1};//FIXME: opposite of rain angles?*/
+						VectorMA(traceEnt->client->ps.saber[0].blade[0].muzzlePoint, traceEnt->client->ps.saber[0].blade[0].length*Q_flrand(0, 1), traceEnt->client->ps.saber[0].blade[0].muzzleDir, end);
+						G_PlayEffect("saber/fizz", end);
+
+						traceEnt->client->ps.forcePower -= forcePowerLoss;
+
 						//make them do a parry
 						traceEnt->client->ps.saberBlocked = BLOCKED_TOP;
-						int parryReCalcTime = Jedi_ReCalcParryTime( traceEnt, EVASION_PARRY );
-						if ( traceEnt->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] < level.time + parryReCalcTime )
+						int parryReCalcTime = Jedi_ReCalcParryTime(traceEnt, EVASION_PARRY);
+						if (traceEnt->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] < level.time + parryReCalcTime)
 						{
 							traceEnt->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] = level.time + parryReCalcTime;
 						}
-						traceEnt->client->ps.weaponTime = Q_irand( 100, 300 );//hold this move - can't attack! - FIXME: unless dual sabers?
+						traceEnt->client->ps.weaponTime = Q_irand(100, 300);//hold this move - can't attack! - FIXME: unless dual sabers?
+
 					}
-				}
-				else if ( Q_irand( 0, 1 ) )
-				{//jedi less likely to be damaged
-					dmg = 0;
+					else
+					{
+						dmg = 1;
+					}
 				}
 				else
 				{
