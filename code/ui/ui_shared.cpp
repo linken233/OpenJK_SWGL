@@ -5571,6 +5571,7 @@ static const char *g_bindCommands[] = {
 	"centerview",
 	"cg_thirdperson !",
 	"datapad",
+	"dualwield",
 	"exitview",
 #ifndef JK2_MODE
 	"force_absorb",

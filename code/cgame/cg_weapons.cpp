@@ -2423,6 +2423,14 @@ void CG_DPNextWeapon_f( void ) {
 	cg.DataPadWeaponSelect = original;
 }
 
+void CG_Dualwield_f()
+{
+	if (!cg_dualWielding.integer)
+		cg_dualWielding.integer = 1;
+	else
+		cg_dualWielding.integer = 0;
+}
+
 /*
 ===============
 CG_DPPrevWeapon_f
