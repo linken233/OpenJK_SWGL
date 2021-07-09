@@ -1672,7 +1672,7 @@ Ghoul2 Insert End
 					CG_RegisterClientModels(i);
 					if ( i != 0 )
 					{//Client weapons already precached
-						CG_RegisterWeapon( g_entities[i].client->ps.weapon, qfalse );
+						CG_RegisterWeapon( g_entities[i].client->ps.weapon );
 						if ( g_entities[i].client->ps.saber[0].g2MarksShader[0] )
 						{
 							cgi_R_RegisterShader( g_entities[i].client->ps.saber[0].g2MarksShader );

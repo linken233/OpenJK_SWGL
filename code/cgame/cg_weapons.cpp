@@ -45,7 +45,7 @@ CG_RegisterWeapon
 The server says this item is used on this level
 =================
 */
-void CG_RegisterWeapon( int weaponNum, qboolean secondaryMdl ) {
+void CG_RegisterWeapon( int weaponNum ) {
 	weaponInfo_t	*weaponInfo;
 	gitem_t			*item, *ammo;
 	char			path[MAX_QPATH];
@@ -81,7 +81,7 @@ void CG_RegisterWeapon( int weaponNum, qboolean secondaryMdl ) {
 	}
 	CG_RegisterItemVisuals( item - bg_itemlist );
 
-	currWeaponMdl = (secondaryMdl) ? weaponData[weaponNum].weaponMdl2 : weaponData[weaponNum].weaponMdl;
+	currWeaponMdl = (weaponData[weaponNum].secondaryMdl) ? weaponData[weaponNum].weaponMdl2 : weaponData[weaponNum].weaponMdl;
 
 	// set up in view weapon model
 	weaponInfo->weaponModel = cgi_R_RegisterModel( currWeaponMdl );
@@ -707,7 +707,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 
 	if ( item->giType == IT_WEAPON )
 	{
-		CG_RegisterWeapon( item->giTag, qfalse );
+		CG_RegisterWeapon( item->giTag );
 	}
 
 	// some ammo types are actually the weapon, like in the case of explosives
@@ -716,13 +716,13 @@ void CG_RegisterItemVisuals( int itemNum ) {
 		switch( item->giTag )
 		{
 		case AMMO_THERMAL:
-			CG_RegisterWeapon( WP_THERMAL, qfalse );
+			CG_RegisterWeapon( WP_THERMAL );
 			break;
 		case AMMO_TRIPMINE:
-			CG_RegisterWeapon( WP_TRIP_MINE, qfalse );
+			CG_RegisterWeapon( WP_TRIP_MINE );
 			break;
 		case AMMO_DETPACK:
-			CG_RegisterWeapon( WP_DET_PACK, qfalse );
+			CG_RegisterWeapon( WP_DET_PACK );
 			break;
 		}
 	}
@@ -738,11 +738,11 @@ void CG_RegisterItemVisuals( int itemNum ) {
 			cgi_S_RegisterSound( "sound/chars/seeker/misc/hiss.wav");
 			theFxScheduler.RegisterEffect( "env/small_explode");
 
-			CG_RegisterWeapon( WP_BLASTER, qfalse );
+			CG_RegisterWeapon( WP_BLASTER );
 			break;
 
 		case INV_SENTRY:
-			CG_RegisterWeapon( WP_TURRET, qfalse );
+			CG_RegisterWeapon( WP_TURRET );
 			cgi_S_RegisterSound( "sound/player/use_sentry" );
 			break;
 
@@ -1115,7 +1115,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 //		CG_LightningBolt( cent, origin );
 
 		// We should still do muzzle flashes though...
-		CG_RegisterWeapon( ps->weapon, qfalse );
+		CG_RegisterWeapon( ps->weapon );
 		weapon = &cg_weapons[ps->weapon];
 		wData =  &weaponData[ps->weapon];
 
@@ -1159,7 +1159,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 		leanOffset = 0;
 	}
 
-	CG_RegisterWeapon( ps->weapon, qfalse );
+	CG_RegisterWeapon( ps->weapon );
 	weapon = &cg_weapons[ps->weapon];
 	wData =  &weaponData[ps->weapon];
 
@@ -1660,7 +1660,7 @@ void CG_DrawDataPadWeaponSelect( void )
 		if (weaponData[weaponSelectI].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( weaponSelectI, qfalse );
+			CG_RegisterWeapon( weaponSelectI );
 			weaponInfo = &cg_weapons[weaponSelectI];
 
 			if (!CG_WeaponCheck(weaponSelectI))
@@ -1688,7 +1688,7 @@ void CG_DrawDataPadWeaponSelect( void )
 	if (weaponData[cg.DataPadWeaponSelect].weaponIcon[0])
 	{
 		weaponInfo_t	*weaponInfo;
-		CG_RegisterWeapon( cg.DataPadWeaponSelect, qfalse );
+		CG_RegisterWeapon( cg.DataPadWeaponSelect );
 		weaponInfo = &cg_weapons[cg.DataPadWeaponSelect];
 
 			// Draw graphic to show weapon has ammo or no ammo
@@ -1750,7 +1750,7 @@ void CG_DrawDataPadWeaponSelect( void )
 		if (weaponData[weaponSelectI].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( weaponSelectI, qfalse );
+			CG_RegisterWeapon( weaponSelectI );
 			weaponInfo = &cg_weapons[weaponSelectI];
 
 			// Draw graphic to show weapon has ammo or no ammo
@@ -2022,7 +2022,7 @@ void CG_DrawWeaponSelect( void )
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i, qfalse );
+			CG_RegisterWeapon( i );
 			weaponInfo = &cg_weapons[i];
 
 			if (!CG_WeaponCheck(i))
@@ -2049,7 +2049,7 @@ void CG_DrawWeaponSelect( void )
 	if (weaponData[cg.weaponSelect].weaponIcon[0])
 	{
 		weaponInfo_t	*weaponInfo;
-		CG_RegisterWeapon( cg.weaponSelect, qfalse );
+		CG_RegisterWeapon( cg.weaponSelect );
 		weaponInfo = &cg_weapons[cg.weaponSelect];
 
 		if (!CG_WeaponCheck(cg.weaponSelect))
@@ -2123,7 +2123,7 @@ void CG_DrawWeaponSelect( void )
 		if (weaponData[i].weaponIcon[0])
 		{
 			weaponInfo_t	*weaponInfo;
-			CG_RegisterWeapon( i, qfalse );
+			CG_RegisterWeapon( i );
 			weaponInfo = &cg_weapons[i];
 			// No ammo for this weapon?
 			if (!CG_WeaponCheck(i))

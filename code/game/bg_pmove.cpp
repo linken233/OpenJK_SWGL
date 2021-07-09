@@ -13364,9 +13364,12 @@ static void PM_SecondaryMdlChange(qboolean secondaryMdl)
 {
 	char *currWeaponMdl = (secondaryMdl) ? weaponData[pm->ps->weapon].weaponMdl2 : weaponData[pm->ps->weapon].weaponMdl;
 
+	// Set secondaryMdl.
+	weaponData[pm->ps->weapon].secondaryMdl = secondaryMdl;
+
 	// Reregister the same weapon with a different model.
 	cg_weapons[pm->ps->weapon].registered = qfalse;
-	CG_RegisterWeapon(pm->ps->weapon, secondaryMdl);
+	CG_RegisterWeapon(pm->ps->weapon);
 	
 	// Remove the weapon you have currently with a different model.
 	G_RemoveWeaponModels(pm->gent);
@@ -13380,9 +13383,6 @@ static void PM_SecondaryMdlChange(qboolean secondaryMdl)
 	{
 		PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_HOLD);
 	}
-
-	// Set secondaryMdl.
-	weaponData[pm->ps->weapon].secondaryMdl = secondaryMdl;
 }
 
 /*

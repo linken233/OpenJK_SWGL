@@ -8010,7 +8010,7 @@ Ghoul2 Insert Start
 			ent.renderfx |= RF_MORELIGHT;			//bigger than normal min light
 		}
 
-		CG_RegisterWeapon( cent->currentState.weapon, qfalse );
+		CG_RegisterWeapon( cent->currentState.weapon );
 
 //---------------
 		Vehicle_t *pVeh;
@@ -9380,7 +9380,7 @@ Ghoul2 Insert End
 		//
 		// add the gun
 		//
-		CG_RegisterWeapon( cent->currentState.weapon, qfalse );
+		CG_RegisterWeapon( cent->currentState.weapon );
 		weapon = &cg_weapons[cent->currentState.weapon];
 
 		gun.hModel = weapon->weaponWorldModel;
