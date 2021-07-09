@@ -2351,28 +2351,28 @@ static void CG_DrawZoomMask( void )
 	{
 		level = (float)(80.0f - cg_zoomFov) / 80.0f;
 
-		switch ( weaponData[cent->currentState.weapon].scopeType )
+		switch (weaponData[cent->currentState.weapon].scopeType)
 		{
 			case ST_A280:
-				cgs.media.scopeTypeMask = cgi_R_RegisterShader( "gfx/2d/a280cropcircle2" );
-				cgs.media.scopeTypeInsert = cgi_R_RegisterShader( "gfx/2d/a280cropcircle" );
+				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/a280mask");
+				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/a280insert");
 				break;
-			case ST_WESTAR_M5:
-				cgs.media.scopeTypeMask = cgi_R_RegisterShader( "gfx/2d/arcMask" );
-				cgs.media.scopeTypeInsert = cgi_R_RegisterShader( "gfx/2d/arcInsert" );
+			case ST_DC17M:
+				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/dc-17mmask");
+				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/dc-17minsert");
 				break;
-			case ST_BOWCASTER:
-				cgs.media.scopeTypeMask = cgi_R_RegisterShader( "gfx/2d/bowMask" );
-				cgs.media.scopeTypeInsert = cgi_R_RegisterShader( "gfx/2d/bowInsert" );
+			case ST_EE3:
+				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/ee3insert");
+				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/ee3mask");
 				break;
-			case ST_DLT_20A:
-				cgs.media.scopeTypeMask = cgi_R_RegisterShader( "gfx/2d/projInsert" );
-				cgs.media.scopeTypeInsert = cgi_R_RegisterShader( "gfx/2d/projMask" );
+			case ST_F11D:
+				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/f11dMask");
+				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/f11dInsert");
 				break;
 		}
 
 		CG_DrawPic( 0, 0, 640, 480, cgs.media.scopeTypeMask ); 
-		CG_DrawRotatePic2( 320, 240, 640, 480, -level, cgs.media.scopeTypeInsert );
+		CG_DrawPic( 0, 0, 640, 480, cgs.media.scopeTypeInsert ); 
 	}
 }
 
@@ -2623,7 +2623,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 				ecolor[1] = 1.0f;//G
 				ecolor[2] = 1.0f;//B
 			}
-			else if (( g_entities[0].client && ( g_entities[0].client->playerTeam == TEAM_FREE || g_entities[0].client->playerTeam == TEAM_SOLO ) ||
+			else if (( ( g_entities[0].client && ( g_entities[0].client->playerTeam == TEAM_FREE || g_entities[0].client->playerTeam == TEAM_SOLO ) ) ||
 			crossEnt->client->playerTeam == TEAM_FREE ||
 			crossEnt->client->playerTeam == TEAM_SOLO ))
 			{

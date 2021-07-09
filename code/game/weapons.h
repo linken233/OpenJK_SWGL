@@ -207,9 +207,9 @@ enum firingType
 enum scopeType
 {
 	ST_A280 = 4,
-	ST_WESTAR_M5,
-	ST_BOWCASTER,
-	ST_DLT_20A
+	ST_DC17M,
+	ST_EE3,
+	ST_F11D
 };
 
 

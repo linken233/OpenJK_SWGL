@@ -14815,19 +14815,19 @@ void PM_AdjustAttackStates( pmove_t *pm )
 				{
 					case ST_A280:
 						cg.zoomMode = ST_A280;
-						cg_zoomFov = 15.0f;
-						break;
-					case ST_WESTAR_M5:
-						cg.zoomMode = ST_WESTAR_M5;
-						cg_zoomFov = 20.0f;
-						break;
-					case ST_BOWCASTER:
-						cg.zoomMode = ST_BOWCASTER;
 						cg_zoomFov = 25.0f;
 						break;
-					case ST_DLT_20A:
-						cg.zoomMode = ST_DLT_20A;
+					case ST_DC17M:
+						cg.zoomMode = ST_DC17M;
+						cg_zoomFov = 20.0f;
+						break;
+					case ST_EE3:
+						cg.zoomMode = ST_EE3;
 						cg_zoomFov = 10.0f;
+						break;
+					case ST_F11D:
+						cg.zoomMode = ST_F11D;
+						cg_zoomFov = 25.0f;
 						break;
 				}
 			}
