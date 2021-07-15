@@ -530,7 +530,9 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			{
 			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
 			case WP_BLASTER_PISTOL:
-				if (ent->client->NPC_class == CLASS_REBORN
+			case WP_JANGO:
+			case WP_CLONEPISTOL:
+				if ((ent->client->NPC_class == CLASS_REBORN || ent->client->NPC_class == CLASS_JANGO)
 					&& ent->NPC->rank >= RANK_LT_COMM
 					&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 				{//dual blaster pistols, so add the left-hand one, too
