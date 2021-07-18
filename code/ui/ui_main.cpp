@@ -4622,6 +4622,7 @@ static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 #ifndef JK2_MODE
 	{ "protect",		FP_PROTECT },
 	{ "stasis",		FP_STASIS },
+	{ "blast",		FP_BLAST},
 	{ "grasp",		FP_GRASP },
 #endif // !JK2_MODE
 
@@ -4648,6 +4649,7 @@ static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 	{ "lightning",	FP_LIGHTNING },
 	{ "destruction", FP_DESTRUCTION},
 	{ "fear", FP_FEAR},
+	{ "strike", FP_LIGHTNING_STRIKE},
 
 #ifndef JK2_MODE
 	{ "rage",			FP_RAGE },
