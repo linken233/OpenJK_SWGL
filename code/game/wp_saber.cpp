@@ -12215,6 +12215,7 @@ static void WP_FireStrike(gentity_t *ent, int forceLevel)
 			break;
 		}
 	}
+
 	AngleVectors(ent->client->ps.viewangles, up, NULL, NULL);
 
 	AngleVectors(ent->client->ps.viewangles, right, NULL, NULL);
@@ -12520,8 +12521,17 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 						dmg = 0;
 
 						vec3_t	end; /*normal = {0,0,1};//FIXME: opposite of rain angles?*/
-						VectorMA(traceEnt->client->ps.saber[0].blade[0].muzzlePoint, traceEnt->client->ps.saber[0].blade[0].length*Q_flrand(0, 1), traceEnt->client->ps.saber[0].blade[0].muzzleDir, end);
+
+						if (traceEnt->client->ps.dualSabers)
+						{
+							VectorMA(traceEnt->client->ps.saber[1].blade[0].muzzlePoint, traceEnt->client->ps.saber[1].blade[0].length*Q_flrand(0, 1), traceEnt->client->ps.saber[1].blade[0].muzzleDir, end);
+							G_PlayEffect("saber/fizz", end);
+						}
+
+						VectorMA(traceEnt->client->ps.saber[0].blade[Q_irand(0,1)].muzzlePoint, traceEnt->client->ps.saber[0].blade[Q_irand(0, 1)].length*Q_flrand(0, 1), traceEnt->client->ps.saber[0].blade[Q_irand(0, 1)].muzzleDir, end);
 						G_PlayEffect("saber/fizz", end);
+
+						
 
 						traceEnt->client->ps.forcePower -= forcePowerLoss;
 
@@ -16431,7 +16441,7 @@ void WP_InitForcePowers( gentity_t *ent )
 			ent->client->ps.forcePowersKnown = ( 1 << FP_HEAL )|( 1 << FP_LEVITATION )|( 1 << FP_SPEED )|( 1 << FP_PUSH )|( 1 << FP_PULL )|( 1 << FP_TELEPATHY )|( 1 << FP_GRIP )|( 1 << FP_LIGHTNING)|( 1 << FP_SABERTHROW)|( 1 << FP_SABER_DEFENSE )|( 1 << FP_SABER_OFFENSE )|( 1<< FP_RAGE )|( 1<< FP_DRAIN )|( 1<< FP_PROTECT )|( 1<< FP_ABSORB )|( 1<< FP_SEE )
 				|(1 << FP_STASIS) | (1 << FP_DESTRUCTION | (1 << FP_GRASP) | (1 << FP_FEAR) | (1 << FP_LIGHTNING_STRIKE) | (1 << FP_BLAST));
 
-			ent->client->ps.forcePowerLevel[FP_HEAL] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_HEAL] = //FORCE_LEVEL_2;
 			ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_2;
 			ent->client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_1;
 			ent->client->ps.forcePowerLevel[FP_PULL] = FORCE_LEVEL_1;
