@@ -29,8 +29,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define PRODUCT_NAME			"SWGLMPconfig"
 
-#define CLIENT_WINDOW_TITLE "Knights of the Force 2.1 MP"
-#define CLIENT_CONSOLE_TITLE "Knights of the Force 2.1 MP Console"
+#define CLIENT_WINDOW_TITLE "Star Wars: Galactic Legacy MP"
+#define CLIENT_CONSOLE_TITLE "Star Wars: Galactic Legacy MP Console"
 #define HOMEPATH_NAME_UNIX "SWGL"
 #define HOMEPATH_NAME_WIN "SWGL"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
