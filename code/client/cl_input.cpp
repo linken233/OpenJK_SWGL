@@ -1010,6 +1010,8 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-forcefocus", IN_Button8Up);
 	Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
 	Cmd_AddCommand ("-block", IN_Button8Up);
+	Cmd_AddCommand("+force_grasp", IN_Button9Down);//force jump
+	Cmd_AddCommand("-force_grasp", IN_Button9Up);
 #endif
 
 	Cmd_AddCommand ("+button0", IN_Button0Down);
