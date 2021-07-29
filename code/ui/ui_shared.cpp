@@ -5552,6 +5552,7 @@ static const char *g_bindCommands[] = {
 #ifndef JK2_MODE
 	"+force_drain",
 #endif
+	"+force_grasp",
 	"+force_grip",
 	"+force_lightning",
 	"+forward",
