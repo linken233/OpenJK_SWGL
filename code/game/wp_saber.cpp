@@ -11098,6 +11098,11 @@ void ForceStasis(gentity_t *self)
 		return;
 	}
 
+	if (self != player && !g_newforcepowers->integer)
+	{
+		return;
+	}
+
 	AngleVectors(self->client->ps.viewangles, forward, NULL, NULL);
 	VectorNormalize(forward);
 	VectorMA(self->client->renderInfo.eyePoint, 2048, forward, end);
@@ -11307,6 +11312,11 @@ void ForceGrasp(gentity_t *self)
 		return;
 	}
 
+	if (self != player && !g_newforcepowers->integer)
+	{
+		return;
+	}
+
 	if (self->client->ps.forceGripEntityNum <= ENTITYNUM_WORLD)
 	{//already gripping
 		if (self->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
@@ -11341,7 +11351,7 @@ void ForceGrasp(gentity_t *self)
 		return;
 	}
 	//Cause choking anim + health drain in ent in front of me
-	NPC_SetAnim(self, SETANIM_TORSO, BOTH_FORCEGRIP_HOLD, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	NPC_SetAnim(self, SETANIM_TORSO, BOTH_FORCE_DRAIN_START, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	self->client->ps.saberMove = self->client->ps.saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
 	self->client->ps.saberBlocked = BLOCKED_NONE;
 
@@ -11560,6 +11570,7 @@ void ForceGrasp(gentity_t *self)
 				&& traceEnt->client->NPC_class != CLASS_JANGO
 				&& traceEnt->client->NPC_class != CLASS_ASSASSIN_DROID
 				&& traceEnt->s.weapon != WP_CONCUSSION	// so rax can't drop his
+				&& traceEnt->client->playerTeam != self->client->playerTeam
 				)
 			{
 				if (traceEnt->client->NPC_class == CLASS_BOBAFETT || traceEnt->client->NPC_class == CLASS_MANDALORIAN || traceEnt->client->NPC_class == CLASS_JANGO)
@@ -11575,7 +11586,8 @@ void ForceGrasp(gentity_t *self)
 				}
 				else if (traceEnt->s.weapon != WP_SABER)
 				{
-					WP_DropWeapon(traceEnt, NULL);
+					if(!Q_irand(0,1))
+						WP_DropWeapon(traceEnt, NULL);
 				}
 				else
 				{
@@ -11731,6 +11743,11 @@ void ForceBlast(gentity_t *self)
 		return;
 	}
 
+	if (self != player && !g_newforcepowers->integer)
+	{
+		return;
+	}
+
 	anim = BOTH_FORCEPUSH;
 	soundIndex = G_SoundIndex("sound/weapons/force/blast.wav");
 
@@ -11862,6 +11879,11 @@ void ForceDestruction(gentity_t *self)
 		return;
 	}
 
+	if (self != player && !g_newforcepowers->integer)
+	{
+		return;
+	}
+
 	anim = BOTH_FORCEPUSH;
 	soundIndex = G_SoundIndex("sound/weapons/force/destruct_fire.wav");
 
@@ -11924,6 +11946,11 @@ void ForceFear(gentity_t *self)
 	}
 	if (self->client->ps.saberLockTime > level.time)
 	{//FIXME: can this be a way to break out?
+		return;
+	}
+
+	if (self != player && !g_newforcepowers->integer)
+	{
 		return;
 	}
 
@@ -12132,6 +12159,11 @@ void ForceLightningStrike(gentity_t *self)
 	}
 	if (self->client->ps.saberLockTime > level.time)
 	{//FIXME: can this be a way to break out?
+		return;
+	}
+
+	if (self != player && !g_newforcepowers->integer)
+	{
 		return;
 	}
 
@@ -12476,7 +12508,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 					&& !PM_SuperBreakWinAnim( traceEnt->client->ps.torsoAnim )
 					&& !PM_SaberInSpecialAttack( traceEnt->client->ps.torsoAnim )
 					&& !PM_InSpecialJump( traceEnt->client->ps.torsoAnim )
-					&& (!traceEnt->s.number||(traceEnt->NPC&&traceEnt->NPC->rank>=RANK_LT_COMM)) )//the player or a tough jedi/reborn
+					&& (!traceEnt->s.number||(traceEnt->NPC&&traceEnt->NPC->rank>=RANK_LT_COMM)))//the player or a tough jedi/reborn
 				{
 					if ( Q_irand( 0, traceEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE]*3 ) > 0 )//more of a chance of defending if saber defense is high
 					{
@@ -12517,8 +12549,9 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 							}
 
 						}
-							
-						dmg = 0;
+						
+						if(traceEnt == player)
+							dmg = 0;
 
 						vec3_t	end; /*normal = {0,0,1};//FIXME: opposite of rain angles?*/
 
@@ -13553,6 +13586,11 @@ void ForceProtect( gentity_t *self )
 		return;
 	}
 
+	if (self != player && !g_allowForceProtect->integer)
+	{
+		return;
+	}
+
 	// Make sure to turn off Force Rage and Force Absorb.
 	if (self->client->ps.forcePowersActive & (1 << FP_RAGE) )
 	{
@@ -13628,7 +13666,11 @@ void ForceAbsorb( gentity_t *self )
 	{
 		return;
 	}
-
+	   
+	if (self != player && !g_allowForceAbsorb->integer)
+	{
+		return;
+	}
 
 	// Make sure to turn off Force Rage and Force Protection.
 	if (self->client->ps.forcePowersActive & (1 << FP_RAGE) )

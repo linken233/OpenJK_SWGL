@@ -1928,31 +1928,31 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set(NPC, "attackDelay", 3000);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceStasis(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceFear(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_LIGHTNING_STRIKE, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_LIGHTNING_STRIKE, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceLightningStrike(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceDestruction(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_BLAST, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_BLAST, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceBlast(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
@@ -1980,7 +1980,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set( NPC, "gripping", 3000 );
 							TIMER_Set( NPC, "attackDelay", 3000 );
 						}
-						else if (WP_ForcePowerUsable(NPC, FP_GRASP, 0)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_GRASP, 0)
 							&& NPC->enemy && InFOV(NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							//taunt

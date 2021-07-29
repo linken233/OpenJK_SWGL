@@ -158,6 +158,12 @@ cvar_t	*g_knockback;
 cvar_t	*g_dismemberment;
 cvar_t	*g_corpseRemovalTime;
 
+cvar_t	*g_newforcepowers;
+
+cvar_t	*g_allowForceAbsorb;
+
+cvar_t	*g_allowForceProtect;
+
 cvar_t	*g_synchSplitAnims;
 #ifndef FINAL_BUILD
 cvar_t	*g_AnimWarning;
@@ -647,6 +653,13 @@ void G_InitCvars( void ) {
 	// change anytime vars
 	g_speed = gi.cvar( "g_speed", "250", CVAR_CHEAT );
 	g_gravity = gi.cvar( "g_gravity", "800", CVAR_SAVEGAME|CVAR_ROM );
+
+	g_newforcepowers = gi.cvar("g_newforcepowers", "1", CVAR_ARCHIVE);
+
+	g_allowForceAbsorb = gi.cvar("g_allowForceAbsorb", "1", CVAR_ARCHIVE);
+
+	g_allowForceProtect = gi.cvar("g_allowForceProtect", "1", CVAR_ARCHIVE);
+	
 	g_stepSlideFix = gi.cvar( "g_stepSlideFix", "1", CVAR_ARCHIVE );
 	g_sex = gi.cvar ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
