@@ -641,6 +641,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			case WP_BRYAR_PISTOL:
 				break;
 			case WP_BLASTER_PISTOL:
+			case WP_CLONEPISTOL:
+			case WP_JANGO:
 				NPCInfo->scriptFlags |= SCF_PILOT;
 				if (ent->client->NPC_class == CLASS_REBORN
 					&& ent->NPC->rank >= RANK_LT_COMM
@@ -711,6 +713,19 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 		{
 			G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+		}
+
+		if (ent->client->ps.weapon == WP_BLASTER_PISTOL
+			|| ent->client->ps.weapon == WP_CLONEPISTOL
+			|| ent->client->ps.weapon == WP_JANGO)
+		{
+			NPCInfo->scriptFlags |= SCF_PILOT;
+			if (ent->client->NPC_class == CLASS_REBORN
+				&& ent->NPC->rank >= RANK_LT_COMM
+				&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
+			{//dual blaster pistols, so add the left-hand one, too
+				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+			}
 		}
 		break;
 	}
