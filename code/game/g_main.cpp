@@ -207,6 +207,7 @@ cvar_t	*g_saberRestrictForce;
 cvar_t	*g_saberPickuppableDroppedSabers;
 cvar_t	*g_dismemberProbabilities;
 cvar_t	*g_allowSaberLocking;
+cvar_t	*g_setSaberLocking;
 
 cvar_t	*g_validJKO;
 
@@ -710,6 +711,7 @@ void G_InitCvars( void ) {
 	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_ARCHIVE );//lets you pick up sabers that are dropped
 
 	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//lets you pick up sabers that are dropped
+	g_setSaberLocking = gi.cvar("g_setSaberLocking", "1", CVAR_INIT);//lets you pick up sabers that are dropped
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
 

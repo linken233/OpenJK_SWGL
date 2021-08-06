@@ -60,6 +60,7 @@ extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_debugSaberLock;
 extern cvar_t	*g_saberLockRandomNess;
 extern cvar_t	*g_allowSaberLocking;
+extern cvar_t	*g_setSaberLocking;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_cheats;
 extern cvar_t	*g_debugMelee;
@@ -5303,7 +5304,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				}
 				else if ( entAttacking
 					&& hitOwnerAttacking
-					&& (!Q_irand( 0, g_saberLockRandomNess->integer ) && g_allowSaberLocking->integer)
+					&& (!Q_irand( 0, g_saberLockRandomNess->integer ) && (g_allowSaberLocking->integer && g_setSaberLocking->integer))
 					&& ( g_debugSaberLock->integer || forceLock
 						|| entPowerLevel == hitOwnerPowerLevel
 						|| (entPowerLevel > FORCE_LEVEL_2 && hitOwnerPowerLevel > FORCE_LEVEL_2 )
@@ -5317,7 +5318,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				}
 				else if ( hitOwnerAttacking
 					&& entDefending
-					&& (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && g_allowSaberLocking->integer)
+					&& (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && (g_allowSaberLocking->integer && g_setSaberLocking->integer))
 					&& (g_debugSaberLock->integer || forceLock ||
 						((ent->client->ps.saberMove != LS_READY || (hitOwnerPowerLevel-ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand( -6, 0 ) )
 							&& ((hitOwnerPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2 )||
@@ -5330,7 +5331,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				else if ( entAttacking && hitOwnerDefending )
 				{//I'm attacking hit, they're parrying
 					qboolean activeDefense = (qboolean)(hitOwner->s.number||g_saberAutoBlocking->integer||hitOwner->client->ps.saberBlockingTime > level.time);
-					if ( (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && g_allowSaberLocking->integer)
+					if ( (!Q_irand( 0, g_saberLockRandomNess->integer*3 ) && (g_allowSaberLocking->integer && g_setSaberLocking->integer))
 						&& activeDefense
 						&& (g_debugSaberLock->integer || forceLock ||
 							((hitOwner->client->ps.saberMove != LS_READY || (entPowerLevel-hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand( -6, 0 ) )
@@ -11220,19 +11221,19 @@ qboolean ToBeAffectedByStasis(gentity_t *self, gentity_t *traceEnt)
 	if (self->client->ps.forcePowerLevel[FP_STASIS] < FORCE_LEVEL_2)
 	{
 		commonFSChance = 20;
-		powerfulFSChance = 200;
+		powerfulFSChance = 2000;
 	}
 	// An intermediate Force Stasis should pose a better chance at disabling a common Jedi or Sith, but still struggle against the powerful ones
 	else if (self->client->ps.forcePowerLevel[FP_STASIS] == FORCE_LEVEL_2)
 	{
-		commonFSChance = 1;
-		powerfulFSChance = 20;
+		commonFSChance = 10;
+		powerfulFSChance = 100;
 	}
 	// A master of Force Stasis should be able to disable a common Jedi or Sith with minimal effort, and still somewhat struggle against the powerful ones.
 	else if (self->client->ps.forcePowerLevel[FP_STASIS] > FORCE_LEVEL_2)
 	{
-		commonFSChance = 0;
-		powerfulFSChance = 10;
+		commonFSChance = 5;
+		powerfulFSChance = 20;
 	}
 
 	if (Q_irand(0, commonFSChance) && (traceEnt->client->NPC_class == CLASS_JEDI
@@ -11259,7 +11260,20 @@ qboolean ToBeAffectedByStasis(gentity_t *self, gentity_t *traceEnt)
 	else if (traceEnt->client->NPC_class == CLASS_GALAKMECH
 			|| traceEnt->client->ps.weapon == WP_CONCUSSION
 			|| traceEnt->client->NPC_class == CLASS_SAND_CREATURE
-			|| traceEnt->client->NPC_class == CLASS_MINEMONSTER)
+			|| traceEnt->client->NPC_class == CLASS_VEHICLE
+			|| traceEnt->client->NPC_class == CLASS_ASSASSIN_DROID
+		|| traceEnt->client->NPC_class == CLASS_HAZARD_TROOPER
+		|| traceEnt->client->NPC_class == CLASS_INTERROGATOR
+		|| traceEnt->client->NPC_class == CLASS_ATST
+		|| traceEnt->client->NPC_class == CLASS_MARK1
+		|| traceEnt->client->NPC_class == CLASS_MARK2
+		|| traceEnt->client->NPC_class == CLASS_MOUSE
+		|| traceEnt->client->NPC_class == CLASS_PROBE
+		|| traceEnt->client->NPC_class == CLASS_R2D2
+		|| traceEnt->client->NPC_class == CLASS_R5D2
+		|| traceEnt->client->NPC_class == CLASS_REMOTE
+		|| traceEnt->client->NPC_class == CLASS_SABER_DROID
+		|| traceEnt->client->NPC_class == CLASS_SEEKER)
 	{
 		return qfalse;
 	}
@@ -11268,6 +11282,7 @@ qboolean ToBeAffectedByStasis(gentity_t *self, gentity_t *traceEnt)
 		|| traceEnt->client->NPC_class == CLASS_JANGO
 		|| traceEnt->client->NPC_class == CLASS_MANDALORIAN
 		|| traceEnt->client->NPC_class == CLASS_WAMPA
+		|| traceEnt->client->NPC_class == CLASS_MINEMONSTER
 		|| traceEnt->client->NPC_class == CLASS_HOWLER
 		|| traceEnt->client->NPC_class == CLASS_RANCOR))
 	{
@@ -11471,27 +11486,14 @@ void ForceGrasp(gentity_t *self)
 			return;
 			break;
 			//no droids either...?
-		case CLASS_GONK:
-		case CLASS_R2D2:
-		case CLASS_R5D2:
 		case CLASS_MARK1:
 		case CLASS_MARK2:
-		case CLASS_MOUSE://?
-		case CLASS_PROTOCOL:
 			//*sigh*... in JK3, you'll be able to grab and move *anything*...
 			return;
 			break;
 			//not even combat droids?  (No animation for being gripped...)
 		case CLASS_SABER_DROID:
 		case CLASS_ASSASSIN_DROID:
-			//*sigh*... in JK3, you'll be able to grab and move *anything*...
-			return;
-			break;
-		case CLASS_PROBE:
-		case CLASS_SEEKER:
-		case CLASS_REMOTE:
-		case CLASS_SENTRY:
-		case CLASS_INTERROGATOR:
 			//*sigh*... in JK3, you'll be able to grab and move *anything*...
 			return;
 			break;
@@ -12107,28 +12109,53 @@ qboolean CanBeFeared(gentity_t *self, gentity_t *traceEnt)
 	// A master of Force Fear should be able to scare a common Jedi or Sith with minimal effort, and still heavily struggle against the powerful ones.
 	else if (self->client->ps.forcePowerLevel[FP_FEAR] > FORCE_LEVEL_2)
 	{
-		commonFSChance = 1;
+		commonFSChance = 4;
 		powerfulFSChance = 20;
 	}
 
-	if (Q_irand(0, commonFSChance) && (traceEnt->client->NPC_class == CLASS_JEDI
+	if (!Q_irand(0, commonFSChance) && (traceEnt->client->NPC_class == CLASS_JEDI
 		|| traceEnt->client->NPC_class == CLASS_REBORN
 		|| traceEnt->client->NPC_class == CLASS_SHADOWTROOPER))
-	{
-		return qfalse;
-	}
-	// Boss NPCs should put up significant resistance, you'd have to be very extremely lucky to affect one
-	else if (Q_irand(0, powerfulFSChance) &&
-		(traceEnt->client->NPC_class == CLASS_KYLE
-			|| traceEnt->client->NPC_class == CLASS_LUKE
-			|| traceEnt->client->NPC_class == CLASS_TAVION
-			|| traceEnt->client->NPC_class == CLASS_DESANN))
 	{
 		return qfalse;
 	}
 
 
 	if (self->client->ps.forcePowerLevel[FP_FEAR] == FORCE_LEVEL_1 && !Q_irand(0, 1))
+	{
+		return qfalse;
+	}
+
+	// Like it or not, some npcs should be immune
+	else if (traceEnt->client->NPC_class == CLASS_GALAKMECH
+		|| traceEnt->client->ps.weapon == WP_CONCUSSION
+		|| traceEnt->client->NPC_class == CLASS_SAND_CREATURE
+		|| traceEnt->client->NPC_class == CLASS_VEHICLE
+		|| traceEnt->client->NPC_class == CLASS_ASSASSIN_DROID
+		|| traceEnt->client->NPC_class == CLASS_HAZARD_TROOPER
+		|| traceEnt->client->NPC_class == CLASS_INTERROGATOR
+		|| traceEnt->client->NPC_class == CLASS_ATST
+		|| traceEnt->client->NPC_class == CLASS_MARK1
+		|| traceEnt->client->NPC_class == CLASS_MARK2
+		|| traceEnt->client->NPC_class == CLASS_MOUSE
+		|| traceEnt->client->NPC_class == CLASS_PROBE
+		|| traceEnt->client->NPC_class == CLASS_R2D2
+		|| traceEnt->client->NPC_class == CLASS_R5D2
+		|| traceEnt->client->NPC_class == CLASS_REMOTE
+		|| traceEnt->client->NPC_class == CLASS_SABER_DROID
+		|| traceEnt->client->NPC_class == CLASS_SEEKER
+		|| traceEnt->client->NPC_class == CLASS_BOBAFETT
+		|| traceEnt->client->NPC_class == CLASS_JANGO
+		|| traceEnt->client->NPC_class == CLASS_MANDALORIAN
+		|| traceEnt->client->NPC_class == CLASS_WAMPA
+		|| traceEnt->client->NPC_class == CLASS_MINEMONSTER
+		|| traceEnt->client->NPC_class == CLASS_HOWLER
+		|| traceEnt->client->NPC_class == CLASS_RANCOR
+		|| traceEnt->client->NPC_class == CLASS_KYLE
+		|| traceEnt->client->NPC_class == CLASS_LUKE
+		|| traceEnt->client->NPC_class == CLASS_TAVION
+		|| traceEnt->client->NPC_class == CLASS_DESANN
+		|| traceEnt->client->NPC_class == CLASS_ALORA)
 	{
 		return qfalse;
 	}

@@ -53,7 +53,7 @@ extern void InitMoverTrData( gentity_t *ent );
 extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
-extern cvar_t *g_allowSaberLocking;
+extern cvar_t *g_setSaberLocking;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 static void Q3_SetWeapon (int entID, const char *wp_name);
 static void Q3_SetItem (int entID, const char *item_name);
@@ -4958,11 +4958,11 @@ static void Q3_SetSaberLocking(qboolean add)
 {
 	if (!add)
 	{
-		g_allowSaberLocking->integer = 0;
+		g_setSaberLocking->integer = 0;
 	}
 	else
 	{
-		g_allowSaberLocking->integer = 1;
+		g_setSaberLocking->integer = 1;
 	}
 }
 
@@ -10160,7 +10160,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 		break;
 
 	case SET_SABERLOCKING:
-		*value = g_allowSaberLocking->value;
+		*value = g_setSaberLocking->value;
 		break;
 
 	case SET_FACEEYESCLOSED:
