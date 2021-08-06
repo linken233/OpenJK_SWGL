@@ -6142,6 +6142,25 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					break;
 				}
 			}
+			else if (mod == MOD_BLAST)
+			{				
+				switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) 
+				{
+				case FORCE_LEVEL_1:
+					damage *= 0.8f;
+					break;
+				case FORCE_LEVEL_2:
+					damage *= 0.4f;
+					break;
+				case FORCE_LEVEL_3:
+					damage *= 0.0f;
+					break;
+				default:
+					damage = 0;
+					break;
+				}				
+			}
+
 		}
 
 			if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
