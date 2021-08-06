@@ -67,6 +67,7 @@ extern cvar_t	*g_debugMelee;
 extern cvar_t	*g_saberRestrictForce;
 extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t	*debug_subdivision;
+extern cvar_t	*g_newforcepowers;
 
 
 extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
@@ -14724,7 +14725,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 			self->s.loopSound = 0;
 			self->client->ps.forceGripEntityNum = ENTITYNUM_NONE;
 		}
-		if (self->client->ps.torsoAnim == BOTH_FORCEGRIP_HOLD)
+		if (self->client->ps.torsoAnim == BOTH_FORCE_DRAIN_START)
 		{
 			NPC_SetAnim(self, SETANIM_BOTH, BOTH_FORCEGRIP_RELEASE, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 		}
@@ -15297,7 +15298,7 @@ else
 
 	if (self->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
 	{//holding it
-		NPC_SetAnim(self, SETANIM_TORSO, BOTH_FORCEGRIP_HOLD, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		NPC_SetAnim(self, SETANIM_TORSO, BOTH_FORCE_DRAIN_START, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 		if (self->client->ps.torsoAnimTimer < 100) {//we were already playing this anim, we didn't want to restart it, but we want to hold it for at least 100ms, sooo....
 
 			self->client->ps.torsoAnimTimer = 100;

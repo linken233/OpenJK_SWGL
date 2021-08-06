@@ -1905,29 +1905,6 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
 
-						else if (WP_ForcePowerUsable(NPC, FP_GRASP, 0)
-							&& NPC->enemy && InFOV(NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
-						{
-							//taunt
-							if (TIMER_Done(NPC, "chatter") && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time)
-							{
-								G_AddVoiceEvent(NPC, Q_irand(EV_TAUNT1, EV_TAUNT3), 3000);
-								jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
-								if ((NPCInfo->aiFlags&NPCAI_ROSH))
-								{
-									TIMER_Set(NPC, "chatter", 6000);
-								}
-								else
-								{
-									TIMER_Set(NPC, "chatter", 3000);
-								}
-							}
-
-							//grip
-							TIMER_Set(NPC, "gripping", 3000);
-							TIMER_Set(NPC, "attackDelay", 3000);
-						}
-
 						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceStasis(NPC);
