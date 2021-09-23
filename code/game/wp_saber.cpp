@@ -14545,7 +14545,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 {
 	gentity_t	*gripEnt;
 	gentity_t	*drainEnt;
-	gentity_t	*stasisEnt;
+	//gentity_t	*stasisEnt; /////// Jace Solaris fix
 
 	if ( !(self->client->ps.forcePowersActive&(1<<forcePower)) )
 	{//umm, wasn't doing it, so...

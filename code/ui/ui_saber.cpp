@@ -455,7 +455,7 @@ void UI_DoSFXSaber( vec3_t blade_muz, vec3_t blade_dir, float lengthMax, float r
 	effectradius	= ((radius * 1.6) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*ui_SFXSabersGlowSize.value;
 	coreradius		= ((radius * 0.4) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*ui_SFXSabersCoreSize.value;
 
-		coreradius *= 0.9;
+		coreradius *= 0.9f;/////// Jace Solaris fix
 
 	{
 		//saber.renderfx = rfx;

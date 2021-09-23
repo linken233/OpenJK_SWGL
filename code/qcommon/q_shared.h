@@ -57,6 +57,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma warning(disable : 4996)		// This function or variable may be unsafe.
 
+#pragma warning(disable : 5208)    /////// Jace Solaris
+
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
@@ -372,6 +374,8 @@ qboolean COM_ParseVec4( const char **buffer, vec4_t *c);
 
 void	COM_MatchToken( char**buf_p, char *match );
 
+
+int Q_parseSaberColor(const char* p, float* color);/////// Jace Solaris
 void SkipBracedSection (const char **program);
 void SkipRestOfLine ( const char **data );
 

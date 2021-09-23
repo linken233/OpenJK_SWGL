@@ -126,5 +126,6 @@ void FX_LightningStrike(vec3_t start, vec3_t end)
 		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
 		*/
 
-	G_PlayEffect("env\huge_lightning", start, end);
+	//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/huge_lightning", start, end);/////// Jace Solaris fix
 }

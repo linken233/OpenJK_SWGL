@@ -3837,7 +3837,7 @@ static void CG_PlayerFootsteps( centity_t *const cent, footstepType_t footStepTy
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, footDownDir );
 		VectorMA( sideOrigin, -8.0f, footDownDir, sideOrigin );//was [2] += 15;	//fudge up a bit for coplanar
-		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle-90, 6, cent, footStepType );
+		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle, 6, cent, footStepType );/////// Jace Solaris fix
 	}
 }
 
@@ -5934,16 +5934,16 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 		if(AngleScale > 1.0)
 			AngleScale = 1.0;
 		if(AngleScale < 0.2)
-			AngleScale = 0.2;
+			AngleScale = 0.2f;/////// Jace Solaris fix
 
 		effectalpha *= AngleScale;
 
-		AngleScale += 0.3;
+		AngleScale += 0.3f;/////// Jace Solaris fix
 
 		if(AngleScale > 1.0)
 			AngleScale = 1.0;
 		if(AngleScale < 0.4)
-			AngleScale = 0.4;
+			AngleScale = 0.4f;/////// Jace Solaris fix
 	}
 
 	memset( &saber, 0, sizeof( refEntity_t ));
@@ -6071,7 +6071,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 
 		// Do the hot core
 		VectorMA( blade_muz, base_len, base_dir, saber.origin );
-		VectorMA( blade_muz, -0.1, base_dir, saber.oldorigin );
+		VectorMA( blade_muz, -0.1f, base_dir, saber.oldorigin );/////// Jace Solaris fix
 
 		saber.customShader = cgs.media.SaberBladeShader;
 		saber.reType = RT_LINE;
@@ -6109,7 +6109,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 
 			if(DisDif > end_len * 0.9)
 			{
-				effectalpha *= 0.3;
+				effectalpha *= 0.3f;/////// Jace Solaris fix
 			}
 			else if(DisDif > end_len * 0.8)
 			{
@@ -6117,7 +6117,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 			}
 			else if(DisDif > end_len * 0.7)
 			{
-				effectalpha *= 0.7;
+				effectalpha *= 0.7f;/////// Jace Solaris fix
 			}
 		}
 
@@ -6148,7 +6148,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 
 		// Do the hot core
 		VectorMA( blade_tip, end_len, end_dir, saber.origin );
-		VectorMA( blade_tip, -0.1, end_dir, saber.oldorigin );
+		VectorMA( blade_tip, -0.1f, end_dir, saber.oldorigin );/////// Jace Solaris fix
 
 		saber.customShader = cgs.media.SaberEndShader;
 		saber.reType = RT_LINE;
@@ -6170,7 +6170,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 			AngleScale -= (((DisDif/end_len)*(DisDif/end_len))*AngleScale);
 
 			if(AngleScale < 0.8)
-				AngleScale = 0.8;
+				AngleScale = 0.8f;/////// Jace Solaris fix
 		}
 
 		saber.radius = (coreradius * AngleScale);
@@ -7265,7 +7265,7 @@ else
 		if ( saberMoveData[client->ps.saberMove].trailLength == 0 )
 		{
 			dirlen0 *= 0.5;
-			dirlen1 *= 0.3;
+			dirlen1 *= 0.3f;/////// Jace Solaris fix
 		}
 		else
 		{
@@ -7277,7 +7277,7 @@ else
 		lagscale = 1-(lagscale*3/200);
 
 		if(lagscale < 0.1)
-			lagscale = 0.1;
+			lagscale = 0.1f;/////// Jace Solaris fix
 
 		VectorNormalize( dir0 );
 		VectorNormalize( dir1 );

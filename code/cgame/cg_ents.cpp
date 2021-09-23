@@ -1180,8 +1180,7 @@ static void CG_Missile( centity_t *cent ) {
 		if (s1->weapon == WP_CONCUSSION)
 		{
 			FX_DestructionProjectileThink(cent, weapon);
-			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
-				1.0, 0.65, 0.0);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125, 1.0f, 0.65f, 0.0f); /////// Jace Solaris fix
 			cgi_S_AddLoopingSound(cent->currentState.number, cent->lerpOrigin, vec3_origin, cgs.media.destructionSound);
 			return;
 
@@ -1189,8 +1188,7 @@ static void CG_Missile( centity_t *cent ) {
 		else if (s1->weapon == WP_ROCKET_LAUNCHER)
 		{
 			FX_BlastProjectileThink(cent, weapon);
-			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
-				1.0, 0.65, 0.0);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125,1.0f, 0.65f, 0.0f);/////// Jace Solaris fix
 			cgi_S_AddLoopingSound(cent->currentState.number, cent->lerpOrigin, vec3_origin, cgs.media.blastSound);
 			return;
 
@@ -1198,8 +1196,7 @@ static void CG_Missile( centity_t *cent ) {
 		else if (s1->weapon == WP_DISRUPTOR)
 		{
 			FX_StrikeProjectileThink(cent, weapon);
-			cgi_R_AddLightToScene(cent->lerpOrigin, 125,
-				1.0, 0.65, 0.0);
+			cgi_R_AddLightToScene(cent->lerpOrigin, 125, 1.0f, 0.65f, 0.0f);/////// Jace Solaris fix
 			return;
 
 		}

@@ -636,56 +636,62 @@ Player_CacheFromPrevLevel
   Argument		: void
 ============
 */
+extern gitem_t* FindItemForInventory(int inv);/////// Jace Solaris fix
 void Player_CacheFromPrevLevel(void)
 {
-	char	s[MAX_STRING_CHARS];
-	const char	*var;
-	int i;
+	char	    s[MAX_STRING_CHARS];
+	const char* var;
+	int         i;
 
-	gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
+	gi.Cvar_VariableStringBuffer(sCVARNAME_PLAYERSAVE, s, sizeof(s));
 
 	if (s[0])	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 	{
 		int iDummy, ibits;
 
-		sscanf( s, "%i %i %i",
+		sscanf(s, "%i %i %i",
 			&iDummy,//client->ps.stats[STAT_HEALTH],
 			&iDummy,//client->ps.stats[STAT_ARMOR],
 			&ibits	//client->ps.stats[STAT_ITEMS]
-			);
+		);
 
-extern gitem_t	*FindItemForInventory( int inv );
-
-		for ( i = 1 ; i < 16 ; i++ )
+		for (i = 0; i < 16; i++)
 		{
-			if ( ibits & ( 1 << i ) )
+			if (ibits & (1 << i))
 			{
-				RegisterItem( FindItemForInventory( i-1 ));
+				RegisterItem(FindItemForInventory(i));
 			}
 		}
 	}
-	
-	gi.Cvar_VariableStringBuffer( "playerweaps", s, sizeof(s) );
-	i=0;
-	var = strtok( s, " " );
-	while( var != NULL )
+
+	gi.Cvar_VariableStringBuffer("playerweaps", s, sizeof(s));
+
+	i = 0;
+
+	if (s[0])
 	{
-		/* While there are tokens in "s" */
-		if ( atoi(var) > 0 )
+		var = strtok(s, " ");
+		while (var != NULL)
 		{
-			if (i == WP_NONE) //don't register!
+			if (atoi(var) > 0)
 			{
-				i++;
+				if (i == WP_NONE) //don't register!
+				{
+					i++;
+				}
+				else
+				{
+					RegisterItem(FindItemForWeapon((weapon_t)i++));
+				}
 			}
 			else
 			{
-				RegisterItem( FindItemForWeapon( (weapon_t)i++ ) );
+				i++;
 			}
+			var = strtok(NULL, " ");
 		}
-		/* Get next token: */
-		var = strtok( NULL, " " );
+		assert(i == WP_NUM_WEAPONS);
 	}
-	assert (i==WP_NUM_WEAPONS);
 }
 
 /*

@@ -47,7 +47,7 @@ void Q_strstrip( char *string, const char *strip, const char *repl );
 	#define Q_vsnprintf vsnprintf
 #endif
     
-int Q_parseSaberColor( const char *p, float *color );
+//int Q_parseSaberColor( const char *p, float *color ); /////// Jace Solaris
 
 #if defined(__cplusplus)
 } // extern "C"

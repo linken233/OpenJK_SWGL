@@ -2494,7 +2494,7 @@ static void UI_FreeSpecies( playerSpeciesInfo_t *species )
 	free(species->SkinLeg);
 	free(species->Color);
 	free(species->Skin);
-	memset(species, 0, sizeof(playerSpeciesInfo_t));
+	memset(species, 0, sizeof(playerSpeciesInfo_t));	
 }
 
 void UI_FreeAllSpecies( void )
@@ -2550,7 +2550,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[128];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
 

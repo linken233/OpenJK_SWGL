@@ -1271,6 +1271,7 @@ char itemRegistered[MAX_ITEMS+1];
 ClearRegisteredItems
 ==============
 */
+extern void Player_CacheFromPrevLevel(void);//g_client.cpp /////// Jace Solaris fix
 void ClearRegisteredItems( void ) {
 	for ( int i = 0; i < bg_numItems; i++ )
 	{
@@ -1279,12 +1280,15 @@ void ClearRegisteredItems( void ) {
 	itemRegistered[ bg_numItems ] = 0;
 
 	//these are given in g_client, ClientSpawn(), but MUST be registered HERE, BEFORE cgame starts.
-	//RegisterItem( FindItemForWeapon( WP_NONE ) );	//has no item
-	RegisterItem( FindItemForInventory( INV_ELECTROBINOCULARS ));
-	//RegisterItem( FindItemForInventory( INV_BACTA_CANISTER ));
-	// saber or baton is cached in SP_info_player_deathmatch now.
+	RegisterItem(FindItemForWeapon(WP_MELEE));	//has no item /////// Jace Solaris fix
+	RegisterItem(FindItemForWeapon(WP_BRYAR_PISTOL));	//these are given in g_client, ClientSpawn(), but MUST be registered HERE, BEFORE cgame starts./////// Jace Solaris fix
+	RegisterItem(FindItemForWeapon(WP_STUN_BATON)); /////// Jace Solaris fix
 
-extern void Player_CacheFromPrevLevel(void);//g_client.cpp
+	RegisterItem(FindItemForInventory(INV_ELECTROBINOCULARS));
+	RegisterItem(FindItemForInventory(INV_BACTA_CANISTER));
+	RegisterItem(FindItemForInventory(INV_SEEKER));
+	RegisterItem(FindItemForInventory(INV_SENTRY));
+
 	Player_CacheFromPrevLevel();	//reads from transition carry-over;
 }
 
