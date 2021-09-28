@@ -1210,11 +1210,12 @@ static void Jedi_AdjustSaberAnimLevel( gentity_t *self, int newLevel )
 	}
 	if ( newLevel < SS_FAST )
 	{
-		newLevel = SS_FAST;
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_STAFF));
+
 	}
 	else if ( newLevel > SS_STAFF )
 	{
-		newLevel = SS_STAFF;
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_STAFF));
 	}
 	//use the different attacks, how often they switch and under what circumstances
 	if ( !(self->client->ps.saberStylesKnown&(1<<newLevel)) )
