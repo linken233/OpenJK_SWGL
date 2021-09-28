@@ -2102,8 +2102,14 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
-			G_ChangePlayerModel( ent, "stormtrooper" );	//need a better fallback?
+			if (ent == player)
+				G_ChangePlayerModel(player, "player");
+			else
+			{
+				gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
+				G_ChangePlayerModel( ent, "stormtrooper" );	//need a better fallback?
+			}
+			
 		}
 	}
 }

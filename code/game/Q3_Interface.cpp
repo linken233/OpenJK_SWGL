@@ -9711,6 +9711,32 @@ extern cvar_t	*g_char_skin_legs;
 					gi.G2API_SetSkin( &ent->ghoul2[ent->playerModel], G_SkinIndex( (char *)data ), iSkinID );
 				}
 			}
+			if (ent == player)
+			{
+				std::string str = (char*)data;
+
+				int modelFind = str.find("players/");
+
+				int skinFind = str.find("/model_");
+
+				int skinFileFind = str.find(".skin");
+
+				std::string model = str.substr((modelFind + 8), skinFind - modelFind - 8);
+				std::string skin = str.substr((skinFind + 1), (skinFileFind - skinFind - 1));
+
+				const char* finalModel = model.c_str();
+				const char* finalSkin = skin.c_str();
+				
+				gi.cvar_set("g_char_model", finalModel);
+				gi.cvar_set("g_char_skin_head", finalSkin);
+				gi.cvar_set("g_char_skin_torso", finalSkin);
+				gi.cvar_set("g_char_skin_legs", finalSkin);
+
+				G_ChangePlayerModel(player, finalModel);
+
+				
+
+			}
 		}
 		break;
 
