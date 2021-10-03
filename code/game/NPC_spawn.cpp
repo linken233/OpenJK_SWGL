@@ -773,7 +773,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		//how many times can she recharge?
 		ent->count = g_spskill->integer * 2;
 		//To make sure she can do it at least once
-		ent->flags |= FL_UNDYING;
+		if(!Q_stricmp("tavion_ragnos", ent->NPC_targetname))
+			ent->flags |= FL_UNDYING;
 	}
 
 	if (ent->client->ps.weapon == WP_NOGHRI_STICK
