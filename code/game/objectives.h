@@ -230,6 +230,7 @@ typedef enum //# Objective_e
 	OK_ANI2_OBJ4,
 	OK_ANI2_OBJ5,
 	OK_ANI2_OBJ6,
+	OK_ANI2_OBJ7,
 
 	OK_ANI3_OBJ1,
 	OK_ANI3_OBJ2,
