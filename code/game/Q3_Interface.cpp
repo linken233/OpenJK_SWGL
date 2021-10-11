@@ -80,6 +80,8 @@ extern void Rail_UnLockCenterOfTrack(const char* trackName);
 extern void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int modelIndex = 0 );
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 
+const char* GetSaberColor(int color);
+
 extern int	BMS_START;
 extern int	BMS_MID;
 extern int	BMS_END;
@@ -9540,6 +9542,17 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_SABER1:
 	case SET_SABER2:
 		WP_SetSaber( &g_entities[entID], toSet-SET_SABER1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			if (toSet == SET_SABER1)
+			{
+				gi.cvar_set("g_saber", (char*)data);
+			}
+			else if (toSet == SET_SABER2)
+			{
+				gi.cvar_set("g_saber2", (char*)data);
+			}
+		}
 		break;
 
 	case SET_PLAYERMODEL:
@@ -9574,10 +9587,18 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_SABER1_COLOR1:
 	case SET_SABER1_COLOR2:
 		WP_SaberSetColor( &g_entities[entID], 0, toSet-SET_SABER1_COLOR1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			gi.cvar_set("g_saber_color", (char*)data);			
+		}
 		break;
 	case SET_SABER2_COLOR1:
 	case SET_SABER2_COLOR2:
 		WP_SaberSetColor( &g_entities[entID], 1, toSet-SET_SABER2_COLOR1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			gi.cvar_set("g_saber2_color", (char*)data);
+		}
 		break;
 	case SET_DISMEMBER_LIMB:
 		Q3_DismemberLimb( entID, (char *)data );
@@ -9727,12 +9748,26 @@ extern cvar_t	*g_char_skin_legs;
 				const char* finalModel = model.c_str();
 				const char* finalSkin = skin.c_str();
 				
-				gi.cvar_set("g_char_model", finalModel);
+ 				gi.cvar_set("g_char_model", finalModel);
 				gi.cvar_set("g_char_skin_head", finalSkin);
 				gi.cvar_set("g_char_skin_torso", finalSkin);
 				gi.cvar_set("g_char_skin_legs", finalSkin);
 
-				G_ChangePlayerModel(player, finalModel);
+				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
+				gi.cvar_set("g_saber_color", GetSaberColor(ent->client->ps.saber[0].blade[0].color));
+
+				if (player->client->ps.dualSabers)
+				{
+					gi.cvar_set("g_saber2", ent->client->ps.saber[0].name);
+					gi.cvar_set("g_saber2_color", GetSaberColor(ent->client->ps.saber[1].blade[0].color));
+				}
+				else
+				{
+					gi.cvar_set("g_saber2", "");
+					gi.cvar_set("g_saber2_color", "");
+				}
+
+				G_ChangePlayerModel(player, "player");
 
 				
 
@@ -9763,6 +9798,31 @@ extern cvar_t	*g_char_skin_legs;
 	}
 
 	IIcarusInterface::GetIcarus()->Completed( ent->m_iIcarusID, taskID );
+}
+
+const char* GetSaberColor(int color)
+{
+	switch (color)
+	{
+		case SABER_RED:
+			return (const char*) "red";
+		case SABER_ORANGE:
+			return (const char*)"orange";
+		case SABER_YELLOW:
+			return (const char*)"yellow";
+		case SABER_GREEN:
+			return (const char*)"green";
+		case SABER_BLUE:
+			return (const char*)"blue";
+		case SABER_PURPLE:
+			return (const char*)"purple";
+		case SABER_UNSTABLE_RED:
+			return (const char*)"unstable_red";
+		case SABER_DARKSABER:
+			return (const char*)"darksaber";
+		case SABER_BLACK:
+			return (const char*)"black";
+	}
 }
 
 void CQuake3GameInterface::PrisonerObjCheck(const char *name,const char *data)

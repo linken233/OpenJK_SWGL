@@ -2009,9 +2009,19 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	try
 	{
 		if (!NPC->NPC_skin)
+		{
 			strcpy(customSkin, "default");
+			if (NPC == player)
+			{
+				gi.cvar_set("g_char_skin_head", "model_default");
+				gi.cvar_set("g_char_skin_torso", "model_default");
+				gi.cvar_set("g_char_skin_legs", "model_default");
+			}
+		}
 		else
+		{
 			strcpy(customSkin, NPC->NPC_skin);
+		}
 	}
 	catch (...)
 	{
@@ -2607,6 +2617,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				Q_strncpyz( playerModel, value, sizeof(playerModel));
+				if (NPC == player)
+				{
+					gi.cvar_set("g_char_model", playerModel);
+				}
 				md3Model = qfalse;
 				continue;
 			}
@@ -3208,11 +3222,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
 						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
 					}
-					else
-					{
-						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
-						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
-					}
 				}
 			}
 			catch(...){}
@@ -3554,6 +3563,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					}
 					ci->customBasicSoundDir = G_NewString( sound );
 				}
+				if (NPC == player)
+				{
+					gi.cvar_set("snd", G_NewString(sound));
+				}
 				continue;
 			}
 
@@ -3624,9 +3637,14 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			//starting weapon
 			if ( !Q_stricmp( token, "weapon" ) )
 			{
+				
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
+				}
+				if (NPC->NPC_Weapon)
+				{
+					value = NPC->NPC_Weapon;
 				}
 				//FIXME: need to precache the weapon, too?  (in above func)
 				int weap = GetIDForString( WPTable, value );
@@ -3640,8 +3658,78 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						NPC->client->ps.ammo[weaponData[weap].ammoIndex] = ammoData[weaponData[weap].ammoIndex].max;
 					}
 				}
+				if (NPC->NPC_SaberOne)
+				{
+					value = NPC->NPC_SaberOne;
+
+					char* saberName = G_NewString(value);
+					WP_SaberParseParms(saberName, &NPC->client->ps.saber[0]);
+					//if it requires a specific style, make sure we know how to use it
+					if (NPC->client->ps.saber[0].stylesLearned)
+					{
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].stylesLearned;
+					}
+					if (NPC->client->ps.saber[0].singleBladeStyle)
+					{
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].singleBladeStyle;
+					}
+				}
+				if (NPC->NPC_SaberTwo)
+				{
+					value = NPC->NPC_SaberTwo;
+
+					if (!(NPC->client->ps.saber[0].saberFlags & SFL_TWO_HANDED))
+					{//can't use a second saber if first one is a two-handed saber...?
+						char* saberName = G_NewString(value);
+						WP_SaberParseParms(saberName, &NPC->client->ps.saber[1]);
+						if (NPC->client->ps.saber[1].stylesLearned)
+						{
+							NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].stylesLearned;
+						}
+						if (NPC->client->ps.saber[1].singleBladeStyle)
+						{
+							NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].singleBladeStyle;
+						}
+						if ((NPC->client->ps.saber[1].saberFlags & SFL_TWO_HANDED))
+						{//tsk tsk, can't use a twoHanded saber as second saber
+							WP_RemoveSaber(NPC, 1);
+						}
+						else
+						{
+							NPC->client->ps.dualSabers = qtrue;
+						}
+					}
+				}
+				if (NPC->NPC_SaberOneColor)
+				{
+					value = NPC->NPC_SaberOneColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[0][n])
+						{
+							NPC->client->ps.saber[0].blade[n].color = color;
+						}
+					}
+				}
+				if (NPC->NPC_SaberTwoColor)
+				{
+					value = NPC->NPC_SaberTwoColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[1][n])
+						{
+							NPC->client->ps.saber[1].blade[n].color = color;
+						}
+					}
+				}
 				continue;
 			}
+
+			
 
 			if ( !parsingPlayer )
 			{
@@ -3734,11 +3822,15 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 
 			//have a sabers.cfg and just name your saber in your NPCs.cfg/ICARUS script
 			//saber name
-			if ( !Q_stricmp( token, "saber" ) )
+			if ( !Q_stricmp( token, "saber" ) || NPC->NPC_SaberOne)
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
+				}
+				if (NPC->NPC_SaberOne)
+				{
+					value = NPC->NPC_SaberOne;
 				}
 				char *saberName = G_NewString( value );
 				WP_SaberParseParms( saberName, &NPC->client->ps.saber[0] );
@@ -3751,17 +3843,33 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].singleBladeStyle;
 				}
+				if (NPC->NPC_SaberOneColor)
+				{
+					value = NPC->NPC_SaberOneColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[0][n])
+						{
+							NPC->client->ps.saber[0].blade[n].color = color;
+						}
+					}
+				}
 				continue;
 			}
 
 			//second saber name
-			if ( !Q_stricmp( token, "saber2" ) )
+			if ( !Q_stricmp( token, "saber2" ) || NPC->NPC_SaberTwo)
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
 				}
-
+				if (NPC->NPC_SaberTwo)
+				{
+					value = NPC->NPC_SaberTwo;
+				}
 				if ( !(NPC->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 				{//can't use a second saber if first one is a two-handed saber...?
 					char *saberName = G_NewString( value );
@@ -3782,12 +3890,25 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						NPC->client->ps.dualSabers = qtrue;
 					}
+					if (NPC->NPC_SaberTwoColor)
+					{
+						value = NPC->NPC_SaberTwoColor;
+
+						saber_colors_t color = TranslateSaberColor(value);
+						for (n = 0; n < MAX_BLADES; n++)
+						{
+							if (!forcedRGBSaberColours[1][n])
+							{
+								NPC->client->ps.saber[1].blade[n].color = color;
+							}
+						}
+					}
 				}
 				continue;
 			}
 
 			// saberColor
-			if ( !Q_stricmpn( token, "saberColor", 10) )
+			if ( !Q_stricmpn( token, "saberColor", 10) || NPC->NPC_SaberOneColor)
 			{
 				if ( !NPC->client )
 				{
@@ -3799,6 +3920,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					if ( COM_ParseString( &p, &value ) )
 					{
 						continue;
+					}
+					if (NPC->NPC_SaberOneColor)
+					{
+						value = NPC->NPC_SaberOneColor;
 					}
 					saber_colors_t color = TranslateSaberColor( value );
 					for ( n = 0; n < MAX_BLADES; n++ )
@@ -3834,7 +3959,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 
-			if ( !Q_stricmpn( token, "saber2Color", 11 ) )
+			if ( !Q_stricmpn( token, "saber2Color", 11 ) || NPC->NPC_SaberTwoColor)
 			{
 				if ( !NPC->client )
 				{
@@ -3846,6 +3971,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					if ( COM_ParseString( &p, &value ) )
 					{
 						continue;
+					}
+					if (NPC->NPC_SaberTwoColor)
+					{
+						value = NPC->NPC_SaberTwoColor;
 					}
 					saber_colors_t color = TranslateSaberColor( value );
 					for ( n = 0; n < MAX_BLADES; n++ )

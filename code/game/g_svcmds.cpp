@@ -72,6 +72,11 @@ extern cvar_t	*g_NPClegs;
 extern cvar_t *g_NPCtype;
 extern cvar_t *g_NPCskin;
 extern cvar_t *g_NPCteam;
+extern cvar_t *g_NPCweapon;
+extern cvar_t *g_NPCsaber;
+extern cvar_t *g_NPCsabercolor;
+extern cvar_t *g_NPCsabertwo;
+extern cvar_t *g_NPCsabertwocolor;
 extern cvar_t *g_NPChealth;
 extern cvar_t *g_NPCspawnscript;
 extern cvar_t *g_NPCfleescript;
@@ -899,6 +904,20 @@ static void Svcmd_Spawn_f(void)
 	}
 
 	NPCspawner->NPC_team = g_NPCteam->string;
+
+	NPCspawner->NPC_Weapon = g_NPCweapon->string;
+
+	NPCspawner->NPC_SaberOne = g_NPCsaber->string;
+
+	if (Q_stricmp("", g_NPCsabertwo->string) 
+	&& Q_stricmp("empty", g_NPCsabertwo->string) 
+	&& Q_stricmp("null", g_NPCsabertwo->string))
+		NPCspawner->NPC_SaberTwo = g_NPCsabertwo->string;
+
+	NPCspawner->NPC_SaberOneColor = g_NPCsabercolor->string;
+
+	
+	NPCspawner->NPC_SaberTwoColor = g_NPCsabertwocolor->string;
 
 	NPCspawner->health = g_NPChealth->integer;
 

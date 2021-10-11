@@ -235,6 +235,11 @@ cvar_t	*g_saberDarkSideSaberColor;
 cvar_t *g_NPCtype;
 cvar_t *g_NPCskin;
 cvar_t *g_NPCteam;
+cvar_t *g_NPCweapon;
+cvar_t *g_NPCsaber;
+cvar_t *g_NPCsabercolor;
+cvar_t *g_NPCsabertwo;
+cvar_t *g_NPCsabertwocolor;
 cvar_t *g_NPChealth;
 cvar_t *g_NPCspawnscript;
 cvar_t *g_NPCfleescript;
@@ -752,6 +757,11 @@ void G_InitCvars( void ) {
 	g_NPChead = gi.cvar("g_NPChead", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCtorso = gi.cvar("g_NPCtorso", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPClegs = gi.cvar("g_NPClegs", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCweapon = gi.cvar("g_NPCweapon", "WP_BLASTER", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsaber = gi.cvar("g_NPCsaber", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabertwo = gi.cvar("g_NPCsabertwo", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 

@@ -36,6 +36,7 @@ extern int WP_SaberInitBladeData( gentity_t *ent );
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
 extern qboolean	CheatsOk( gentity_t *ent );
 extern void Boba_Precache( void );
+extern const char* GetSaberColor(int color);
 
 extern cvar_t	*g_char_model;
 extern cvar_t	*g_char_skin_head;
@@ -2099,11 +2100,30 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 				//FIXME: remove saber, too?
 				Boba_Precache();	// player as boba?
 			}
+			if (ent == player)
+			{
+				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
+				gi.cvar_set("g_saber_color", GetSaberColor(ent->client->ps.saber[0].blade[0].color));
+
+				if (player->client->ps.dualSabers)
+				{
+					gi.cvar_set("g_saber2", ent->client->ps.saber[0].name);
+					gi.cvar_set("g_saber2_color", GetSaberColor(ent->client->ps.saber[1].blade[0].color));
+				}
+				else
+				{
+					gi.cvar_set("g_saber2", "") ;
+					gi.cvar_set("g_saber2_color", "");
+				}
+				G_ChangePlayerModel(player, "player");
+			}
 		}
 		else
 		{
 			if (ent == player)
+			{
 				G_ChangePlayerModel(player, "player");
+			}
 			else
 			{
 				gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );

@@ -1744,7 +1744,25 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 
 	newent->classname = "NPC";
 	newent->NPC_skin = G_NewString(ent->NPC_skin);
-	newent->NPC_team = G_NewString(ent->NPC_team);
+
+	if(ent->NPC_Weapon)
+		newent->NPC_Weapon = G_NewString(ent->NPC_Weapon);
+
+	if (ent->NPC_SaberOne)
+		newent->NPC_SaberOne = G_NewString(ent->NPC_SaberOne);
+
+	if (ent->NPC_SaberOneColor)
+		newent->NPC_SaberOneColor = G_NewString(ent->NPC_SaberOneColor);
+
+	if (ent->NPC_SaberTwo)
+		newent->NPC_SaberTwo = G_NewString(ent->NPC_SaberTwo);
+
+	if (ent->NPC_SaberTwoColor)
+		newent->NPC_SaberTwoColor = G_NewString(ent->NPC_SaberTwoColor);
+
+	if(ent->NPC_team)
+		newent->NPC_team = G_NewString(ent->NPC_team);
+
 	VectorCopy(ent->s.origin, newent->s.origin);
 	VectorCopy(ent->s.origin, newent->client->ps.origin);
 	VectorCopy(ent->s.origin, newent->currentOrigin);
@@ -5256,7 +5274,7 @@ static void NPC_Spawn_f(void)
 	// Default values to prevent crashing
 	char* skin = "default";
 
-	char* team = "enemy";
+	char* team = "";
 
 	// Variable to start arg checking
 	int spawnCommand = 0;
@@ -5301,6 +5319,26 @@ static void NPC_Spawn_f(void)
 			NPCspawner->soundSet = gi.argv(++spawnCommand);
 
 		}
+		else if (!Q_stricmp("weapon", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_Weapon = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("saber", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_SaberOne = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("sabercolor", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_SaberOneColor = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("saber2", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_SaberTwo = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("saber2color", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_SaberTwoColor = gi.argv(++spawnCommand);
+		}
 
 		spawnCommand++;
 
@@ -5308,7 +5346,11 @@ static void NPC_Spawn_f(void)
 
 	NPCspawner->NPC_skin = G_NewString(skin);
 
-	NPCspawner->NPC_team = G_NewString(team);
+	if (Q_stricmp("", team))
+	{
+		NPCspawner->NPC_team = G_NewString(team);
+	}
+
 
 	NPCspawner->count = 1;
 
