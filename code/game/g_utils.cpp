@@ -1010,6 +1010,26 @@ void G_FreeEntity(gentity_t *ed) {
 	{
 		gi.Free(ed->NPC_team);
 	}
+	if (ed->NPC_Weapon && gi.bIsFromZone(ed->NPC_Weapon, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_Weapon);
+	}
+	if (ed->NPC_SaberOne && gi.bIsFromZone(ed->NPC_SaberOne, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_SaberOne);
+	}
+	if (ed->NPC_SaberOneColor && gi.bIsFromZone(ed->NPC_SaberOneColor, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_SaberOneColor);
+	}
+	if (ed->NPC_SaberTwo && gi.bIsFromZone(ed->NPC_SaberTwo, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_SaberTwo);
+	}
+	if (ed->NPC_SaberTwoColor && gi.bIsFromZone(ed->NPC_SaberTwoColor, TAG_G_ALLOC))
+	{
+		gi.Free(ed->NPC_SaberTwoColor);
+	}
 	if (ed->classname && gi.bIsFromZone(ed->classname, TAG_G_ALLOC)) {
 		gi.Free(ed->classname);
 	}

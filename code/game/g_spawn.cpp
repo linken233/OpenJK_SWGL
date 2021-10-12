@@ -335,7 +335,12 @@ field_t fields[] = {
 	{"NPC_target4", FOFS(target4), F_LSTRING},//NPC_spawner only
 	{"NPC_type", FOFS(NPC_type), F_LSTRING},
 	{"NPC_skin", FOFS(NPC_skin), F_LSTRING},
-	{"NPC_team", FOFS(NPC_team), F_LSTRING},
+	{ "NPC_team", FOFS(NPC_team), F_LSTRING },
+	{ "NPC_Weapon", FOFS(NPC_Weapon), F_LSTRING },
+	{ "NPC_SaberOne", FOFS(NPC_SaberOne), F_LSTRING },
+	{ "NPC_SaberTwo", FOFS(NPC_SaberTwo), F_LSTRING },
+	{ "NPC_SaberOneColor", FOFS(NPC_SaberOneColor), F_LSTRING },
+	{ "NPC_SaberTwoColor", FOFS(NPC_SaberTwoColor), F_LSTRING },
 	{"ownername", FOFS(ownername), F_LSTRING},
 	//for weapon_saber
 	{"saberType", FOFS(NPC_type), F_LSTRING},
