@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../win32/AutoVersion.h"
 
+
 /*
 ===============================================================================
 
@@ -41,6 +42,7 @@ These commands can only be entered from stdin or by a remote operator datagram
 
 qboolean qbLoadTransition = qfalse;
 
+
 //=========================================================
 // don't call this directly, it should only be called from SV_Map_f() or SV_MapTransition_f()
 //
@@ -48,6 +50,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 {
 	char		*map = NULL;
 	char		expanded[MAX_QPATH] = {0};
+	char		*kor_align = NULL;
 
 	char* jk2maps[] = { "kejim_post", "kejim_base", "artus_mine", "artus_detention", "artus_topside",
 		"valley", "yavin_temple", "yavin_trial", "ns_streets", "ns_hideout", "ns_starpad",
@@ -62,6 +65,8 @@ static bool SV_Map_( ForceReload_e eForceReload )
 						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2"};
 
 	map = Cmd_Argv(1);
+	kor_align = Cmd_Argv(2);
+
 	if ( !*map ) {
 		Com_Printf ("no map specified\n");
 		return false;
@@ -142,6 +147,22 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		Cvar_Set("g_newgameplus", "0");
 	}
 	
+	if (!strcmp(kor_align, "dark") && (!strcmp(map, "kor1") || !strcmp(map, "kor2")))
+	{
+		Cvar_Set("g_darkkorriban", "1");
+	}
+	else if (!strcmp(kor_align, "light") && (!strcmp(map, "kor1") || !strcmp(map, "kor2")))
+	{
+		Cvar_Set("g_darkkorriban", "0");
+	}
+	else if (!strcmp(map, "kor1") || !strcmp(map, "kor2"))
+	{
+	}
+	else
+	{
+		Cvar_Set("g_darkkorriban", "0");
+	}
+
 
 	if (map[0]!='_')
 	{

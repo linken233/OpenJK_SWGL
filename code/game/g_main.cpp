@@ -248,6 +248,8 @@ cvar_t *g_NPChead;
 cvar_t *g_NPCtorso;
 cvar_t *g_NPClegs;
 
+cvar_t* g_darkkorriban;
+
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
@@ -762,6 +764,8 @@ void G_InitCvars( void ) {
 	g_NPCsabertwo = gi.cvar("g_NPCsabertwo", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
+
+	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 

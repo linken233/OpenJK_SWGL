@@ -87,6 +87,8 @@ extern int	BMS_MID;
 extern int	BMS_END;
 extern cvar_t	*g_skippingcin;
 
+extern cvar_t *g_darkkorriban;
+
 extern qboolean	stop_icarus;
 
 #define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
@@ -10709,7 +10711,15 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 
 	case SET_OBJECTIVE_LIGHTSIDE:
 	{
-		*value = level.clients[0].sess.mission_objectives[LIGHTSIDE_OBJ].status;
+		if (g_darkkorriban->integer)
+		{
+			*value = 2;
+			player->client->playerTeam = TEAM_FREE;
+			player->client->enemyTeam = TEAM_FREE;
+
+		}
+		else
+			*value = level.clients[0].sess.mission_objectives[LIGHTSIDE_OBJ].status;
 		break;
 	}
 
