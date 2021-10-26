@@ -211,6 +211,8 @@ cvar_t	*g_setSaberLocking;
 
 cvar_t	*g_validJKO;
 
+cvar_t	*g_forceLightningColor;
+
 cvar_t	*g_charKey;
 
 cvar_t	*g_speederControlScheme;
@@ -238,6 +240,7 @@ cvar_t *g_NPCteam;
 cvar_t *g_NPCweapon;
 cvar_t *g_NPCsaber;
 cvar_t *g_NPCsabercolor;
+cvar_t *g_NPCLightningColor;
 cvar_t *g_NPCsabertwo;
 cvar_t *g_NPCsabertwocolor;
 cvar_t *g_NPChealth;
@@ -722,6 +725,8 @@ void G_InitCvars( void ) {
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
 
+	g_forceLightningColor = gi.cvar("g_forceLightningColor", "0", CVAR_ARCHIVE);
+
 	g_charKey = gi.cvar("g_charKey", "stormtrooper", CVAR_ARCHIVE);
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
@@ -764,6 +769,7 @@ void G_InitCvars( void ) {
 	g_NPCsabertwo = gi.cvar("g_NPCsabertwo", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCLightningColor = gi.cvar("g_LightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
 

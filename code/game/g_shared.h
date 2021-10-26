@@ -1247,6 +1247,8 @@ Ghoul2 Insert End
 	char		*NPC_SaberTwo;
 	char		*NPC_SaberTwoColor;
 	char		*NPC_Weapon;
+	char		*NPC_LightningColor;
+	char		*NPC_LightningVictim;
 
 //Variables used by movers (most likely exclusively by them)
 	moverState_t moverState;
@@ -1462,6 +1464,8 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(NPC_targetname);
 		saved_game.write<int32_t>(NPC_target);
 		saved_game.write<int32_t>(NPC_skin);
+		saved_game.write<int32_t>(NPC_LightningColor);
+		saved_game.write<int32_t>(NPC_LightningVictim);
 		saved_game.write<int32_t>(NPC_team);
 		saved_game.write<int32_t>(NPC_Weapon);
 		saved_game.write<int32_t>(NPC_SaberOne);
@@ -1657,6 +1661,8 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(NPC_type);
 		saved_game.read<int32_t>(NPC_targetname);
 		saved_game.read<int32_t>(NPC_target);
+		saved_game.read<int32_t>(NPC_LightningColor);
+		saved_game.write<int32_t>(NPC_LightningVictim);
 		saved_game.read<int32_t>(NPC_skin);
 		saved_game.read<int32_t>(NPC_team);
 		saved_game.read<int32_t>(NPC_Weapon);

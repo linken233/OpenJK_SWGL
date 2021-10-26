@@ -548,6 +548,34 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_LIGHTNING_STRIKE");
 		FX_LightningStrike(cent->currentState.origin2, cent->lerpOrigin);
 		break;
+	case EV_RED_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_RedLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_ORANGE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_OrangeLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_YELLOW_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_YellowLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_GREEN_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_GreenLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_PURPLE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_PurpleLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_WHITE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_WhiteLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_BLACK_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_BlackLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
 
 	case EV_DISRUPTOR_SNIPER_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_SNIPER_SHOT");

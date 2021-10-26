@@ -171,12 +171,17 @@ extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_saberDamageCapping;
 extern cvar_t	*g_saberNewControlScheme;
+
+extern cvar_t   *g_forceLightningColor;
+
 extern int g_crosshairEntNum;
 
 qboolean g_saberNoEffects = qfalse;
 qboolean g_noClashFlare = qfalse;
 int		g_saberFlashTime = 0;
 vec3_t	g_saberFlashPos = {0,0,0};
+
+const char* CG_GetForceLightning(gentity_t* ent);
 
 int forcePowerDarkLight[NUM_FORCE_POWERS] = //0 == neutral
 { //nothing should be usable at rank 0..
@@ -12212,7 +12217,25 @@ void ForceLightningStrike(gentity_t *self)
 
 	if (self->handLBolt != -1)
 	{
-		G_PlayEffect(G_EffectIndex("demp2/wall_impact"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+		if (self->NPC_LightningColor)
+		{
+			if (!Q_stricmp(self->NPC_LightningColor, "red"))
+				G_PlayEffect(G_EffectIndex("force/redlightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "orange"))
+				G_PlayEffect(G_EffectIndex("force/orangelightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "yellow"))
+				G_PlayEffect(G_EffectIndex("force/yellowlightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "green"))
+				G_PlayEffect(G_EffectIndex("force/greenlightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "purple"))
+				G_PlayEffect(G_EffectIndex("force/purplelightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "white"))
+				G_PlayEffect(G_EffectIndex("force/whitelightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "black"))
+				G_PlayEffect(G_EffectIndex("force/blacklightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+			else if (!Q_stricmp(self->NPC_LightningColor, "blue"))
+				G_PlayEffect(G_EffectIndex("force/lightning"), self->playerModel, self->handLBolt, self->s.number, self->currentOrigin, 200, qtrue);
+		}
 	}
 
 	G_Sound(self, soundIndex);
@@ -12240,14 +12263,14 @@ extern bool WP_MissileTargetHint(gentity_t* shooter, vec3_t start, vec3_t out);
 extern qboolean LogAccuracyHit(gentity_t *target, gentity_t *attacker);
 extern int G_GetHitLocFromTrace(trace_t *trace, int mod);
 //---------------------------------------------------------
-static void WP_FireStrike(gentity_t *ent, int forceLevel)
+static void WP_FireStrike(gentity_t* ent, int forceLevel)
 //---------------------------------------------------------
 {
 	int			damage = STRIKE_DAMAGE;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end, spot, forward, right, up;
 	trace_t		tr;
-	gentity_t	*traceEnt = NULL, *tent;
+	gentity_t* traceEnt = NULL, * tent;
 	float		dist, shotDist, shotRange = 8192;
 
 	if (ent == player)
@@ -12329,7 +12352,28 @@ static void WP_FireStrike(gentity_t *ent, int forceLevel)
 
 	// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
 	tent = G_TempEntity(tr.endpos, EV_LIGHTNING_STRIKE);
-	G_PlayEffect("env/electricity", start, forward);
+	if (ent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(ent->NPC_LightningColor, "red"))
+			tent = G_TempEntity(tr.endpos, EV_RED_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "orange"))
+			tent = G_TempEntity(tr.endpos, EV_ORANGE_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "yellow"))
+			tent = G_TempEntity(tr.endpos, EV_YELLOW_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "green"))
+			tent = G_TempEntity(tr.endpos, EV_GREEN_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "purple"))
+			tent = G_TempEntity(tr.endpos, EV_PURPLE_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "white"))
+			tent = G_TempEntity(tr.endpos, EV_WHITE_LIGHTNING_STRIKE);
+		else if (!Q_stricmp(ent->NPC_LightningColor, "black"))
+			tent = G_TempEntity(tr.endpos, EV_BLACK_LIGHTNING_STRIKE);
+		else
+			tent = G_TempEntity(tr.endpos, EV_LIGHTNING_STRIKE);
+	}
+	
+
+	G_PlayEffect(CG_GetForceLightning(ent), start, forward);
 	tent->svFlags |= SVF_BROADCAST;
 	VectorCopy(ent->client->renderInfo.eyePoint, tent->s.origin2);
 
@@ -12371,6 +12415,54 @@ static void WP_FireStrike(gentity_t *ent, int forceLevel)
 	}
 	VectorMA(start, shotDist - 4, forward, spot);
 	AddSightEvent(ent, spot, 256, AEL_DISCOVERED, 50);
+}
+
+
+const char* CG_GetForceLightning(gentity_t* ent)
+{
+	if (ent == player)
+	{
+		ent->NPC_LightningColor = g_forceLightningColor->string;
+	}
+
+	if (ent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(ent->NPC_LightningColor, "red"))
+		{
+			return "force/redlightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "orange"))
+		{
+			return "force/orangelightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "yellow"))
+		{
+			return "force/yellowlightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "green"))
+		{
+			return "force/greenlightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "purple"))
+		{
+			return "force/purplelightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "white"))
+		{
+			return "force/whitelightning";
+		}
+		else if (!Q_stricmp(ent->NPC_LightningColor, "black"))
+		{
+			return "force/blacklightning";
+		}
+
+		return "force/lightning";
+	}
+	else
+	{
+		return "force/lightning";
+	}
+
 }
 
 void ForceLightning( gentity_t *self )
@@ -12462,6 +12554,8 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
+		traceEnt->NPC_LightningVictim = self->NPC_LightningColor;
+
 		if ( !traceEnt->client || traceEnt->client->playerTeam != self->client->playerTeam || self->enemy == traceEnt || traceEnt->enemy == self || traceEnt->client->playerTeam == TEAM_SOLO || self->client->playerTeam == TEAM_SOLO)
 		{//an enemy or object
 			int	dmg;

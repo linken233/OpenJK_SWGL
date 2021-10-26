@@ -1642,6 +1642,7 @@ void CG_NPC_Precache ( gentity_t *spawner )
 	qboolean	md3Model = qfalse;
 	char	playerModel[MAX_QPATH] = { 0 };
 	char	customSkin[MAX_QPATH];
+	char    lightningColor[MAX_QPATH];
 
 	if ( !Q_stricmp( "random", spawner->NPC_type ) )
 	{//sorry, can't precache a random just yet
@@ -1764,13 +1765,13 @@ void CG_NPC_Precache ( gentity_t *spawner )
 		}
 
 		// customSkin
-		if ( !Q_stricmp( token, "customSkin" ) )
+		if (!Q_stricmp(token, "customSkin"))
 		{
-			if ( COM_ParseString( &p, &value ) )
+			if (COM_ParseString(&p, &value))
 			{
 				continue;
 			}
-			Q_strncpyz( customSkin, value, sizeof(customSkin));
+			Q_strncpyz(customSkin, value, sizeof(customSkin));
 			continue;
 		}
 
@@ -1995,6 +1996,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	sound[MAX_QPATH];
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
+	char	lightningColor[MAX_QPATH];
 	clientInfo_t	*ci = &NPC->client->clientInfo;
 	renderInfo_t	*ri = &NPC->client->renderInfo;
 	gNPCstats_t		*stats = NULL;
@@ -2633,6 +2635,18 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				Q_strncpyz( customSkin, value, sizeof(customSkin));
+				continue;
+			}
+
+			// Force lightning color
+			if (!Q_stricmp(token, "lightningColor"))
+			{
+				if (COM_ParseString(&p, &value))
+				{
+					continue;
+				}
+				Q_strncpyz(lightningColor, value, sizeof(lightningColor));
+				NPC->NPC_LightningColor = lightningColor;
 				continue;
 			}
 

@@ -127,5 +127,96 @@ void FX_LightningStrike(vec3_t start, vec3_t end)
 		*/
 
 	//G_PlayEffect("env\huge_lightning", start, end);
-	G_PlayEffect("env/huge_lightning", start, end);/////// Jace Solaris fix
+	G_PlayEffect("env/lightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_RedLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/redlightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_OrangeLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/orangelightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_YellowLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/yellowlightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_GreenLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/greenlightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_PurpleLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/purplelightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_WhiteLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/whitelightning", start, end);/////// Jace Solaris fix
+}
+
+void FX_BlackLightningStrike(vec3_t start, vec3_t end)
+{
+	/*FX_AddLine(-1, start, end, 0.1f, 4.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		120, cgi_R_RegisterShader("gfx/effects/blueLine"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+		*/
+
+		//G_PlayEffect("env\huge_lightning", start, end);
+	G_PlayEffect("env/blacklightning", start, end);/////// Jace Solaris fix
 }

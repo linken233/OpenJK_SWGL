@@ -46,8 +46,13 @@ extern vmCvar_t	cg_SFXSabers;
 extern vmCvar_t	cg_SFXSabersGlowSize;
 extern vmCvar_t	cg_SFXSabersCoreSize;
 
+extern cvar_t *g_forceLightningColor;
+
 //True View Camera Position Check Function
 extern void CheckCameraLocation( vec3_t OldeyeOrigin );
+
+fxHandle_t CG_GetWideForceLightning(centity_t* const cent);
+fxHandle_t CG_GetForceLightning(centity_t* const cent);
 
 /*
 
@@ -4406,6 +4411,59 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	trace_t	tr;
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
+
+	if (cent->gent->NPC_LightningVictim)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "red"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 0.0f;
+			rgb[2] = 0.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "orange"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 0.6f;
+			rgb[2] = 0.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "yellow"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 1.0f;
+			rgb[2] = 0.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "green"))
+		{
+			rgb[0] = 0.0f;
+			rgb[1] = 1.0f;
+			rgb[2] = 0.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "blue"))
+		{
+			rgb[0] = 0.0f;
+			rgb[1] = 0.0f;
+			rgb[2] = 1.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "purple"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 0.0f;
+			rgb[2] = 1.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "white"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 1.0f;
+			rgb[2] = 1.0f;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "black"))
+		{
+			rgb[0] = 1.0f;
+			rgb[1] = 1.0f;
+			rgb[2] = 1.0f;
+		}
+
+	}
 
 	if ( tr.fraction < 1.0f || Q_flrand(0.0f, 1.0f) > 0.94f || alwaysDo )
 	{
@@ -9048,19 +9106,19 @@ SkipTrueView:
 				{//arc
 					vec3_t	fxAxis[3];
 					AnglesToAxis( tAng, fxAxis );
-					theFxScheduler.PlayEffect( cgs.effects.forceLightningWide, cent->gent->client->renderInfo.handLPoint, fxAxis );
+					theFxScheduler.PlayEffect( CG_GetWideForceLightning(cent), cent->gent->client->renderInfo.handLPoint, fxAxis );
 					if ( cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_START
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_HOLD
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_RELEASE )
 					{//jackin' 'em up, Palpatine-style
-						theFxScheduler.PlayEffect( cgs.effects.forceLightningWide, cent->gent->client->renderInfo.handRPoint, fxAxis );
+						theFxScheduler.PlayEffect(CG_GetWideForceLightning(cent), cent->gent->client->renderInfo.handRPoint, fxAxis );
 					}
 				}
 				else
 				{//line
 					AngleVectors( tAng, fxDir, NULL, NULL );
-					theFxScheduler.PlayEffect( cgs.effects.forceLightning, cent->gent->client->renderInfo.handLPoint, fxDir );
+					theFxScheduler.PlayEffect( CG_GetForceLightning(cent), cent->gent->client->renderInfo.handLPoint, fxDir );
 				}
 			}
 
@@ -9632,6 +9690,103 @@ Ghoul2 Insert End
 			FX_AddSprite( cent->gent->client->renderInfo.muzzlePoint, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, Q_flrand(0.0f, 1.0f) * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA );
 		}
 	}
+}
+
+fxHandle_t CG_GetWideForceLightning(centity_t* const cent)
+{
+	if (cent->gent == player)
+	{
+		cent->gent->NPC_LightningColor = g_forceLightningColor->string;
+	}
+
+	if (cent->gent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningColor, "red"))
+		{
+			return cgs.effects.redForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "orange"))
+		{
+			return cgs.effects.orangeForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "yellow"))
+		{
+			return cgs.effects.yellowForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "green"))
+		{
+			return cgs.effects.greenForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "purple"))
+		{
+			return cgs.effects.purpleForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "indigo"))
+		{
+			return cgs.effects.indigoForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "white"))
+		{
+			return cgs.effects.whiteForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "black"))
+		{
+			return cgs.effects.blackForceLightningWide;
+		}
+
+		return cgs.effects.forceLightningWide;
+	}
+	else
+	{
+		return cgs.effects.forceLightningWide;
+	}	
+}
+
+fxHandle_t CG_GetForceLightning(centity_t* const cent)
+{
+	if (cent->gent == player)
+	{
+		cent->gent->NPC_LightningColor = g_forceLightningColor->string;		
+	}
+
+	if (cent->gent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningColor, "red"))
+		{
+			return cgs.effects.redForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "orange"))
+		{
+			return cgs.effects.orangeForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "yellow"))
+		{
+			return cgs.effects.yellowForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "green"))
+		{
+			return cgs.effects.greenForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "purple"))
+		{
+			return cgs.effects.purpleForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "white"))
+		{
+			return cgs.effects.whiteForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "black"))
+		{
+			return cgs.effects.blackForceLightning;
+		}
+
+		return cgs.effects.forceLightning;
+	}
+	else
+	{
+		return cgs.effects.forceLightning;
+	}
+	
 }
 
 //=====================================================================

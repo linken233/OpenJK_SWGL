@@ -243,8 +243,25 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgs.effects.forceHeal			= theFxScheduler.RegisterEffect( "force/heal" );
 		//cgs.effects.forceInvincibility	= theFxScheduler.RegisterEffect( "force/invin" );
 		cgs.effects.forceConfusion		= theFxScheduler.RegisterEffect( "force/confusion" );
-		cgs.effects.forceLightning		= theFxScheduler.RegisterEffect( "force/lightning" );
-		cgs.effects.forceLightningWide	= theFxScheduler.RegisterEffect( "force/lightningwide" );
+		cgs.effects.forceLightning = theFxScheduler.RegisterEffect("force/lightning");
+		cgs.effects.forceLightningWide = theFxScheduler.RegisterEffect("force/lightningwide");
+		cgs.effects.redForceLightning = theFxScheduler.RegisterEffect("force/redlightning");
+		cgs.effects.redForceLightningWide = theFxScheduler.RegisterEffect("force/redlightningwide");
+		cgs.effects.orangeForceLightning = theFxScheduler.RegisterEffect("force/orangelightning");
+		cgs.effects.orangeForceLightningWide = theFxScheduler.RegisterEffect("force/orangelightningwide");
+		cgs.effects.yellowForceLightning = theFxScheduler.RegisterEffect("force/yellowlightning");
+		cgs.effects.yellowForceLightningWide = theFxScheduler.RegisterEffect("force/yellowlightningwide");
+		cgs.effects.greenForceLightning = theFxScheduler.RegisterEffect("force/greenlightning");
+		cgs.effects.greenForceLightningWide = theFxScheduler.RegisterEffect("force/greenlightningwide");
+		cgs.effects.indigoForceLightning = theFxScheduler.RegisterEffect("force/indigolightning");
+		cgs.effects.indigoForceLightningWide = theFxScheduler.RegisterEffect("force/indigolightningwide");
+		cgs.effects.purpleForceLightning = theFxScheduler.RegisterEffect("force/purplelightning");
+		cgs.effects.purpleForceLightningWide = theFxScheduler.RegisterEffect("force/purplelightningwide");
+		cgs.effects.whiteForceLightning = theFxScheduler.RegisterEffect("force/whitelightning");
+		cgs.effects.whiteForceLightningWide = theFxScheduler.RegisterEffect("force/whitelightningwide");
+		cgs.effects.blackForceLightning = theFxScheduler.RegisterEffect("force/blacklightning");
+		cgs.effects.blackForceLightningWide = theFxScheduler.RegisterEffect("force/blacklightningwide");
+
 		//new Jedi Academy force power effects
 		cgs.effects.forceDrain		= theFxScheduler.RegisterEffect( "mp/drain" );
 		cgs.effects.forceDrainWide	= theFxScheduler.RegisterEffect( "mp/drainwide" );
@@ -1034,7 +1051,8 @@ Add the weapon, and flash for the player's view
 */
 extern int PM_TorsoAnimForFrame( gentity_t *ent, int torsoFrame );
 extern float CG_ForceSpeedFOV( void );
-
+extern fxHandle_t CG_GetWideForceLightning(centity_t* const cent);
+extern fxHandle_t CG_GetForceLightning(centity_t* const cent);
 void CG_AddViewWeapon( playerState_t *ps )
 {
 	refEntity_t	hand;
@@ -1073,12 +1091,12 @@ void CG_AddViewWeapon( playerState_t *ps )
 		{//arc
 			//vec3_t	fxAxis[3];
 			//AnglesToAxis( tAng, fxAxis );
-			theFxScheduler.PlayEffect( cgs.effects.forceLightningWide, temp, cg.refdef.viewaxis );
+			theFxScheduler.PlayEffect( CG_GetWideForceLightning(cent), temp, cg.refdef.viewaxis );
 		}
 		else
 		{//line
 			//AngleVectors( tAng, fxDir, NULL, NULL );
-			theFxScheduler.PlayEffect( cgs.effects.forceLightning, temp, cg.refdef.viewaxis[0] );
+			theFxScheduler.PlayEffect(CG_GetForceLightning(cent), temp, cg.refdef.viewaxis[0] );
 		}
 	}
 
@@ -3230,6 +3248,9 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 	}
 }
 
+
+
+
 /*
 -------------------------
 CG_MissileHitPlayer
@@ -3258,27 +3279,27 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		}
 	}
 
-	switch( weapon )
+	switch (weapon)
 	{
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
 	case WP_JAWA:
-		if ( altFire )
+		if (altFire)
 		{
-			FX_BryarAltHitPlayer( origin, dir, humanoid );
+			FX_BryarAltHitPlayer(origin, dir, humanoid);
 		}
 		else
 		{
-			FX_BryarHitPlayer( origin, dir, humanoid );
+			FX_BryarHitPlayer(origin, dir, humanoid);
 		}
 		break;
 
 	case WP_BLASTER:
-		FX_BlasterWeaponHitPlayer( other, origin, dir, humanoid );
+		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 
 	case WP_BOWCASTER:
-		FX_BowcasterHitPlayer( origin, dir, humanoid );
+		FX_BowcasterHitPlayer(origin, dir, humanoid);
 		break;
 
 	case WP_DISRUPTOR:
@@ -3289,38 +3310,38 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_REPEATER:
-		if ( altFire )
+		if (altFire)
 		{
-			FX_RepeaterAltHitPlayer( origin, dir, humanoid );
+			FX_RepeaterAltHitPlayer(origin, dir, humanoid);
 		}
 		else
 		{
-			FX_RepeaterHitPlayer( origin, dir, humanoid );
+			FX_RepeaterHitPlayer(origin, dir, humanoid);
 		}
 		break;
 
 	case WP_DEMP2:
-		if ( !altFire )
+		if (!altFire)
 		{
-			FX_DEMP2_HitPlayer( origin, dir, humanoid );
+			FX_DEMP2_HitPlayer(origin, dir, humanoid);
 		}
 
 		// Do a full body effect here for some more feedback
-		if ( other && other->client )
+		if (other && other->client)
 		{
-			other->s.powerups |= ( 1 << PW_SHOCKED );
+			other->s.powerups |= (1 << PW_SHOCKED);
 			other->client->ps.powerups[PW_SHOCKED] = cg.time + 1000;
 		}
 		break;
 
 	case WP_FLECHETTE:
-		if ( altFire )
+		if (altFire)
 		{
-			theFxScheduler.PlayEffect( "flechette/alt_blow", origin, dir );
+			theFxScheduler.PlayEffect("flechette/alt_blow", origin, dir);
 		}
 		else
 		{
-			FX_FlechetteWeaponHitPlayer( origin, dir, humanoid );
+			FX_FlechetteWeaponHitPlayer(origin, dir, humanoid);
 		}
 		break;
 
@@ -3347,47 +3368,47 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_THERMAL:
-		theFxScheduler.PlayEffect( "thermal/explosion", origin, dir );
-		theFxScheduler.PlayEffect( "thermal/shockwave", origin );
+		theFxScheduler.PlayEffect("thermal/explosion", origin, dir);
+		theFxScheduler.PlayEffect("thermal/shockwave", origin);
 		break;
 
 	case WP_EMPLACED_GUN:
-		FX_EmplacedHitPlayer( origin, dir, (qboolean)(cent->gent&&cent->gent->alt_fire) );
+		FX_EmplacedHitPlayer(origin, dir, (qboolean)(cent->gent && cent->gent->alt_fire));
 		break;
 
 	case WP_TRIP_MINE:
-		theFxScheduler.PlayEffect( "tripmine/explosion", origin, dir );
+		theFxScheduler.PlayEffect("tripmine/explosion", origin, dir);
 		break;
 
 	case WP_DET_PACK:
-		theFxScheduler.PlayEffect( "detpack/explosion", origin, dir );
+		theFxScheduler.PlayEffect("detpack/explosion", origin, dir);
 		break;
 
 	case WP_TURRET:
-		theFxScheduler.PlayEffect( "turret/flesh_impact", origin, dir );
+		theFxScheduler.PlayEffect("turret/flesh_impact", origin, dir);
 		break;
 
 	case WP_ATST_MAIN:
-		FX_EmplacedHitWall( origin, dir, qfalse );
+		FX_EmplacedHitWall(origin, dir, qfalse);
 		break;
 
 	case WP_ATST_SIDE:
-		if ( altFire )
+		if (altFire)
 		{
-			theFxScheduler.PlayEffect( "atst/side_alt_explosion", origin, dir );
+			theFxScheduler.PlayEffect("atst/side_alt_explosion", origin, dir);
 		}
 		else
 		{
-			theFxScheduler.PlayEffect( "atst/side_main_impact", origin, dir );
+			theFxScheduler.PlayEffect("atst/side_main_impact", origin, dir);
 		}
 		break;
 
 	case WP_TUSKEN_RIFLE:
-		FX_TuskenShotWeaponHitPlayer( other, origin, dir, humanoid );
+		FX_TuskenShotWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 
 	case WP_NOGHRI_STICK:
-		FX_NoghriShotWeaponHitPlayer( other, origin, dir, humanoid );
+		FX_NoghriShotWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 
 	case WP_BATTLEDROID:
@@ -3417,14 +3438,15 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_REY:
-		if ( altFire )
+		if (altFire)
 		{
-			FX_BryarAltHitPlayer( origin, dir, humanoid );
+			FX_BryarAltHitPlayer(origin, dir, humanoid);
 		}
 		else
 		{
-			FX_BryarHitPlayer( origin, dir, humanoid );
+			FX_BryarHitPlayer(origin, dir, humanoid);
 		}
 		break;
 	}
+
 }

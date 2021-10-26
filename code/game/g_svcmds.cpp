@@ -75,6 +75,7 @@ extern cvar_t *g_NPCteam;
 extern cvar_t *g_NPCweapon;
 extern cvar_t *g_NPCsaber;
 extern cvar_t *g_NPCsabercolor;
+extern cvar_t* g_NPCLightningColor;
 extern cvar_t *g_NPCsabertwo;
 extern cvar_t *g_NPCsabertwocolor;
 extern cvar_t *g_NPChealth;
@@ -278,6 +279,24 @@ static void Svcmd_SaberBlade_f()
 	}
 
 	g_entities[0].client->ps.SaberBladeActivate( sabernum, bladenum, turnOn );
+}
+
+static void Svcmd_LightningColor_f()
+{//FIXME: just list the colors, each additional listing sets that blade
+	char* color = gi.argv(1);
+	if (gi.argc() < 2)
+	{
+		gi.Printf("Usage:  lightningColor <color>\n");
+		gi.Printf("valid colors:  red, orange, yellow, green, blue, purple, white, and black\n");
+
+		return;
+	}
+
+	gentity_t* self = G_GetSelfForPlayerCmd();
+
+	gi.cvar_set("g_forcelightningcolor", color);
+
+	self->NPC_LightningColor = color;
 }
 
 static void Svcmd_SaberColor_f()
@@ -916,6 +935,7 @@ static void Svcmd_Spawn_f(void)
 
 	NPCspawner->NPC_SaberOneColor = g_NPCsabercolor->string;
 
+	NPCspawner->NPC_LightningColor = g_NPCLightningColor->string;
 	
 	NPCspawner->NPC_SaberTwoColor = g_NPCsabertwocolor->string;
 
@@ -1126,6 +1146,7 @@ static svcmd_t svcmds[] = {
 	{ "saberColor",					Svcmd_SaberColor_f,							CMD_CHEAT },
 	{ "saber",						Svcmd_Saber_f,								CMD_CHEAT },
 	{ "saberBlade",					Svcmd_SaberBlade_f,							CMD_CHEAT },
+	{ "lightningColor",				Svcmd_LightningColor_f,						CMD_NONE  },
 	
 	{ "setForceJump",				Svcmd_ForceSetLevel_f<FP_LEVITATION>,		CMD_CHEAT },
 	{ "setSaberThrow",				Svcmd_ForceSetLevel_f<FP_SABERTHROW>,		CMD_CHEAT },

@@ -1148,6 +1148,13 @@ void FX_StrikeHitWall(vec3_t origin, vec3_t normal);
 void FX_StrikeHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
 
 void FX_LightningStrike(vec3_t start, vec3_t end);
+void FX_RedLightningStrike(vec3_t start, vec3_t end);
+void FX_OrangeLightningStrike(vec3_t start, vec3_t end);
+void FX_YellowLightningStrike(vec3_t start, vec3_t end);
+void FX_GreenLightningStrike(vec3_t start, vec3_t end);
+void FX_PurpleLightningStrike(vec3_t start, vec3_t end);
+void FX_WhiteLightningStrike(vec3_t start, vec3_t end);
+void FX_BlackLightningStrike(vec3_t start, vec3_t end);
 
 void FX_DisruptorMainShot( vec3_t start, vec3_t end );
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean full );

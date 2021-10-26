@@ -377,6 +377,25 @@ typedef struct
 	fxHandle_t	forceConfusion;
 	fxHandle_t	forceLightning;
 	fxHandle_t	forceLightningWide;
+
+	// Other ForceLightnings
+	fxHandle_t	greenForceLightning;
+	fxHandle_t	greenForceLightningWide;
+	fxHandle_t	redForceLightning;
+	fxHandle_t	redForceLightningWide;
+	fxHandle_t	purpleForceLightning;
+	fxHandle_t	purpleForceLightningWide;
+	fxHandle_t	yellowForceLightning;
+	fxHandle_t	yellowForceLightningWide;
+	fxHandle_t	orangeForceLightning;
+	fxHandle_t	orangeForceLightningWide;
+	fxHandle_t	indigoForceLightning;
+	fxHandle_t	indigoForceLightningWide;
+	fxHandle_t	whiteForceLightning;
+	fxHandle_t	whiteForceLightningWide;
+	fxHandle_t	blackForceLightning;
+	fxHandle_t	blackForceLightningWide;
+
 	//fxHandle_t	forceInvincibility;
 	fxHandle_t	forceHeal;
 

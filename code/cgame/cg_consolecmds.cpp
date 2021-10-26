@@ -302,6 +302,7 @@ static const char *gcmds[] = {
 	"god",
 	"invuse",
 	"kill",
+	"lightningColor",
 	"meditate",
 	"nav",
 	"noclip",

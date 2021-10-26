@@ -1760,6 +1760,9 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	if (ent->NPC_SaberTwoColor)
 		newent->NPC_SaberTwoColor = G_NewString(ent->NPC_SaberTwoColor);
 
+	if (ent->NPC_LightningColor)
+		newent->NPC_LightningColor = G_NewString(ent->NPC_LightningColor);
+
 	if(ent->NPC_team)
 		newent->NPC_team = G_NewString(ent->NPC_team);
 
@@ -5338,6 +5341,10 @@ static void NPC_Spawn_f(void)
 		else if (!Q_stricmp("saber2color", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
 		{
 			NPCspawner->NPC_SaberTwoColor = gi.argv(++spawnCommand);
+		}
+		else if (!Q_stricmp("lightningcolor", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
+		{
+			NPCspawner->NPC_LightningColor = gi.argv(++spawnCommand);
 		}
 
 		spawnCommand++;
