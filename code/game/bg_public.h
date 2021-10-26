@@ -264,6 +264,8 @@ typedef enum {
 
 	PW_FORCE_PROJECTILE,
 
+	PW_FORCE_SHOCKED,
+
 	PW_NUM_POWERUPS
 } powerup_t;
 

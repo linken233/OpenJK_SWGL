@@ -12748,7 +12748,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 				{
 					G_Sound( traceEnt, G_SoundIndex( va( "sound/weapons/force/lightninghit%d.wav", Q_irand( 1, 3 ) ) ) );
 				}
-				traceEnt->s.powerups |= ( 1 << PW_SHOCKED );
+				traceEnt->s.powerups |= ( 1 << PW_FORCE_SHOCKED );
 
 				// If we are dead or we are a bot, we can do the full version
 				class_t npc_class = traceEnt->client->NPC_class;
@@ -12758,11 +12758,11 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 					 npc_class == CLASS_MARK2 || npc_class == CLASS_INTERROGATOR || npc_class == CLASS_ATST ) ||
 					 npc_class == CLASS_SENTRY )
 				{
-					traceEnt->client->ps.powerups[PW_SHOCKED] = level.time + 4000;
+					traceEnt->client->ps.powerups[PW_FORCE_SHOCKED] = level.time + 4000;
 				}
 				else //short version
 				{
-					traceEnt->client->ps.powerups[PW_SHOCKED] = level.time + 500;
+					traceEnt->client->ps.powerups[PW_FORCE_SHOCKED] = level.time + 500;
 				}
 			}
 		}

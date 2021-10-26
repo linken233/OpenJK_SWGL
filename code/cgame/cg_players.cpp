@@ -4301,7 +4301,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent, const vec3_t origin, vec3_t t
 	}
 }
 
-static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean alwaysDo = qfalse )
+static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean forceDrain, qboolean alwaysDo = qfalse )
 {
 	// Undoing for now, at least this code should compile if I ( or anyone else ) decides to work on this effect
 	qboolean	found = qfalse;
@@ -4412,7 +4412,7 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
 
-	if (cent->gent->NPC_LightningVictim)
+	if (cent->gent->NPC_LightningVictim && !forceDrain && cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
 	{
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "red"))
 		{
@@ -9085,16 +9085,17 @@ SkipTrueView:
 				CG_ForcePushBlur( cent->gent->client->renderInfo.headPoint, qtrue );
 			}
 
-			if ( cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time )
+			if ( cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time
+			  || cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
 			{//being electrocuted
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader, qfalse );
 			}
 
 			if ( cent->gent->client->ps.eFlags & EF_FORCE_DRAINED
 				|| (cent->currentState.powerups&(1<<PW_DRAINED)) )
 			{//being drained
 				//do red electricity lines off them and red drain shell on them
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qtrue );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qtrue, qtrue );
 			}
 
 			if ( cent->gent->client->ps.forcePowersActive&(1<<FP_LIGHTNING) )
