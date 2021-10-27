@@ -4958,18 +4958,6 @@ static void Q3_SetWalking( int entID, qboolean add)
 	}
 }
 
-static void Q3_SetSaberLocking(qboolean add)
-{
-	if (!add)
-	{
-		g_setSaberLocking->integer = 0;
-	}
-	else
-	{
-		g_setSaberLocking->integer = 1;
-	}
-}
-
 /*
 ============
 Q3_SetRunning
@@ -9807,24 +9795,26 @@ const char* GetSaberColor(int color)
 	switch (color)
 	{
 		case SABER_RED:
-			return (const char*) "red";
+			return "red";
 		case SABER_ORANGE:
-			return (const char*)"orange";
+			return "orange";
 		case SABER_YELLOW:
-			return (const char*)"yellow";
+			return "yellow";
 		case SABER_GREEN:
-			return (const char*)"green";
+			return "green";
 		case SABER_BLUE:
-			return (const char*)"blue";
+			return "blue";
 		case SABER_PURPLE:
-			return (const char*)"purple";
+			return "purple";
 		case SABER_UNSTABLE_RED:
-			return (const char*)"unstable_red";
+			return "unstable_red";
 		case SABER_DARKSABER:
-			return (const char*)"darksaber";
+			return "darksaber";
 		case SABER_BLACK:
-			return (const char*)"black";
+			return "black";
 	}
+
+	return "blue";
 }
 
 void CQuake3GameInterface::PrisonerObjCheck(const char *name,const char *data)

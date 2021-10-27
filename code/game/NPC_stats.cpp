@@ -1642,7 +1642,6 @@ void CG_NPC_Precache ( gentity_t *spawner )
 	qboolean	md3Model = qfalse;
 	char	playerModel[MAX_QPATH] = { 0 };
 	char	customSkin[MAX_QPATH];
-	char    lightningColor[MAX_QPATH];
 
 	if ( !Q_stricmp( "random", spawner->NPC_type ) )
 	{//sorry, can't precache a random just yet

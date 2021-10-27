@@ -2059,7 +2059,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 	}
 	else
 	{
-		ent->flags = NULL;
+		ent->flags = 0;
 	}
 
 	//attempt to free the string (currently can't since it's always "player" )

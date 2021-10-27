@@ -49,8 +49,6 @@ static float	sabersCrossed;
 static int		saberHitEntity;
 static int		numVictims = 0;
 
-static qboolean stasisChecked = qfalse;
-
 extern vec3_t	forwardVec, vrightVec, up;
 extern vec3_t	muzzle;
 

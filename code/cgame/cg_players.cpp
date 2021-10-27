@@ -5863,7 +5863,7 @@ void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t
 	float	glowscale = 0.5;
 	float 	v1, v2, len;
 
-	qhandle_t	glow = 0, blade = 0;
+	qhandle_t	glow = 0;
 	refEntity_t saber;
 
 	VectorSubtract( blade_tip, blade_muz, blade_dir );
@@ -9085,8 +9085,8 @@ SkipTrueView:
 				CG_ForcePushBlur( cent->gent->client->renderInfo.headPoint, qtrue );
 			}
 
-			if ( cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time
-			  || cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
+			if ( (cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time)
+			  || (cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time))
 			{//being electrocuted
 				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader, qfalse );
 			}

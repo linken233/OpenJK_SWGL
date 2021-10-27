@@ -4600,20 +4600,6 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 	return 1.0f;
 }
 
-static inline qboolean PM_IsHumanoid( CGhoul2Info *ghlInfo )
-{
-	char	*GLAName;
-	GLAName = gi.G2API_GetGLAName( ghlInfo );
-	assert(GLAName);
-
-	if ( !Q_stricmp( "models/players/_humanoid/_humanoid", GLAName ) )
-	{
-		return qtrue;
-	}
-
-	return qfalse;
-}
-
 /*
 -------------------------
 PM_SetAnimFinal

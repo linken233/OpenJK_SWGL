@@ -871,7 +871,6 @@ static void Svcmd_Spawn_f(void)
 
 	vec3_t			forward, end;
 	trace_t			trace;
-	qboolean		isVehicle = qfalse;
 	
 
 	if (!NPCspawner)
