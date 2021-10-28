@@ -1084,6 +1084,7 @@ void NPC_SetFX_SpawnStates(gentity_t *ent)
 
 //--------------------------------------------------------------
 extern qboolean	stop_icarus;
+char* NPC_GetLightning(gentity_t* NPC);
 void NPC_Begin(gentity_t *ent)
 {
 	vec3_t	spawn_origin, spawn_angles;
@@ -1230,6 +1231,10 @@ void NPC_Begin(gentity_t *ent)
 		}
 	}
 
+	if (!ent->NPC_LightningColor)
+	{
+		ent->NPC_LightningColor = NPC_GetLightning(ent);
+	}
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
 	ent->mass = 10;
@@ -1425,6 +1430,29 @@ void NPC_Begin(gentity_t *ent)
 			}
 		}
 	}
+}
+
+char* NPC_GetLightning(gentity_t* NPC)
+{
+	switch (NPC->NPC->stats.lightningColor)
+	{
+	case LIGHTNING_RED:
+		return "red";
+	case LIGHTNING_ORANGE:
+		return "orange";
+	case LIGHTNING_YELLOW:
+		return "yellow";
+	case LIGHTNING_GREEN:
+		return "green";
+	case LIGHTNING_PURPLE:
+		return "purple";
+	case LIGHTNING_WHITE:
+		return "white";
+	case LIGHTNING_BLACK:
+		return "black";
+	}
+
+	return "blue";
 }
 
 /*

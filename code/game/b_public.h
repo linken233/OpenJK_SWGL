@@ -131,6 +131,18 @@ typedef enum
 	SEX_SHEMALE//what the Hell, ya never know...
 } sexType_t;
 
+typedef	enum
+{
+	LIGHTNING_BLUE = 0,
+	LIGHTNING_RED,
+	LIGHTNING_ORANGE,
+	LIGHTNING_YELLOW,
+	LIGHTNING_GREEN,
+	LIGHTNING_PURPLE,
+	LIGHTNING_WHITE,
+	LIGHTNING_BLACK
+} lightningColor_t;
+
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 class gNPCstats_t
 {//Stats, loaded in, and can be set by scripts
@@ -156,6 +168,7 @@ public:
 	int		acceleration;
 	//sex
 	sexType_t	sex;			//male, female, etc.
+	lightningColor_t lightningColor;
 
 
 	void sg_export(
@@ -179,6 +192,7 @@ public:
 		saved_game.write<int32_t>(health);
 		saved_game.write<int32_t>(acceleration);
 		saved_game.write<int32_t>(sex);
+		saved_game.write<int32_t>(lightningColor);
 	}
 
 	void sg_import(
@@ -202,6 +216,7 @@ public:
 		saved_game.read<int32_t>(health);
 		saved_game.read<int32_t>(acceleration);
 		saved_game.read<int32_t>(sex);
+		saved_game.read<int32_t>(lightningColor);
 	}
 }; // gNPCstats_t
 

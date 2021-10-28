@@ -2057,6 +2057,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 */
 		// fill in defaults
 		stats->sex			= SEX_MALE;
+		stats->lightningColor = LIGHTNING_BLUE;
 		stats->aggression	= 3;
 		stats->aim			= 3;
 		stats->earshot		= 1024;
@@ -2073,7 +2074,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			stats->visrange	= g_entities[ENTITYNUM_WORLD].max_health;
 		}
 		stats->health		= 0;
-
 		stats->yawSpeed		= 90;
 		stats->walkSpeed	= 90;
 		stats->runSpeed		= 300;
@@ -2634,18 +2634,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				Q_strncpyz( customSkin, value, sizeof(customSkin));
-				continue;
-			}
-
-			// Force lightning color
-			if (!Q_stricmp(token, "lightningColor"))
-			{
-				if (COM_ParseString(&p, &value))
-				{
-					continue;
-				}
-				Q_strncpyz(lightningColor, value, sizeof(lightningColor));
-				NPC->NPC_LightningColor = lightningColor;
 				continue;
 			}
 
@@ -3533,6 +3521,45 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					else if ( value[0] == 't' )
 					{//transsexual/transvestite?
 						stats->sex = SEX_SHEMALE;
+					}
+					continue;
+				}
+
+				//Lightning Color
+				if (!Q_stricmp(token, "lightningColor") && !NPC->NPC_LightningColor)
+				{
+					if (COM_ParseString(&p, &value))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (!Q_stricmp(value, "red"))
+					{
+						stats->lightningColor = LIGHTNING_RED;
+					}
+					else if (!Q_stricmp(value, "orange"))
+					{
+						stats->lightningColor = LIGHTNING_ORANGE;
+					}
+					else if (!Q_stricmp(value, "yellow"))
+					{
+						stats->lightningColor = LIGHTNING_YELLOW;
+					}
+					else if (!Q_stricmp(value, "green"))
+					{
+						stats->lightningColor = LIGHTNING_GREEN;
+					}
+					else if (!Q_stricmp(value, "purple"))
+					{
+						stats->lightningColor = LIGHTNING_PURPLE;
+					}
+					else if (!Q_stricmp(value, "white"))
+					{
+						stats->lightningColor = LIGHTNING_WHITE;
+					}
+					else if (!Q_stricmp(value, "black"))
+					{
+						stats->lightningColor = LIGHTNING_BLACK;
 					}
 					continue;
 				}

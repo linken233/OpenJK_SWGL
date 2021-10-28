@@ -248,7 +248,6 @@ typedef enum {
 	PW_NONE,
 	PW_QUAD,// This can go away
 	PW_BATTLESUIT,
-	PW_HASTE,// This can go away
 	PW_CLOAKED,
 	PW_UNCLOAKING,
 	PW_DISRUPTION,
@@ -269,7 +268,7 @@ typedef enum {
 	PW_NUM_POWERUPS
 } powerup_t;
 
-#define PW_REMOVE_AT_DEATH ((1<<PW_QUAD)|(1<<PW_BATTLESUIT)|(1<<PW_HASTE)|(1<<PW_CLOAKED)|(1<<PW_UNCLOAKING)|(1<<PW_UNCLOAKING)|(1<<PW_GALAK_SHIELD)|(1<<PW_DISINT_2)|(1<<PW_INVINCIBLE)|(1<<PW_SEEKER))
+#define PW_REMOVE_AT_DEATH ((1<<PW_QUAD)|(1<<PW_BATTLESUIT)|(1<<PW_CLOAKED)|(1<<PW_UNCLOAKING)|(1<<PW_UNCLOAKING)|(1<<PW_GALAK_SHIELD)|(1<<PW_DISINT_2)|(1<<PW_INVINCIBLE)|(1<<PW_SEEKER))
 // entityState_t->event values
 // entity events are for effects that take place relative
 // to an existing entities origin.  Very network efficient.

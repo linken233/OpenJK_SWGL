@@ -12552,7 +12552,14 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, flo
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
-		traceEnt->NPC_LightningVictim = self->NPC_LightningColor;
+		if (self->NPC_LightningColor)
+		{
+			traceEnt->NPC_LightningVictim = self->NPC_LightningColor;
+		}
+		else
+		{
+			traceEnt->NPC_LightningVictim = "blue";
+		}
 
 		if ( !traceEnt->client || traceEnt->client->playerTeam != self->client->playerTeam || self->enemy == traceEnt || traceEnt->enemy == self || traceEnt->client->playerTeam == TEAM_SOLO || self->client->playerTeam == TEAM_SOLO)
 		{//an enemy or object

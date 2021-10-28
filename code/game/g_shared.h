@@ -1086,6 +1086,7 @@ Ghoul2 Insert End
 //Health and damage fields
 	int			health;
 	int			max_health;
+	lightningColor_t			lightningColor;
 	qboolean	takedamage;
 	material_t	material;
 	int			damage;
