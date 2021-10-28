@@ -6802,6 +6802,16 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 							G_ActivateBehavior( targ, BSET_DEATH );
 						}
 						targ->health = 1;
+						if (!Q_stricmp("Darth_Sion", targ->NPC_type)
+							|| !Q_stricmp("Darth_Sion_TFU", targ->NPC_type))
+						{
+							NPC_SetAnim(targ, SETANIM_BOTH, BOTH_FORCE_RAGE, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+							targ->health = ((targ->max_health/(Q_irand(1,4)))+1);
+							if (!Q_irand(0, 2))
+							{
+								targ->flags &= ~FL_UNDYING;
+							}
+						}
 					}
 				}
 				else if ( targ->health < 1 && attacker->client )

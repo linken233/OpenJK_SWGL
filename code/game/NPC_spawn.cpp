@@ -242,6 +242,7 @@ void G_ClassSetDontFlee(gentity_t *self)
 extern void	Vehicle_Register(gentity_t *ent);
 extern void RT_FlyStart(gentity_t *self);
 extern void SandCreature_ClearTimers(gentity_t *ent);
+extern void NPC_Vader_ClearTimers(gentity_t* ent);
 void NPC_SetMiscDefaultData(gentity_t *ent)
 {
 	if (ent->spawnflags & SFB_CINEMATIC)
@@ -287,7 +288,6 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		}
 
 	}
-
 	else if (ent->client->NPC_class == CLASS_MANDALORIAN || ent->client->NPC_class == CLASS_JANGO)
 	{//set some stuff, precache
 		ent->client->ps.forcePowersKnown |= (1 << FP_LEVITATION);
@@ -326,6 +326,18 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	else if (!Q_stricmp("Darth_Vader", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
+		NPC_Vader_ClearTimers(ent);
+	}
+	else if (!Q_stricmp("Sith_Stalker", ent->NPC_type)
+		|| !Q_stricmp("Cybernetic_Reconstruction", ent->NPC_type)
+		|| !Q_stricmp("Lord_Starkiller", ent->NPC_type)
+		|| !Q_stricmp("Lord_Starkiller_Tatooine", ent->NPC_type))
+	{
+		NPC_Vader_ClearTimers(ent);
+	}
+	else if (!Q_stricmp("Darth_Sion", ent->NPC_type))
+	{
+		NPC->flags |= FL_UNDYING; // Sion is the lord of pain, he won't die immediately
 	}
 	else if (ent->client->NPC_class == CLASS_ROCKETTROOPER)
 	{//set some stuff, precache

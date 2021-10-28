@@ -1462,6 +1462,7 @@ extern void NPC_Remote_Precache( void );
 extern void	NPC_R2D2_Precache(void);
 extern void	NPC_R5D2_Precache(void);
 extern void NPC_Probe_Precache(void);
+extern void NPC_Vader_Precache(void);
 extern void NPC_Interrogator_Precache(gentity_t *self);
 extern void NPC_MineMonster_Precache( void );
 extern void NPC_Howler_Precache( void );
@@ -1567,9 +1568,13 @@ void NPC_PrecacheByClassName( const char* type )
 	{
 		NPC_Wampa_Precache();
 	}
-	else if ( !Q_stricmp( "sand_creature", type ))
+	else if (!Q_stricmp("sand_creature", type))
 	{
 		SandCreature_Precache();
+	}
+	else if (!Q_stricmp("darth_vader", type))
+	{
+		NPC_Vader_Precache();
 	}
 	else if ( !Q_stricmp( "sentry", type ))
 	{

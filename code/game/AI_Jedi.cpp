@@ -127,6 +127,44 @@ void NPC_ShadowTrooper_Precache( void )
 	G_SoundIndex( "sound/chars/shadowtrooper/decloak.wav" );
 }
 
+void NPC_Vader_Precache(void)
+{
+	// Regular Vader breathing
+	G_SoundIndex(va("sound/chars/am_darth_vader/vader_breathe.wav"));
+
+	// Strained Vader breathing
+	G_SoundIndex("sound/chars/am_darth_vader/vader_breathe_strained.wav");
+
+	// Regular Starkiller breathing
+	G_SoundIndex("sound/chars/lord_starkiller/starkiller_breathe.wav");
+
+	// Strained Starkiller breathing
+	G_SoundIndex("sound/chars/lord_starkiller/starkiller_breathe_strained.wav");
+}
+
+void NPC_Vader_ClearTimers(gentity_t *ent)
+{
+	TIMER_Set(NPC, "breathing", -level.time);
+}
+
+void NPC_BSVader_Default(void)
+{
+	if (TIMER_Done(NPC, "breathing"))
+	{
+		if (NPC->health > (NPC->max_health * .33))
+		{
+			G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+			TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+		}
+		else
+		{
+			G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+			TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+		}
+		
+	}
+}
+
 void NPC_Rosh_Dark_Precache( void )
 {
 	G_EffectIndex( "force/kothos_recharge.efx" );
@@ -7697,6 +7735,41 @@ void NPC_BSJedi_Default( void )
 	if ( Jedi_InSpecialMove() )
 	{
 		return;
+	}
+
+	if (TIMER_Done(NPC, "breathing") && 
+		(!Q_stricmp("Darth_Vader", NPC->NPC_type)
+		|| !Q_stricmp("Sith_Stalker", NPC->NPC_type)
+		|| !Q_stricmp("Cybernetic_Reconstruction", NPC->NPC_type)
+		|| !Q_stricmp("Lord_Starkiller", NPC->NPC_type)
+		|| !Q_stricmp("Lord_Starkiller_Tatooine", NPC->NPC_type)))
+	{
+		if (!Q_stricmp("Darth_Vader", NPC->NPC_type))
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+			}
+		}
+		else
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(3131, 5000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
+			}
+		}
 	}
 
 	Jedi_CheckCloak();
