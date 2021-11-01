@@ -1780,7 +1780,7 @@ void CG_NPC_Precache ( gentity_t *spawner )
 		}
 
 		// playerTeam
-		if ( !Q_stricmp( token, "playerTeam" ) )
+		if ( !Q_stricmp( token, "playerTeam" ) && spawner != player)
 		{
 			if ( COM_ParseString( &p, &value ) )
 			{
@@ -3178,7 +3178,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// playerTeam
-			if ( !Q_stricmp( token, "playerTeam" ) )
+			if ( !Q_stricmp( token, "playerTeam" ) && NPC != player)
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
@@ -3189,7 +3189,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// enemyTeam
-			if ( !Q_stricmp( token, "enemyTeam" ) )
+			if ( !Q_stricmp( token, "enemyTeam" ) && NPC != player)
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
