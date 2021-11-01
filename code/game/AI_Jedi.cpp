@@ -100,6 +100,8 @@ extern qboolean G_EntIsBreakable( int entityNum, gentity_t *breaker );
 extern qboolean PM_LockedAnim( int anim );
 extern qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore, int clipmask);
 
+extern void WP_SetSaber(gentity_t* ent, int saberNum, const char* saberName);
+
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_saberNewControlScheme;
@@ -145,6 +147,11 @@ void NPC_Vader_Precache(void)
 void NPC_Vader_ClearTimers(gentity_t *ent)
 {
 	TIMER_Set(NPC, "breathing", -level.time);
+}
+
+void NPC_Inquisitor_ClearTimers(gentity_t* ent)
+{
+	TIMER_Set(NPC, "saber_switch", -level.time);
 }
 
 void NPC_BSVader_Default(void)
@@ -1248,12 +1255,12 @@ static void Jedi_AdjustSaberAnimLevel( gentity_t *self, int newLevel )
 	}
 	if ( newLevel < SS_FAST )
 	{
-		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_STAFF));
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_TAVION));
 
 	}
 	else if ( newLevel > SS_STAFF )
 	{
-		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_STAFF));
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_TAVION));
 	}
 	//use the different attacks, how often they switch and under what circumstances
 	if ( !(self->client->ps.saberStylesKnown&(1<<newLevel)) )
@@ -7771,6 +7778,37 @@ void NPC_BSJedi_Default( void )
 			}
 		}
 	}
+
+	if (!Q_stricmp("Grand_Inquisitor", NPC->NPC_type)
+		|| !Q_stricmp("Second_Sister", NPC->NPC_type)
+		|| !Q_stricmp("Fifth_Brother", NPC->NPC_type)
+		|| !Q_stricmp("Seventh_Sister", NPC->NPC_type))
+		{
+			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "inquisitor_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("inquisitor_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "inquisitor");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("5th_brother", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "5th_brother_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("5th_brother_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "5th_brother");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("7th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "7th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("7th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "7th_sister");
+			}
+		}
 
 	Jedi_CheckCloak();
 

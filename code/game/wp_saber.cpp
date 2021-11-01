@@ -67,6 +67,8 @@ extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_newforcepowers;
 
+extern void WP_SetSaber(gentity_t* ent, int saberNum, const char* saberName);
+
 
 extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
 extern qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum );
@@ -6674,7 +6676,26 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 		}
 
 		if ( thrown )
-		{//this is a regular throw, so take force power
+		{
+			// Inquisitor sabers should switch to staff when thrown
+			if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))
+			{
+				WP_SetSaber(self, 0, "inquisitor_staff");
+				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+			}
+			// Inquisitor sabers should switch to staff when thrown
+			if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
+			{
+				WP_SetSaber(self, 0, "7th_sister_staff");
+				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+			}
+			// Inquisitor sabers should switch to staff when thrown
+			if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
+			{
+				WP_SetSaber(self, 0, "5th_brother_staff");
+				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+			}
+			//this is a regular throw, so take force power
 			if ( self->client->ps.forcePowerLevel[FP_SABERTHROW] > FORCE_LEVEL_2 )
 			{//at max skill, the cost increases as keep it out
 				WP_ForcePowerStart( self, FP_SABERTHROW, 10 );

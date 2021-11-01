@@ -243,6 +243,7 @@ extern void	Vehicle_Register(gentity_t *ent);
 extern void RT_FlyStart(gentity_t *self);
 extern void SandCreature_ClearTimers(gentity_t *ent);
 extern void NPC_Vader_ClearTimers(gentity_t* ent);
+extern void NPC_Inquisitor_ClearTimers(gentity_t* ent);
 void NPC_SetMiscDefaultData(gentity_t *ent)
 {
 	if (ent->spawnflags & SFB_CINEMATIC)
@@ -333,7 +334,14 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		|| !Q_stricmp("Lord_Starkiller", ent->NPC_type)
 		|| !Q_stricmp("Lord_Starkiller_Tatooine", ent->NPC_type))
 	{
-		NPC_Vader_ClearTimers(ent);
+		NPC_Vader_ClearTimers(ent); // For breathing
+	}
+	else if (!Q_stricmp("Grand_Inquisitor", ent->NPC_type)
+		|| !Q_stricmp("Second_Sister", ent->NPC_type)
+		|| !Q_stricmp("Fifth_Brother", ent->NPC_type)
+		|| !Q_stricmp("Seventh_Sister", ent->NPC_type))
+	{
+		NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}
 	else if (!Q_stricmp("Darth_Sion", ent->NPC_type))
 	{
