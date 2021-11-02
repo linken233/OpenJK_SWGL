@@ -2000,7 +2000,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	sound[MAX_QPATH];
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
-	char	lightningColor[MAX_QPATH];
 	clientInfo_t	*ci = &NPC->client->clientInfo;
 	renderInfo_t	*ri = &NPC->client->renderInfo;
 	gNPCstats_t		*stats = NULL;

@@ -1464,6 +1464,8 @@ char* NPC_GetLightning(gentity_t* NPC)
 		return "yellow";
 	case LIGHTNING_GREEN:
 		return "green";
+	case LIGHTNING_BLUE:
+		return "blue";
 	case LIGHTNING_PURPLE:
 		return "purple";
 	case LIGHTNING_WHITE:
