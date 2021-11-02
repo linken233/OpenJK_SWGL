@@ -1421,6 +1421,7 @@ void Cmd_SaberDrop_f( gentity_t *ent, int saberNum )
 ClientCommand
 =================
 */
+extern void G_ChangePlayerModel(gentity_t* ent, const char* newModel);
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
 	const char	*cmd;
@@ -1699,6 +1700,12 @@ void ClientCommand( int clientNum ) {
 		{//drop either left or right
 			Cmd_SaberDrop_f( ent, saberNum );
 		}
+	}
+	else if (Q_stricmp(cmd, "imhansolo") == 0)
+	{
+		G_StartMatrixEffect(player);
+		gi.SetConfigstring(CS_MUSIC, "music/imhansolo");
+		G_ChangePlayerModel(&g_entities[0], "han_solo");
 	}
 	else
 	{
