@@ -243,6 +243,7 @@ extern void	Vehicle_Register(gentity_t *ent);
 extern void RT_FlyStart(gentity_t *self);
 extern void SandCreature_ClearTimers(gentity_t *ent);
 extern void NPC_Vader_ClearTimers(gentity_t* ent);
+extern void NPC_Kestis_ClearTimers(gentity_t* ent);
 extern void NPC_Inquisitor_ClearTimers(gentity_t* ent);
 void NPC_SetMiscDefaultData(gentity_t *ent)
 {
@@ -329,12 +330,20 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
 		NPC_Vader_ClearTimers(ent);
 	}
+	else if (!Q_stricmp("Gorc", ent->NPC_type))
+	{
+		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
+	}
 	else if (!Q_stricmp("Sith_Stalker", ent->NPC_type)
 		|| !Q_stricmp("Cybernetic_Reconstruction", ent->NPC_type)
 		|| !Q_stricmp("Lord_Starkiller", ent->NPC_type)
 		|| !Q_stricmp("Lord_Starkiller_Tatooine", ent->NPC_type))
 	{
 		NPC_Vader_ClearTimers(ent); // For breathing
+	}
+	else if (!Q_stricmp("Cal_Kestis", ent->NPC_type))
+	{
+		NPC_Kestis_ClearTimers(ent);
 	}
 	else if (!Q_stricmp("Grand_Inquisitor", ent->NPC_type)
 		|| !Q_stricmp("Second_Sister", ent->NPC_type)

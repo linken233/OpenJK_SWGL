@@ -144,9 +144,14 @@ void NPC_Vader_Precache(void)
 	G_SoundIndex("sound/chars/lord_starkiller/starkiller_breathe_strained.wav");
 }
 
-void NPC_Vader_ClearTimers(gentity_t *ent)
+void NPC_Vader_ClearTimers(gentity_t* ent)
 {
 	TIMER_Set(NPC, "breathing", -level.time);
+}
+
+void NPC_Kestis_ClearTimers(gentity_t* ent)
+{
+	TIMER_Set(NPC, "saber_switch", -level.time);
 }
 
 void NPC_Inquisitor_ClearTimers(gentity_t* ent)
@@ -7777,6 +7782,20 @@ void NPC_BSJedi_Default( void )
 				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
 			}
 		}
+	}
+
+	if (TIMER_Done(NPC, "saber_switch") &&
+		(!Q_stricmp("Cal_Kestis", NPC->NPC_type)))
+	{
+		if (!Q_stricmp("cal_kestis_staff", NPC->client->ps.saber[0].name))
+		{
+			WP_SetSaber(NPC, 0, "cal_kestis_single");
+		}
+		else if (!Q_stricmp("cal_kestis_single", NPC->client->ps.saber[0].name))
+		{
+			WP_SetSaber(NPC, 0, "cal_kestis_staff");
+		}
+		TIMER_Set(NPC, "saber_switch", Q_irand(5000, 20000));
 	}
 
 	if (!Q_stricmp("Grand_Inquisitor", NPC->NPC_type)
