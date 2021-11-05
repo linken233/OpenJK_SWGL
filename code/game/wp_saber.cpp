@@ -6677,23 +6677,30 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 
 		if ( thrown )
 		{
-			// Inquisitor sabers should switch to staff when thrown
-			if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))
+			// Only inquisitors should do this, not the player or anyone else
+			if (self != player && (!Q_stricmp("Grand_Inquisitor", self->NPC_type)
+				|| !Q_stricmp("Second_Sister", self->NPC_type)
+				|| !Q_stricmp("Fifth_Brother", self->NPC_type)
+				|| !Q_stricmp("Seventh_Sister", self->NPC_type)))
 			{
-				WP_SetSaber(self, 0, "inquisitor_staff");
-				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
-			}
-			// Inquisitor sabers should switch to staff when thrown
-			if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
-			{
-				WP_SetSaber(self, 0, "7th_sister_staff");
-				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
-			}
-			// Inquisitor sabers should switch to staff when thrown
-			if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
-			{
-				WP_SetSaber(self, 0, "5th_brother_staff");
-				TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				// Inquisitor sabers should switch to staff when thrown
+				if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "inquisitor_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "7th_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "5th_brother_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
 			}
 			//this is a regular throw, so take force power
 			if ( self->client->ps.forcePowerLevel[FP_SABERTHROW] > FORCE_LEVEL_2 )
