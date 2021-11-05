@@ -6681,7 +6681,8 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 			if (self != player && (!Q_stricmp("Grand_Inquisitor", self->NPC_type)
 				|| !Q_stricmp("Second_Sister", self->NPC_type)
 				|| !Q_stricmp("Fifth_Brother", self->NPC_type)
-				|| !Q_stricmp("Seventh_Sister", self->NPC_type)))
+				|| !Q_stricmp("Seventh_Sister", self->NPC_type)
+				|| !Q_stricmp("Eighth_Brother", self->NPC_type)))
 			{
 				// Inquisitor sabers should switch to staff when thrown
 				if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))

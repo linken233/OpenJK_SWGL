@@ -348,7 +348,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	else if (!Q_stricmp("Grand_Inquisitor", ent->NPC_type)
 		|| !Q_stricmp("Second_Sister", ent->NPC_type)
 		|| !Q_stricmp("Fifth_Brother", ent->NPC_type)
-		|| !Q_stricmp("Seventh_Sister", ent->NPC_type))
+		|| !Q_stricmp("Seventh_Sister", ent->NPC_type)
+		|| !Q_stricmp("Eighth_Brother", ent->NPC_type))
 	{
 		NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}

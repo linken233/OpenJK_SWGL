@@ -7801,7 +7801,8 @@ void NPC_BSJedi_Default( void )
 	if (!Q_stricmp("Grand_Inquisitor", NPC->NPC_type)
 		|| !Q_stricmp("Second_Sister", NPC->NPC_type)
 		|| !Q_stricmp("Fifth_Brother", NPC->NPC_type)
-		|| !Q_stricmp("Seventh_Sister", NPC->NPC_type))
+		|| !Q_stricmp("Seventh_Sister", NPC->NPC_type)
+		|| !Q_stricmp("Eighth_Brother", NPC->NPC_type)
 		{
 			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
 			{
