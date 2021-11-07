@@ -11695,6 +11695,12 @@ void WP_FireDestruction(gentity_t *ent, int forceLevel)
 	if (ent == player)
 	{
 		damage *= (player->client->ps.forcePower * forceLevel);
+
+		// Just in case the player's force meter is impossibly large
+		if (damage <= 0)
+		{					 
+			damage = 2147483647;
+		}
 	}
 
 	if (forceLevel == FORCE_LEVEL_2)

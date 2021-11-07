@@ -213,6 +213,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		{
 			ent->client->ps.forcePowerMax = atoi(args);
 
+			// Such a big number it turns negative
+			if (ent->client->ps.forcePowerMax < 0)
+			{
+				ent->client->ps.forcePowerMax = 715827882;
+			}
+
 			ent->client->ps.forcePower = Com_Clampi(0, ent->client->ps.forcePowerMax, atoi(args));
 		}
 		else
