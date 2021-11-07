@@ -1989,6 +1989,7 @@ void NPC_BuildRandom( gentity_t *NPC )
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
 extern void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn );
+const char* setYounglingSkin(gentity_t* ent);
 qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 {
 	const char	*token;
@@ -2639,6 +2640,15 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				Q_strncpyz( customSkin, value, sizeof(customSkin));
 				continue;
+			}
+			else if (NPC != player 
+				&& (!Q_stricmp("jedi_youngling1", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling2", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling3", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling4", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling5", NPC->NPC_type)))
+			{
+				Q_strncpyz(customSkin, setYounglingSkin(NPC), sizeof(customSkin));
 			}
 
 			// surfOff
@@ -4507,4 +4517,249 @@ void NPC_LoadParms( void )
 
 	}
 	
+}
+
+const char* setYounglingSkin(gentity_t* NPC)
+{
+	std::string skin;
+	int head = 0;
+	int torso = Q_irand(0, 7);
+
+	if (!Q_stricmp("jedi_youngling1", NPC->NPC_type))
+	{
+		head = Q_irand(0, 19);
+		switch (head)
+		{
+		case 0:
+			skin = "head_a1|";
+			break;
+		case 1:
+			skin = "head_a2|";
+			break;
+		case 2:
+			skin = "head_b1|";
+			break;
+		case 3:
+			skin = "head_b2|";
+			break;
+		case 4:
+			skin = "head_c1|";
+			break;
+		case 5:
+			skin = "head_c2|";
+			break;
+		case 6:
+			skin = "head_d1|";
+			break;
+		case 7:
+			skin = "head_d2|";
+			break;
+		case 8:
+			skin = "head_e1|";
+			break;
+		case 9:
+			skin = "head_e2|";
+			break;
+		case 10:
+			skin = "head_f1|";
+			break;
+		case 11:
+			skin = "head_f2|";
+			break;
+		case 12:
+			skin = "head_g1|";
+			break;
+		case 13:
+			skin = "head_g2|";
+			break;
+		case 14:
+			skin = "head_h1|";
+			break;
+		case 15:
+			skin = "head_h2|";
+			break;
+		case 16:
+			skin = "head_i1|";
+			break;
+		case 17:
+			skin = "head_i2|";
+			break;
+		case 18:
+			skin = "head_j1|";
+			break;
+		case 19:
+			skin = "head_j2|";
+			break;
+		default:
+			skin = "head_a1|";
+			break;
+		}
+	}
+	else if (!Q_stricmp("jedi_youngling2", NPC->NPC_type))
+	{
+		head = Q_irand(0, 5);
+		switch (head)
+		{
+		case 0:
+			skin = "head_a1|";
+			break;
+		case 1:
+			skin = "head_a2|";
+			break;
+		case 2:
+			skin = "head_b1|";
+			break;
+		case 3:
+			skin = "head_b2|";
+			break;
+		case 4:
+			skin = "head_c1|";
+			break;
+		case 5:
+			skin = "head_c2|";
+			break;
+		default:
+			skin = "head_a1|";
+			break;
+		}
+
+	}
+	else if (!Q_stricmp("jedi_youngling3", NPC->NPC_type))
+	{
+		skin = "head_a1|";
+	}
+
+	else if (!Q_stricmp("jedi_youngling4", NPC->NPC_type))
+	{
+	head = Q_irand(0, 11);
+	switch (head)
+	{
+	case 0:
+		skin = "head_a1|";
+		break;
+	case 1:
+		skin = "head_a2|";
+		break;
+	case 2:
+		skin = "head_a3|";
+		break;
+	case 3:
+		skin = "head_b1|";
+		break;
+	case 4:
+		skin = "head_b2|";
+		break;
+	case 5:
+		skin = "head_b3|";
+		break;
+	case 6:
+		skin = "head_c1|";
+		break;
+	case 7:
+		skin = "head_c2|";
+		break;
+	case 8:
+		skin = "head_d1|";
+		break;
+	case 9:
+		skin = "head_d2|";
+		break;
+	case 10:
+		skin = "head_d3|";
+		break;
+	case 11:
+		skin = "head_d4|";
+		break;
+	default:
+		skin = "head_a1|";
+		break;
+	}
+
+	}
+	else if (!Q_stricmp("jedi_youngling5", NPC->NPC_type))
+	{
+	head = Q_irand(0, 12);
+	switch (head)
+	{
+	case 0:
+		skin = "head_a1|";
+		break;
+	case 1:
+		skin = "head_a2|";
+		break;
+	case 2:
+		skin = "head_a3|";
+		break;
+	case 3:
+		skin = "head_a4|";
+		break;
+	case 4:
+		skin = "head_a5|";
+		break;
+	case 5:
+		skin = "head_a6|";
+		break;
+	case 6:
+		skin = "head_a7|";
+		break;
+	case 7:
+		skin = "head_b1|";
+		break;
+	case 8:
+		skin = "head_b2|";
+		break;
+	case 9:
+		skin = "head_c1|";
+		break;
+	case 10:
+		skin = "head_c2|";
+		break;
+	case 11:
+		skin = "head_d1|";
+		break;
+	case 12:
+		skin = "head_d2|";
+		break;
+	default:
+		skin = "head_a1|";
+		break;
+	}
+
+	}
+
+	switch (torso)
+	{
+	case 0:
+		skin += "torso_a1|";
+		break;
+	case 1:
+		skin += "torso_a2|";
+		break;
+	case 2:
+		skin += "torso_a3|";
+		break;
+	case 3:
+		skin += "torso_b1|";
+		break;
+	case 4:
+		skin += "torso_b2|";
+		break;
+	case 5:
+		skin += "torso_c1|";
+		break;
+	case 6:
+		skin += "torso_d1|";
+		break;
+	case 7:
+		skin += "torso_e1|";
+		break;
+	default:
+		skin += "torso_a1|";
+		break;
+	}
+	
+
+	skin += "lower_a1";
+
+	return skin.c_str();
 }

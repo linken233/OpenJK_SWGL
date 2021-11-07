@@ -984,6 +984,12 @@ static void Svcmd_Spawn_f(void)
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
+	if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 8;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
 	else
 	{
 		NPC_Spawn(NPCspawner, NPCspawner, NPCspawner);

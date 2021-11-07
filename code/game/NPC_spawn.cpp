@@ -3110,6 +3110,40 @@ void SP_NPC_SWGL_Jedi(gentity_t *self)
 				break;	//get out of the while
 			}
 		}
+		else if (self->spawnflags & 8)
+		{//random!
+			int sanityCheck = 20;	//just in case
+			while (sanityCheck--)
+			{
+				switch (npc_pick % 5)
+				{
+				case 0:
+					self->NPC_type = "jedi_youngling1";
+					break;
+				case 1:
+					self->NPC_type = "jedi_youngling2";
+					break;
+				case 2:
+					self->NPC_type = "jedi_youngling3";
+					break;
+				case 3:
+					self->NPC_type = "jedi_youngling4";
+					break;
+				case 4:
+					self->NPC_type = "jedi_youngling5";
+					break;
+			
+				default://just in case
+					self->NPC_type = "jedi_youngling1";
+					break;
+				}
+				if (strstr(self->NPC_type, g_char_model->string) != NULL)
+				{//bah, we're using this one, try again
+					continue;
+				}
+				break;	//get out of the while
+			}
+		}
 		else
 		{//random!
 			int sanityCheck = 20;	//just in case
@@ -5474,6 +5508,12 @@ static void NPC_Spawn_f(void)
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 8;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	if (!Q_stricmp("imperial", NPCspawner->NPC_type))
