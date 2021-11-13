@@ -769,7 +769,7 @@ void G_InitCvars( void ) {
 	g_NPCsabertwo = gi.cvar("g_NPCsabertwo", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
-	g_NPCLightningColor = gi.cvar("g_LightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCLightningColor = gi.cvar("g_NPCLightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
 
