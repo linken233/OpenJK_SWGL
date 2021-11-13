@@ -408,6 +408,7 @@ vmCvar_t	ui_PrecacheModels;
 vmCvar_t	ui_screenshotType;
 vmCvar_t	ui_npc_faction;
 vmCvar_t	ui_npc_custom;
+vmCvar_t	ui_npc_saber;
 
 static void UI_UpdateScreenshot( void )
 {
@@ -496,6 +497,7 @@ static cvarTable_t cvarTable[] =
 	{ &ui_SFXSabers,	"cg_SFXSabers",	"1", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", NULL, CVAR_ARCHIVE },
+	{ &ui_npc_saber,	"ui_npc_saber",	"0", NULL },
 
 
 };
@@ -4476,11 +4478,21 @@ extern saber_colors_t TranslateSaberColor( const char *name );
 
 static void UI_UpdateSaberCvars ( void )
 {
-	Cvar_Set ( "g_saber_type", Cvar_VariableString ( "ui_saber_type" ) );
-	Cvar_Set ( "g_saber", Cvar_VariableString ( "ui_saber" ) );
-	Cvar_Set ( "g_saber2", Cvar_VariableString ( "ui_saber2" ) );
-	Cvar_Set ( "g_saber_color", Cvar_VariableString ( "ui_saber_color" ) );
-	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
+	if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+	{
+		Cvar_Set("g_saber_type", Cvar_VariableString("ui_saber_type"));
+		Cvar_Set("g_saber", Cvar_VariableString("ui_saber"));
+		Cvar_Set("g_saber2", Cvar_VariableString("ui_saber2"));
+		Cvar_Set("g_saber_color", Cvar_VariableString("ui_saber_color"));
+		Cvar_Set("g_saber2_color", Cvar_VariableString("ui_saber2_color"));
+	}
+	else
+	{
+		Cvar_Set("g_NPCsaber", Cvar_VariableString("ui_saber"));
+		Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_saber2"));
+		Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_saber_color"));
+		Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_saber2_color"));
+	}
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber_color")) >= SABER_RGB)
 	{

@@ -47,7 +47,6 @@ extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel 
 extern void G_SetWeapon( gentity_t *self, int wp );
 extern stringID_table_t WPTable[];
 
-
 extern void SP_NPC_spawner(gentity_t *self);
 
 extern cvar_t	*g_char_model;
@@ -211,6 +210,9 @@ static void Svcmd_Saber_f()
 	const char *saber = gi.argv(1);
 	const char *saber2 = gi.argv(2);
 	char name[MAX_CVAR_VALUE_STRING] = {0};
+
+	if (gi.Cvar_VariableIntegerValue("ui_npc_saber"))
+		return;
 
 	if ( gi.argc() < 2 )
 	{
