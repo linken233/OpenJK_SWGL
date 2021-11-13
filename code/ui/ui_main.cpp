@@ -4500,7 +4500,14 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_blue")));
-		Cvar_Set( "g_saber_color", rgbColor );
+		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+		{
+			Cvar_Set("g_saber_color", rgbColor);
+		}
+		else
+		{
+			Cvar_Set("g_NPCsabercolor", rgbColor);
+		}
 	}
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber2_color")) >= SABER_RGB)
@@ -4509,7 +4516,14 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber2_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_blue")));
-		Cvar_Set( "g_saber2_color", rgbColor );
+		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+		{
+			Cvar_Set( "g_saber2_color", rgbColor );
+		}
+		else
+		{
+			Cvar_Set("g_NPCsabertwocolor", rgbColor);
+		}
 	}
 
 }
@@ -6357,12 +6371,21 @@ static void	UI_HighLightThrowSelection ( void )
 
 static void UI_GetSaberCvars ( void )
 {
-	Cvar_Set ( "ui_saber_type", Cvar_VariableString ( "g_saber_type" ) );
-	Cvar_Set ( "ui_saber", Cvar_VariableString ( "g_saber" ) );
-	Cvar_Set ( "ui_saber2", Cvar_VariableString ( "g_saber2" ) );
-	Cvar_Set ( "ui_saber_color", Cvar_VariableString ( "g_saber_color" ) );
-	Cvar_Set ( "ui_saber2_color", Cvar_VariableString ( "g_saber2_color" ) );
-	Cvar_Set ( "ui_saber2_color", Cvar_VariableString ( "g_saber2_color" ) );
+	Cvar_Set("ui_saber_type", Cvar_VariableString("g_saber_type"));
+	if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+	{		
+		Cvar_Set("ui_saber", Cvar_VariableString("g_saber"));
+		Cvar_Set("ui_saber2", Cvar_VariableString("g_saber2"));
+		Cvar_Set("ui_saber_color", Cvar_VariableString("g_saber_color"));
+		Cvar_Set("ui_saber2_color", Cvar_VariableString("g_saber2_color"));
+	}
+	else
+	{
+		Cvar_Set("ui_saber", Cvar_VariableString("g_NPCsaber"));
+		Cvar_Set("ui_saber2", Cvar_VariableString("g_NPCsabertwo"));
+		Cvar_Set("ui_saber_color", Cvar_VariableString("g_NPCsabercolor"));
+		Cvar_Set("ui_saber2_color", Cvar_VariableString("g_NPCsabertwocolor"));
+	}
 
 	saber_colors_t saberColour = TranslateSaberColor(Cvar_VariableString( "ui_saber_color" ));
 
