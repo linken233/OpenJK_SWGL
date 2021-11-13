@@ -547,6 +547,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
 				ent->client->noclip = true;//hang
 			}
+			if (ent->client->ps.weapon != WP_SABER)
+			{
+				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+			}
 		}
 		else
 		{
@@ -1868,6 +1872,8 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 		//set the info we want
 	newent->health = ent->health;
 	newent->wait = ent->wait;
+
+	newent->NPC_Weapon = G_NewString(ent->NPC_Weapon);
 
 	//copy strings so we can safely free them
 	newent->script_targetname = G_NewString(ent->NPC_targetname);
