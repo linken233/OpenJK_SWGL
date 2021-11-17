@@ -4531,6 +4531,8 @@ static void UI_UpdateSaberCvars ( void )
 #ifndef JK2_MODE
 static void UI_UpdateFightingStyleChoices ( void )
 {
+	if (Cvar_VariableIntegerValue("ui_npc_saber"))
+		return;
 	//
 	if (!Q_stricmp("staff",Cvar_VariableString ( "ui_saber_type" )))
 	{
@@ -6413,6 +6415,8 @@ static void UI_GetSaberCvars ( void )
 
 static void UI_ResetSaberCvars ( void )
 {
+	if(Cvar_VariableIntegerValue("ui_npc_saber"))
+		return;
 	Cvar_Set ( "g_saber_type", "single" );
 	Cvar_Set ( "g_saber", "single_1" );
 	Cvar_Set ( "g_saber2", "" );
