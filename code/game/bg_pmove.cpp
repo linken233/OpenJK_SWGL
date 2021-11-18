@@ -8922,9 +8922,24 @@ static void PM_BeginWeaponChange( int weapon ) {
 
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
-	if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+
+	if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 	{
-		PM_SetAnim(pm,SETANIM_TORSO,TORSO_DROPWEAP1,SETANIM_FLAG_HOLD);
+		if (pm->gent->alt_fire)
+		{//FIXME: attack delay?
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		}
+		else
+		{//FIXME: attack delay?
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		}
+	}
+	else
+	{
+		if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+		{
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_HOLD);
+		}
 	}
 
 	// turn of any kind of zooming when weapon switching....except the LA Goggles
@@ -9094,14 +9109,28 @@ static void PM_FinishWeaponChange( void ) {
 			}
 		}
 
-		if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) )
+		if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 		{
-			if ( pm->ps->weapon != WP_THERMAL
-				&& pm->ps->weapon != WP_TRIP_MINE
-				&& pm->ps->weapon != WP_DET_PACK
-				&& !G_IsRidingVehicle(pm->gent))
+			if (pm->gent->alt_fire)
+			{//FIXME: attack delay?
+				PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+			}
+			else
+			{//FIXME: attack delay?
+				PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+			}
+		}
+		else
+		{
+			if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA))
 			{
-				PM_SetAnim(pm,SETANIM_TORSO,TORSO_RAISEWEAP1,SETANIM_FLAG_HOLD);
+				if (pm->ps->weapon != WP_THERMAL
+					&& pm->ps->weapon != WP_TRIP_MINE
+					&& pm->ps->weapon != WP_DET_PACK
+					&& !G_IsRidingVehicle(pm->gent))
+				{
+					PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_HOLD);
+				}
 			}
 		}
 

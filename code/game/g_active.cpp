@@ -743,6 +743,8 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 	float magnitude, my_mass;
 	bool	thrown = false;
 	vec3_t	velocity;
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
 
 	Vehicle_t *pSelfVeh = NULL;
 	Vehicle_t *pOtherVeh = NULL;
@@ -1219,85 +1221,123 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 			}
 		}
 
-		if ( damageSelf && self->takedamage && !(self->flags&FL_NO_IMPACT_DMG))
+		if (damageSelf && self->takedamage && !(self->flags & FL_NO_IMPACT_DMG))
 		{
 			//Now damage me
 			//FIXME: more lenient falling damage, especially for when driving a vehicle
-			if ( pSelfVeh && self->client->ps.forceJumpZStart )
+			if (pSelfVeh && self->client->ps.forceJumpZStart)
 			{//we were force-jumping
-				if ( self->currentOrigin[2] >= self->client->ps.forceJumpZStart )
+				if (self->currentOrigin[2] >= self->client->ps.forceJumpZStart)
 				{//we landed at same height or higher than we landed
 					magnitude = 0;
 				}
 				else
 				{//FIXME: take off some of it, at least?
-					magnitude = (self->client->ps.forceJumpZStart-self->currentOrigin[2])/3;
+					magnitude = (self->client->ps.forceJumpZStart - self->currentOrigin[2]) / 3;
 				}
 			}
 
-			if( ( magnitude >= 100 + self->health
-					&& self->s.number >= MAX_CLIENTS
-					&& self->s.weapon != WP_SABER )
-				|| self->client->NPC_class == CLASS_VEHICLE
-				|| ( magnitude >= 700 ) )//health here is used to simulate structural integrity
+			if (!strcmp(s, "doom_shields")) //playing outcast
 			{
-				if ((self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO || self->client->NPC_class == CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
-				{//players and jedi take less impact damage
-					//allow for some lenience on high falls
-					magnitude /= 2;
-				}
-				//drop it some (magic number... sigh)
-				magnitude /= 40;
-				//If damage other, subtract half of that damage off of own injury
-				if ( other->bmodel && other->material != MAT_GLASS )
-				{//take off only a little because we broke architecture (not including glass), that should hurt
-					magnitude = magnitude - force/8;
-				}
-				else
-				{//take off half damage we did to it
-					magnitude = magnitude - force/2;
-				}
-
-				if ( pSelfVeh )
+				if ((magnitude >= 100 + self->health && self->s.number != 0 && self->s.weapon != WP_SABER) || (magnitude >= 700))
 				{
-					//FIXME: if hit another vehicle, take their toughness into
-					//			account, too?  Or should their toughness only matter
-					//			when they hit me?
-					magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 1000.0f;
-					if ( other->bmodel && other->material != MAT_GLASS )
-					{//broke through some architecture, take a good amount of damage
+					if ((self->s.weapon == WP_SABER || self->s.number == 0) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
+					{
+						//players and jedi take less impact damage
+						magnitude /= 2;
 					}
-					else if ( pOtherVeh )
-					{//they're tougher
-						//magnitude /= 4.0f;//FIXME: get the toughness of other from vehicles.cfg
+					magnitude /= 40;
+
+					if (other->bmodel && other->material != MAT_GLASS)
+					{//take off only a little because we broke architecture (not including glass), that should hurt
+						magnitude = magnitude - force / 8;
 					}
 					else
-					{//take some off because of give
-						//NOTE: this covers all other entities and impact with world...
-						//FIXME: certain NPCs/entities should be TOUGH - like Ion Cannons, AT-STs, Mark1 droids, etc.
-						magnitude /= 10.0f;
-					}
-					if ( magnitude < 1.0f )
-					{
-						magnitude = 0;
-					}
-				}
-				if ( magnitude >= 1 )
-				{
-	//FIXME: Put in a thingtype impact sound function
-	/*
-					dprint("Damage self (");
-					dprint(self.classname);
-					dprint("): ");
-					dprint(ftos(magnitude));
-					dprint("\n");
-	*/
-					if ( self->NPC && self->s.weapon == WP_SABER )
-					{//FIXME: for now Jedi take no falling damage, but really they should if pushed off?
-						magnitude = 0;
+					{//take off half damage we did to it
+						magnitude = magnitude - force / 2;
 					}
 
-					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					if (magnitude >= 1)
+					{
+						if (self->NPC && self->s.weapon == WP_SABER)
+						{
+							magnitude = 0;
+						}
+
+						else
+						{
+							G_Damage(self, NULL, NULL, NULL, self->currentOrigin, magnitude / 2, DAMAGE_NO_ARMOR, MOD_FALLING);
+						}
+					}
+				}
+			}
+			else
+			{
+
+				if ((magnitude >= 100 + self->health
+					&& self->s.number >= MAX_CLIENTS
+					&& self->s.weapon != WP_SABER)
+					|| self->client->NPC_class == CLASS_VEHICLE
+					|| (magnitude >= 700))//health here is used to simulate structural integrity
+				{
+					if ((self->s.weapon == WP_SABER || self->s.number < MAX_CLIENTS || (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO || self->client->NPC_class == CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
+					{//players and jedi take less impact damage
+						//allow for some lenience on high falls
+						magnitude /= 2;
+					}
+					//drop it some (magic number... sigh)
+					magnitude /= 40;
+					//If damage other, subtract half of that damage off of own injury
+					if (other->bmodel && other->material != MAT_GLASS)
+					{//take off only a little because we broke architecture (not including glass), that should hurt
+						magnitude = magnitude - force / 8;
+					}
+					else
+					{//take off half damage we did to it
+						magnitude = magnitude - force / 2;
+					}
+
+					if (pSelfVeh)
+					{
+						//FIXME: if hit another vehicle, take their toughness into
+						//			account, too?  Or should their toughness only matter
+						//			when they hit me?
+						magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 1000.0f;
+						if (other->bmodel && other->material != MAT_GLASS)
+						{//broke through some architecture, take a good amount of damage
+						}
+						else if (pOtherVeh)
+						{//they're tougher
+							//magnitude /= 4.0f;//FIXME: get the toughness of other from vehicles.cfg
+						}
+						else
+						{//take some off because of give
+							//NOTE: this covers all other entities and impact with world...
+							//FIXME: certain NPCs/entities should be TOUGH - like Ion Cannons, AT-STs, Mark1 droids, etc.
+							magnitude /= 10.0f;
+						}
+						if (magnitude < 1.0f)
+						{
+							magnitude = 0;
+						}
+					}
+					if (magnitude >= 1)
+					{
+						//FIXME: Put in a thingtype impact sound function
+						/*
+										dprint("Damage self (");
+										dprint(self.classname);
+										dprint("): ");
+										dprint(ftos(magnitude));
+										dprint("\n");
+						*/
+						if (self->NPC && self->s.weapon == WP_SABER)
+						{//FIXME: for now Jedi take no falling damage, but really they should if pushed off?
+							magnitude = 0;
+						}
+
+						G_Damage(self, NULL, NULL, NULL, self->currentOrigin, magnitude / 2, DAMAGE_NO_ARMOR, MOD_FALLING);//FIXME: MOD_IMPACT
+					}
 				}
 			}
 		}
@@ -1720,6 +1760,13 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				tent->s.eventParm = ent->s.number;
 			}
 		}*/
+		if (ent->client->NPC_class != CLASS_GALAKMECH)
+		{
+			if (ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH])
+			{
+				ent->client->ps.stats[STAT_ARMOR]++;
+			}
+		}
 		if ( (ent->flags&FL_OVERCHARGED_HEALTH) )
 		{//need to gradually reduce health back to max
 			if ( ent->health > ent->client->ps.stats[STAT_MAX_HEALTH] )

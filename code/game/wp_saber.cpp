@@ -2839,8 +2839,8 @@ qboolean WP_SaberDamageForTrace( int ignore, vec3_t start, vec3_t end, float dmg
 
 		if ( attacker && attacker->client && attacker->client->ps.saberInFlight )
 		{//thrown saber hit something
-			if ((hitEnt && hitEnt->client && hitEnt->health > 0 && (hitEnt->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda", hitEnt->NPC_type) || hitEnt->client->NPC_class == CLASS_LUKE || hitEnt->client->NPC_class == CLASS_BOBAFETT || hitEnt->client->NPC_class == CLASS_MANDALORIAN || hitEnt->client->NPC_class == CLASS_JANGO || (hitEnt->client->ps.powerups[PW_GALAK_SHIELD] > 0))) ||
-				 ( owner && owner->client && owner->health > 0 && ( owner->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda",owner->NPC_type) || owner->client->NPC_class == CLASS_LUKE || (owner->client->ps.powerups[PW_GALAK_SHIELD] > 0) ) ) )
+			if ((hitEnt && hitEnt->client && hitEnt->health > 0 && (hitEnt->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda", hitEnt->NPC_type) || hitEnt->client->NPC_class == CLASS_LUKE || hitEnt->client->NPC_class == CLASS_BOBAFETT || hitEnt->client->NPC_class == CLASS_GALAKMECH || hitEnt->client->NPC_class == CLASS_MANDALORIAN || hitEnt->client->NPC_class == CLASS_JANGO || (hitEnt->client->ps.powerups[PW_GALAK_SHIELD] > 0))) ||
+				 ( owner && owner->client && owner->health > 0 && ( owner->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda",owner->NPC_type) || owner->client->NPC_class == CLASS_LUKE || owner->client->NPC_class == CLASS_GALAKMECH || (owner->client->ps.powerups[PW_GALAK_SHIELD] > 0) ) ) )
 			{//Luke and Desann slap thrown sabers aside
 				//FIXME: control the direction of the thrown saber... if hit Galak's shield, bounce directly away from his origin?
 				WP_SaberKnockaway( attacker, &tr );

@@ -89,6 +89,8 @@ extern cvar_t	*g_skippingcin;
 
 extern cvar_t *g_darkkorriban;
 
+extern cvar_t* g_char_model;
+
 extern qboolean	stop_icarus;
 
 #define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
@@ -3343,7 +3345,16 @@ void G_SetWeapon( gentity_t *self, int wp )
 static void Q3_SetWeapon (int entID, const char *wp_name)
 {
 	gentity_t	*self  = &g_entities[entID];
-	int		wp = GetIDForString( WPTable, wp_name );
+	int	wp = 0;
+
+	if ((self == player && !Q_stricmp("WP_BLASTER_PISTOL", wp_name)) &&
+		(!Q_stricmp("kyle", g_char_model->string)
+			|| !Q_stricmp("kylejk2", g_char_model->string)))
+	{
+		wp = GetIDForString(WPTable, "WP_BRYAR_PISTOL");
+	}
+	else
+		wp = GetIDForString( WPTable, wp_name );
 
 	if ( !self )
 	{

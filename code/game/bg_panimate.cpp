@@ -6396,13 +6396,27 @@ void PM_TorsoAnimation( void )
 				case WP_THEFIRSTORDER:
 				case WP_CLONECARBINE:
 				case WP_REBELBLASTER:
-					if ( weaponBusy )
+					if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 					{
-						PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
+						if (pm->gent->alt_fire)
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE3, SETANIM_FLAG_NORMAL);
+						}
+						else
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE1, SETANIM_FLAG_NORMAL);
+						}
 					}
 					else
 					{
-						PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
+						if (weaponBusy)
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONREADY3, SETANIM_FLAG_NORMAL);
+						}
+						else
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE3, SETANIM_FLAG_NORMAL);
+						}
 					}
 					break;
 				case WP_TRIP_MINE:

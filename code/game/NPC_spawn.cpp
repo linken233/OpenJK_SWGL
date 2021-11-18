@@ -47,6 +47,9 @@ extern int WP_SaberInitBladeData(gentity_t *ent);
 extern void ST_ClearTimers(gentity_t *ent);
 extern void Jedi_ClearTimers(gentity_t *ent);
 extern void Howler_ClearTimers(gentity_t *self);
+
+extern void NPC_GalakMech_Init(gentity_t* ent);
+
 #define	NSF_DROP_TO_FLOOR	16
 
 
@@ -596,6 +599,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				break;
 			}
 		}
+		if (!Q_stricmp("galak_mech", ent->NPC_type))
+		{//starts with armor
+			NPC_GalakMech_Init(ent);
+		}
 		if (ent->client->NPC_class == CLASS_PLAYER
 			|| ent->client->NPC_class == CLASS_VEHICLE
 			|| (ent->spawnflags & SFB_CINEMATIC))
@@ -739,6 +746,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				}
 				break;
 			}
+		}
+		if (!Q_stricmp("galak_mech", ent->NPC_type))
+		{//starts with armor
+			NPC_GalakMech_Init(ent);
 		}
 	}
 	break;

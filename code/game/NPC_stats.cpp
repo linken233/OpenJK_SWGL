@@ -1483,6 +1483,7 @@ extern void NPC_Rosh_Dark_Precache( void );
 extern void NPC_Tusken_Precache( void );
 extern void NPC_Saboteur_Precache( void );
 extern void NPC_CultistDestroyer_Precache( void );
+extern void NPC_GalakMech_Precache(void);
 void NPC_Jawa_Precache( void )
 {
 	for ( int i = 1; i < 7; i++ )
@@ -1571,6 +1572,10 @@ void NPC_PrecacheByClassName( const char* type )
 	else if (!Q_stricmp("sand_creature", type))
 	{
 		SandCreature_Precache();
+	}
+	else if (!Q_stricmp("galak_mech", type))
+	{
+		NPC_GalakMech_Precache();
 	}
 	else if (!Q_stricmp("darth_vader", type))
 	{

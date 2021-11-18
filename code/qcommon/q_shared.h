@@ -335,6 +335,9 @@ typedef enum
 
 #define MAX_BATTERIES	2500
 
+#define randoms()	((rand () & 0x7fff) / ((float)0x7fff))
+#define crandoms()	(2.0 * (randoms() - 0.5))
+
 #define ENUM2STRING(arg)   { #arg,arg }
 
 //=============================================

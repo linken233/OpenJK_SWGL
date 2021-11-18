@@ -56,6 +56,7 @@ extern bool Boba_Flee();
 extern bool Boba_Tactics();
 extern void BubbleShield_Update();
 extern qboolean PM_LockedAnim( int anim );
+extern void NPC_BSGM_Default(void);
 
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
@@ -86,12 +87,18 @@ static bState_t G_CurrentBState( gNPC_t *gNPC );
 
 extern int eventClearTime;
 
+extern void GM_Dying(gentity_t* self);
 void CorpsePhysics( gentity_t *self )
 {
 	// run the bot through the server like it was a real client
 	memset( &ucmd, 0, sizeof( ucmd ) );
 	ClientThink( self->s.number, &ucmd );
 	VectorCopy( self->s.origin, self->s.origin2 );
+
+	if (self->client->NPC_class == CLASS_GALAKMECH)
+	{
+		GM_Dying(self);
+	}
 
 	//FIXME: match my pitch and roll for the slope of my groundPlane
 	if ( self->client->ps.groundEntityNum != ENTITYNUM_NONE && !(self->flags&FL_DISINTEGRATED) )
@@ -2044,6 +2051,9 @@ void NPC_RunBehavior( int team, int bState )
 				return;
 			case CLASS_MARK2:
 				NPC_BehaviorSet_Mark2( bState );
+				return;
+			case CLASS_GALAKMECH:
+				NPC_BSGM_Default();
 				return;
 			default:
 				break;
