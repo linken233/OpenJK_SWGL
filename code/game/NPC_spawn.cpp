@@ -2408,6 +2408,11 @@ void SP_NPC_Luke(gentity_t *self)
 {
 	self->NPC_type = "Luke";
 
+	if ((self->spawnflags & 1))
+	{
+		self->NPC_skin = "jko";
+	}
+
 	SP_NPC_spawner(self);
 }
 
