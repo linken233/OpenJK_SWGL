@@ -264,6 +264,8 @@ cvar_t	*g_broadsword;
 
 cvar_t	*g_allowBunnyhopping;
 
+cvar_t	*g_allowAlignmentChange;
+
 qboolean	stop_icarus = qfalse;
 
 extern char *G_GetLocationForEnt( gentity_t *ent );
@@ -772,6 +774,8 @@ void G_InitCvars( void ) {
 	g_NPCLightningColor = gi.cvar("g_NPCLightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
+
+	g_allowAlignmentChange = gi.cvar("g_allowAlignmentChange", "0", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 

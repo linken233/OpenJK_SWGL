@@ -40,6 +40,8 @@ extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern stringID_table_t WPTable[];
 
+extern cvar_t *g_allowAlignmentChange;
+
 #define		MAX_MODELS_PER_LEVEL	60
 
 hstring		modelsAlreadyDone[MAX_MODELS_PER_LEVEL];
@@ -3192,7 +3194,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// playerTeam
-			if ( !Q_stricmp( token, "playerTeam" ) && NPC != player)
+			if ( !Q_stricmp( token, "playerTeam" ) && (NPC != player || (NPC == player && g_allowAlignmentChange->integer)))
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
@@ -3203,7 +3205,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// enemyTeam
-			if ( !Q_stricmp( token, "enemyTeam" ) && NPC != player)
+			if ( !Q_stricmp( token, "enemyTeam" ) && (NPC != player || (NPC == player && g_allowAlignmentChange->integer)))
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
