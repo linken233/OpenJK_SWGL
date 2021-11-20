@@ -1760,13 +1760,27 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				tent->s.eventParm = ent->s.number;
 			}
 		}*/
-		if (ent->client->NPC_class != CLASS_GALAKMECH)
+
+		// Passive health regen for player
+		if ((player->client->ps.stats[STAT_HEALTH] < player->client->ps.stats[STAT_MAX_HEALTH]))
 		{
-			if (ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH])
-			{
-				ent->client->ps.stats[STAT_ARMOR]++;
-			}
+			// Player gets the first 25 points for free
+			if(player->health < 25)
+				player->health++;
+
+			// Player must crouch to get the rest of their health back
+			if(PM_CrouchAnim(player->client->ps.legsAnim) && !player->client->ps.velocity[0])
+				player->health++;
 		}
+
+		// Shield acts a little different
+		if ((player->client->ps.stats[STAT_ARMOR] < player->client->ps.stats[STAT_MAX_HEALTH]))
+		{
+			// Shield will regenerate at an inconsistent rate
+			if(!Q_irand(0,1))
+				player->client->ps.stats[STAT_ARMOR]++;
+		}
+		
 		if ( (ent->flags&FL_OVERCHARGED_HEALTH) )
 		{//need to gradually reduce health back to max
 			if ( ent->health > ent->client->ps.stats[STAT_MAX_HEALTH] )
