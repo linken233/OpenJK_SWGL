@@ -38,6 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <inttypes.h>
 #if defined(_WIN32)
 #include <windows.h>
+#include <ctime>
 #endif
 
 static void S_Play_f(void);
@@ -3721,11 +3722,24 @@ static void S_Music_f( void ) {
 	}
 }
 
-static void S_MenuMusic_f(void) {
+static void S_MenuMusic_f(void) 
+{
 	
-	if (atoi(Cvar_VariableString("disableMusicRepeat")) != 1) {
+	if (atoi(Cvar_VariableString("disableMusicRepeat")) != 1) 
+	{
+		std::time_t tp = std::time(NULL);
 
-		int music_pick = rand() % 16;
+		std::tm* ts = std::localtime(&tp);
+
+		// April Fools day gets a special treat :)
+		if (ts->tm_mon == 3 && ts->tm_mday == 1)
+		{
+			S_StartBackgroundTrack("music/imhansolo.mp3", "music/imhansolo.mp3", qfalse);
+			return;
+		}
+
+		int music_pick = Q_irand(0, 20);
+
 		switch (music_pick)
 		{
 		case 0:
@@ -3775,6 +3789,21 @@ static void S_MenuMusic_f(void) {
 			break;
 		case 15:
 			S_StartBackgroundTrack("music/sp/menu15.mp3", "music/sp/menu15.mp3", qfalse);
+			break;
+		case 16:
+			S_StartBackgroundTrack("music/sp/menu16.mp3", "music/sp/menu16.mp3", qfalse);
+			break;
+		case 17:
+			S_StartBackgroundTrack("music/sp/menu17.mp3", "music/sp/menu17.mp3", qfalse);
+			break;
+		case 18:
+			S_StartBackgroundTrack("music/sp/menu18.mp3", "music/sp/menu18.mp3", qfalse);
+			break;
+		case 19:
+			S_StartBackgroundTrack("music/sp/menu19.mp3", "music/sp/menu19.mp3", qfalse);
+			break;
+		case 20:
+			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu20.mp3", qfalse);
 			break;
 		default:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
