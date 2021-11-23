@@ -2015,6 +2015,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	surfOff[1024]={0};
 	char	surfOn[1024]={0};
 	qboolean parsingPlayer = qfalse;
+	qboolean lightningColor = qfalse;
 
 	
 	qboolean forcedRGBSaberColours[MAX_SABERS][MAX_BLADES] = {{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse},
@@ -3426,10 +3427,16 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				
-				if (NPC == player)
-					gi.cvar_set("g_forcelightningcolor", value);
+				
+				gi.cvar_set("g_forcelightningcolor", value);
+				lightningColor = qtrue;
 
 				continue;
+			}
+			else
+			{
+				if (!lightningColor)
+					gi.cvar_set("g_forcelightningcolor", "blue");
 			}
 
 			if ( !parsingPlayer )
