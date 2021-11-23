@@ -36,9 +36,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_music.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <ctime>
 #if defined(_WIN32)
 #include <windows.h>
-#include <ctime>
 #endif
 
 static void S_Play_f(void);
