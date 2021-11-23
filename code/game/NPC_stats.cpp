@@ -3417,6 +3417,21 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				continue;
 			}
 
+			//Lightning Color
+			if (!Q_stricmp(token, "lightningColor") && parsingPlayer)
+			{
+				if (COM_ParseString(&p, &value))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				
+				if (NPC == player)
+					gi.cvar_set("g_forcelightningcolor", value);
+
+				continue;
+			}
+
 			if ( !parsingPlayer )
 			{
 				if ( !Q_stricmp( token, "movetype" ) )
@@ -3582,6 +3597,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						stats->lightningColor = LIGHTNING_BLACK;
 					}
+
 					continue;
 				}
 //===MISC===============================================================================
