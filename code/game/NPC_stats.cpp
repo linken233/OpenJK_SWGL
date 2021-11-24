@@ -3435,7 +3435,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 			else
 			{
-				if (!lightningColor)
+				if (!lightningColor && parsingPlayer)
 					gi.cvar_set("g_forcelightningcolor", "blue");
 			}
 
