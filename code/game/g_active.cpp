@@ -1765,7 +1765,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		if ((player->client->ps.stats[STAT_HEALTH] < player->client->ps.stats[STAT_MAX_HEALTH]))
 		{
 			// Player gets the first 25 points for free, only on Padawan difficulty mode though
-			if ((player->health < 25 && !Q_irand(0, 1)) && !g_spskill->integer)
+			if ((player->health < 25 && !Q_irand(0, 1)) && !g_spskill->integer && player->health >= 1)
 			{
 				player->health++;
 				player->client->ps.stats[STAT_HEALTH] = player->health;
