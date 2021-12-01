@@ -1235,6 +1235,8 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN || ent->client->NPC_class == CLASS_JANGO)
 			{//get the flamethrower bolt
 				ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flamethrower");
+				if(ent->genericBolt3 == -1)
+					ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_hand");
 			}
 		}
 		else
