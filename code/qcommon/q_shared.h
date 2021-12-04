@@ -663,7 +663,7 @@ typedef struct {
 /*
 Ghoul2 Insert Start
 */
-#define	MAX_CHARSKINS		64		// character skins
+#define	MAX_CHARSKINS		256		// character skins
 /*
 Ghoul2 Insert End
 */
@@ -671,7 +671,7 @@ Ghoul2 Insert End
 #ifdef JK2_MODE
 #define MAX_CONFIGSTRINGS (1024)
 #else
-#define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
+#define	MAX_CONFIGSTRINGS	1600//1024 //rww - I had to up this for terrains
 #endif // JK2_MODE
 
 // these are the only configstrings that the system reserves, all the
