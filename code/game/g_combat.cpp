@@ -6799,6 +6799,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					{
 						if ( targ->NPC == NULL || !(targ->NPC->aiFlags&NPCAI_ROSH) || !Rosh_TwinPresent( targ ) )
 						{//NOTE: Rosh won't run his deathscript until he doesn't have the twins to heal him
+							targ->client->dismembered = qtrue;
 							G_ActivateBehavior( targ, BSET_DEATH );
 						}
 						targ->health = 1;
@@ -6810,6 +6811,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 							if (!Q_irand(0, 2))
 							{
 								targ->flags &= ~FL_UNDYING;
+								targ->client->dismembered = qtrue;
 							}
 						}
 					}

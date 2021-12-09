@@ -276,6 +276,9 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		ent->takedamage = qfalse;//can't be killed
 		ent->flags |= FL_NO_KNOCKBACK;
 		SandCreature_ClearTimers(ent);
+		if(g_spskill->integer > 1)
+			ent->NPC->stats.runSpeed *= 1.5f;
+
 	}
 	else if (ent->client->NPC_class == CLASS_BOBAFETT)
 	{//set some stuff, precache
@@ -356,9 +359,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{
 		NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}
-	else if (!Q_stricmp("Darth_Sion", ent->NPC_type))
+	else if (!Q_stricmp("Darth_Sion", ent->NPC_type) || !Q_stricmp("Darth_Sion_TFU", ent->NPC_type))
 	{
 		NPC->flags |= FL_UNDYING; // Sion is the lord of pain, he won't die immediately
+		ent->client->dismembered = qfalse;
 	}
 	else if (ent->client->NPC_class == CLASS_ROCKETTROOPER)
 	{//set some stuff, precache
@@ -422,6 +426,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	else if (Q_stricmp("rosh_dark", ent->NPC_type) == 0)
 	{
 		ent->NPC->aiFlags |= NPCAI_ROSH;
+		ent->client->dismembered = qfalse;
 	}
 
 	if (Q_stricmpn(ent->NPC_type, "hazardtrooper", 13) == 0)
