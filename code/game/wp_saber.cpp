@@ -11161,7 +11161,7 @@ void ForceStasis(gentity_t *self)
 	}
 
 
-	if (traceEnt->health > 0 && traceEnt->client && ToBeAffectedByStasis(self, traceEnt))
+	if (traceEnt->health > 0 && traceEnt->client && ToBeAffectedByStasis(self, traceEnt) && (traceEnt == player || traceEnt->NPC))
 	{
 		int modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.forcePowerLevel[FP_ABSORB], self, FP_STASIS, self->client->ps.forcePowerLevel[FP_STASIS], forcePowerNeeded[FP_STASIS]);
 		int actualPowerLevel;
@@ -11173,6 +11173,8 @@ void ForceStasis(gentity_t *self)
 		{
 			actualPowerLevel = modPowerLevel;
 		}
+
+		traceEnt->s.loopSound = G_SoundIndex("sound/weapons/force/stasisloop.wav");
 
 		if (actualPowerLevel > 0)
 		{
@@ -11227,8 +11229,6 @@ void ForceStasis(gentity_t *self)
 	WP_ForcePowerStart(self, FP_STASIS, 0);
 
 	self->client->ps.weaponTime = 1000;
-
-	traceEnt->s.loopSound = G_SoundIndex("sound/weapons/force/stasisloop.wav");
 
 	if (self->client->ps.forcePowersActive&(1 << FP_SPEED))
 	{
