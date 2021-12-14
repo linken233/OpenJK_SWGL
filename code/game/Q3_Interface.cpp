@@ -41,6 +41,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "g_navigator.h"
 #include "qcommon/ojk_saved_game_helper.h"
+#include <ctime>
 
 extern	cvar_t	*com_buildScript;
 
@@ -1029,33 +1030,97 @@ static qboolean G_AddSexToPlayerString ( char *string, qboolean qDoBoth )
 {
 	char *start;
 
-	if VALIDSTRING( string ) {
-		if ( g_sex->string[0] == 'f' ) {
+	if VALIDSTRING( string ) 
+	{
+		if ( g_sex->string[0] == 'f' ) 
+		{
 			start = strstr( string, "jaden_male/" );
-			if ( start != NULL ) {
+			if ( start != NULL ) 
+			{
 				strncpy( start, "jaden_fmle", 10 );
 				return qtrue;
-			} else {
+			} 
+			else 
+			{
 				start = strrchr( string, '/' );		//get the last slash before the wav
-				if (start != NULL) {
-					if (!strncmp( start, "/mr_", 4) ) {
-						if (qDoBoth) {	//we want to change mr to ms
+				if (start != NULL) 
+				{
+					if (!strncmp( start, "/mr_", 4) ) 
+					{
+						if (qDoBoth) 
+						{	//we want to change mr to ms
 							start[2] = 's';	//change mr to ms
 							return qtrue;
-						} else {	//IF qDoBoth
+						} 
+						else 
+						{	//IF qDoBoth
 							return qfalse;	//don't want this one
 						}
 					}
 				}	//IF found slash
 			}
 		}	//IF Female
-		else {	//i'm male
+		else 
+		{	//i'm male
 			start = strrchr( string, '/' );		//get the last slash before the wav
-			if (start != NULL) {
-				if (!strncmp( start, "/ms_", 4) ) {
+			if (start != NULL) 
+			{
+				if (!strncmp( start, "/ms_", 4) ) 
+				{
 					return qfalse;	//don't want this one
 				}
 			}	//IF found slash
+		}
+
+		std::time_t tp = std::time(NULL);
+
+		std::tm* ts = std::localtime(&tp);
+
+		// April Fools day gets a special treat :)
+		if (ts->tm_mon == 3 && ts->tm_mday == 1)
+		{
+			start = strstr(string, "maul_3/dooku");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/wonka", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/standard");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/lollypop", 15);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/palpatine7");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/palplolly7", 17);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/palpatine8");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/palplolly8", 15);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul3");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk3", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul4");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk4", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul10");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk10", 13);
+				return qtrue;
+			}
 		}
 	}	//if VALIDSTRING
 	return qtrue;
@@ -9542,6 +9607,16 @@ extern void LockDoors(gentity_t *const ent);
 
 	case SET_SABER1:
 	case SET_SABER2:
+		if (!Q_stricmp(data, "Count_Dooku"))
+		{
+			std::time_t tp = std::time(NULL);
+
+			std::tm* ts = std::localtime(&tp);
+			if (ts->tm_mon == 3 && ts->tm_mday == 1)
+			{
+				data = "wonka_lolly";
+			}
+		}
 		WP_SetSaber( &g_entities[entID], toSet-SET_SABER1, (char *)data );
 		if (&g_entities[entID] == player)
 		{
