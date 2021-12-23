@@ -311,6 +311,19 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		NPC->client->ps.weapon == WP_CLONECOMMANDO || NPC->client->ps.weapon == WP_REBELRIFLE)
 	{
 		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
+
+		if (ent->client->NPC_class == CLASS_ROCKETTROOPER)
+		{//set some stuff, precache
+			ent->client->ps.forcePowersKnown |= (1 << FP_LEVITATION);
+			ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
+			ent->client->ps.forcePower = 100;
+			ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY | SCF_FLY_WITH_JET | SCF_NAV_CAN_JUMP);//no groups, no combat points!
+
+
+			ent->behaviorSet[BSET_SPAWN] = NULL;
+			ent->behaviorSet[BSET_FLEE] = NULL;
+			ent->behaviorSet[BSET_DEATH] = NULL;
+		}
 	}
 	else if (!Q_stricmp("purge_trooper_commander", ent->NPC_type))
 	{

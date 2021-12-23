@@ -1229,8 +1229,17 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN
 				|| ent->client->NPC_class == CLASS_JANGO || ent->client->NPC_class == CLASS_ROCKETTROOPER )
 			{//get jet bolts
-				ent->genericBolt1 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet1" );
-				ent->genericBolt2 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet2" );
+				if (Q_stricmp("cad_bane", ent->NPC_type) && Q_stricmp("cadbane|model_default", ent->NPC_type))
+				{
+					ent->genericBolt1 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*jet1");
+					ent->genericBolt2 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*jet2");
+				}
+				else
+				{
+					ent->genericBolt1 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_leg_foot");
+					ent->genericBolt2 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*r_leg_foot");
+				}
+
 			}
 			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN || ent->client->NPC_class == CLASS_JANGO)
 			{//get the flamethrower bolt

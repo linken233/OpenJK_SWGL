@@ -13778,7 +13778,7 @@ static void PM_Weapon( void )
 		}
 
 		// start the animation even if out of ammo
-		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER )
+		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER && (!Q_stricmp("rockettrooper2", pm->gent->NPC_type) || !Q_stricmp("rockettrooper2officer", pm->gent->NPC_type)))
 		{
 			if ( pm->gent->client->moveType == MT_FLYSWIM )
 			{
@@ -13787,6 +13787,18 @@ static void PM_Weapon( void )
 			else
 			{
 				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+		}
+
+		else if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+		{
+			if (pm->gent->client->moveType == MT_FLYSWIM)
+			{
+				PM_SetAnim(pm, SETANIM_TORSO, BOTH_ATTACK3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+			}
+			else
+			{
+				PM_SetAnim(pm, SETANIM_TORSO, BOTH_ATTACK3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
 			}
 		}
 #ifndef BASE_SAVE_COMPAT
