@@ -6355,6 +6355,19 @@ qboolean WP_SaberValidateEnemy( gentity_t *self, gentity_t *enemy )
 		return qfalse;
 	}
 
+	if (enemy->client->playerTeam == TEAM_NEUTRAL)
+	{
+		switch (enemy->client->NPC_class)
+		{
+		case CLASS_GONK:
+		case CLASS_MOUSE:
+		case CLASS_PROTOCOL:
+		case CLASS_R2D2:
+		case CLASS_R5D2:
+		case CLASS_VEHICLE:
+			return qfalse;
+		}
+	}
 	//LOS?
 
 	return qtrue;
@@ -15163,10 +15176,14 @@ void WP_ForceForceThrow( gentity_t *thrower )
 		return;
 	}
 	qboolean relock = qfalse;
+	
 	if ( !(thrower->client->ps.forcePowersKnown&(1<<FP_PUSH)) )
 	{//give them push just for this specific purpose
+		/*
 		thrower->client->ps.forcePowersKnown |= (1<<FP_PUSH);
 		thrower->client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_1;
+		*/
+		return;
 	}
 
 	if ( thrower->NPC
@@ -15184,11 +15201,12 @@ void WP_ForceForceThrow( gentity_t *thrower )
 		thrower->flags |= FL_LOCK_PLAYER_WEAPONS;
 	}
 
+	/*
 	if ( thrower )
 	{//take it back off
 		thrower->client->ps.forcePowersKnown &= ~(1<<FP_PUSH);
 		thrower->client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_0;
-	}
+	}*/
 }
 
 extern qboolean PM_ForceJumpingUp( gentity_t *gent );
@@ -15320,16 +15338,16 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 			if ( !(self->client->ps.forcePowersActive&(1<<FP_RAGE))
 				|| self->client->ps.forcePowerLevel[FP_SPEED] >= self->client->ps.forcePowerLevel[FP_RAGE] )
 			{//either not using rage or rage is at a lower level than speed
-				gi.cvar_set("timescale", va("%4.2f", speed));
-				if ( g_timescale->value > speed )
+			gi.cvar_set("timescale", va("%4.2f", speed));
+			if (g_timescale->value > speed)
+			{
+				newSpeed = g_timescale->value - 0.05;
+				if (newSpeed < speed)
 				{
-					newSpeed = g_timescale->value - 0.05;
-					if ( newSpeed < speed )
-					{
-						newSpeed = speed;
-					}
-					gi.cvar_set("timescale", va("%4.2f", newSpeed));
+					newSpeed = speed;
 				}
+				gi.cvar_set("timescale", va("%4.2f", newSpeed));
+			}
 			}
 		}
 		break;
@@ -15343,7 +15361,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		break;
 	case FP_GRASP:
 		if (!WP_ForcePowerAvailable(self, FP_GRASP, 0)
-			|| (self->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1 && !self->s.number && !(cmd->buttons&BUTTON_FORCEGRASP)))
+			|| (self->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1 && !self->s.number && !(cmd->buttons & BUTTON_FORCEGRASP)))
 		{
 			WP_ForcePowerStop(self, FP_GRASP);
 			return;
@@ -15406,10 +15424,13 @@ else if (gripEnt->NPC
 	&& !Jedi_CultistDestroyer(gripEnt)
 	&& !Q_irand(0, 100 - (gripEnt->NPC->stats.evasion * 8) - (g_spskill->integer * 20)))
 {//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
-	WP_ForceForceThrow(gripEnt);
-	//FIXME: I need to go into some pushed back anim...
-	WP_ForcePowerStop(self, FP_GRASP);
-	return;
+	if ((gripEnt->client->ps.forcePowersKnown & (1 << FP_PUSH)))
+	{
+		WP_ForceForceThrow(gripEnt);
+		//FIXME: I need to go into some pushed back anim...
+		WP_ForcePowerStop(self, FP_GRASP);
+		return;
+	}
 }
 else if (PM_SaberInAttack(self->client->ps.saberMove)
 	|| PM_SaberInStart(self->client->ps.saberMove))
@@ -15764,9 +15785,12 @@ else
 				&& !Jedi_CultistDestroyer(gripEnt)
 				&& !Q_irand( 0, 100-(gripEnt->NPC->stats.evasion*8)-(g_spskill->integer*20) ) )
 			{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
-				WP_ForceForceThrow( gripEnt );
-				//FIXME: I need to go into some pushed back anim...
-				WP_ForcePowerStop( self, FP_GRIP );
+				if ((gripEnt->client->ps.forcePowersKnown & (1 << FP_PUSH)))
+				{
+					WP_ForceForceThrow(gripEnt);
+					//FIXME: I need to go into some pushed back anim...
+					WP_ForcePowerStop(self, FP_GRIP);
+				}
 				return;
 			}
 			else if ( PM_SaberInAttack( self->client->ps.saberMove )
@@ -16203,12 +16227,15 @@ else
 					&& level.time-(self->client->ps.forcePowerDebounce[FP_DRAIN]>self->client->ps.forcePowerLevel[FP_DRAIN]*500)//at level 1, I always get at least 500ms of drain, at level 3 I get 1500ms
 					&& !Q_irand( 0, 100-(drainEnt->NPC->stats.evasion*8)-(g_spskill->integer*15) ) )
 				{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
-					WP_ForceForceThrow( drainEnt );
-					//FIXME: I need to go into some pushed back anim...
-					WP_ForcePowerStop( self, FP_DRAIN );
-					//can't drain again for 2 seconds
-					self->client->ps.forcePowerDebounce[FP_DRAIN] = level.time + 4000;
-					return;
+					if ((drainEnt->client->ps.forcePowersKnown & (1 << FP_PUSH)))
+					{
+						WP_ForceForceThrow(drainEnt);
+						//FIXME: I need to go into some pushed back anim...
+						WP_ForcePowerStop(self, FP_DRAIN);
+						//can't drain again for 2 seconds
+						self->client->ps.forcePowerDebounce[FP_DRAIN] = level.time + 4000;
+						return;
+					}
 				}
 				else
 				{
