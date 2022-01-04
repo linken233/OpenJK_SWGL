@@ -1407,7 +1407,14 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.cloakedShader				= cgi_R_RegisterShader( "gfx/effects/cloakedShader" );
 											cgi_R_RegisterShader( "gfx/misc/ion_shield" );
 
-	cgs.media.boltShader				= cgi_R_RegisterShader( "gfx/misc/blueLine" );
+	cgs.media.boltShader = cgi_R_RegisterShader("gfx/misc/blueLine");
+	cgs.media.redBoltShader = cgi_R_RegisterShader("gfx/misc/redLine");
+	cgs.media.orangeBoltShader = cgi_R_RegisterShader("gfx/misc/orangeLine");
+	cgs.media.yellowBoltShader = cgi_R_RegisterShader("gfx/misc/yellowLine");
+	cgs.media.greenBoltShader = cgi_R_RegisterShader("gfx/misc/greenLine");
+	cgs.media.purpleBoltShader = cgi_R_RegisterShader("gfx/misc/purpleLine");
+	cgs.media.whiteBoltShader = cgi_R_RegisterShader("gfx/misc/whiteLine");
+	cgs.media.blackBoltShader = cgi_R_RegisterShader("gfx/misc/blackLine");
 
 	// FIXME: do these conditionally
 	cgi_R_RegisterShader( "gfx/2d/workingCamera" );

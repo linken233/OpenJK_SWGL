@@ -4301,7 +4301,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent, const vec3_t origin, vec3_t t
 	}
 }
 
-static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean forceDrain, qboolean alwaysDo = qfalse )
+static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean forceLightning, qboolean alwaysDo = qfalse )
 {
 	// Undoing for now, at least this code should compile if I ( or anyone else ) decides to work on this effect
 	qboolean	found = qfalse;
@@ -4412,55 +4412,39 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
 
-	if (cent->gent->NPC_LightningVictim && !forceDrain && cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
+	if (cent->gent->client && cent->gent->NPC_LightningVictim && forceLightning && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
 	{
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "red"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 0.0f;
-			rgb[2] = 0.0f;
+			shader = cgs.media.redBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "orange"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 0.6f;
-			rgb[2] = 0.0f;
+			shader = cgs.media.orangeBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "yellow"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 1.0f;
-			rgb[2] = 0.0f;
+			shader = cgs.media.yellowBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "green"))
 		{
-			rgb[0] = 0.0f;
-			rgb[1] = 1.0f;
-			rgb[2] = 0.0f;
+			shader = cgs.media.greenBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "blue"))
 		{
-			rgb[0] = 0.0f;
-			rgb[1] = 0.0f;
-			rgb[2] = 1.0f;
+			shader = cgs.media.boltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "purple"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 0.0f;
-			rgb[2] = 1.0f;
+			shader = cgs.media.purpleBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "white"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 1.0f;
-			rgb[2] = 1.0f;
+			shader = cgs.media.whiteBoltShader;
 		}
 		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "black"))
 		{
-			rgb[0] = 1.0f;
-			rgb[1] = 1.0f;
-			rgb[2] = 1.0f;
+			shader = cgs.media.blackBoltShader;
 		}
 
 	}
@@ -9089,14 +9073,14 @@ SkipTrueView:
 			if ( (cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time)
 			  || (cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time))
 			{//being electrocuted
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader, qfalse );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader, qtrue);
 			}
 
 			if ( cent->gent->client->ps.eFlags & EF_FORCE_DRAINED
 				|| (cent->currentState.powerups&(1<<PW_DRAINED)) )
 			{//being drained
 				//do red electricity lines off them and red drain shell on them
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qtrue, qtrue );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qfalse);
 			}
 
 			if ( cent->gent->client->ps.forcePowersActive&(1<<FP_LIGHTNING) )

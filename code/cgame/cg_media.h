@@ -194,6 +194,13 @@ typedef struct {
 	qhandle_t	electricBody2Shader;
 	qhandle_t	refractShader;
 	qhandle_t	boltShader;
+	qhandle_t	redBoltShader;
+	qhandle_t	orangeBoltShader;
+	qhandle_t	yellowBoltShader;
+	qhandle_t	greenBoltShader;
+	qhandle_t	purpleBoltShader;
+	qhandle_t	whiteBoltShader;
+	qhandle_t	blackBoltShader;
 
 	// Disruptor zoom graphics
 	qhandle_t	disruptorMask;
