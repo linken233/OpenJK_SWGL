@@ -3734,11 +3734,14 @@ static void S_MenuMusic_f(void)
 		// April Fools day gets a special treat :)
 		if (ts->tm_mon == 3 && ts->tm_mday == 1)
 		{
-			S_StartBackgroundTrack("music/imhansolo.mp3", "music/imhansolo.mp3", qfalse);
+			if(!Q_irand(0,1))
+				S_StartBackgroundTrack("music/imhansolo.mp3", "music/imhansolo.mp3", qfalse);
+			else
+				S_StartBackgroundTrack("music/empiretoday.mp3", "music/empiretoday.mp3", qfalse);
 			return;
 		}
 
-		int music_pick = Q_irand(0, 20);
+		int music_pick = Q_irand(0, 21);
 
 		switch (music_pick)
 		{
@@ -3804,6 +3807,9 @@ static void S_MenuMusic_f(void)
 			break;
 		case 20:
 			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu20.mp3", qfalse);
+			break;
+		case 21:
+			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu21.mp3", qfalse);
 			break;
 		default:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
