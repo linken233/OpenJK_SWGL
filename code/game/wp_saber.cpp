@@ -167,6 +167,9 @@ void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int override
 void WP_DeactivateSaber( gentity_t *self, qboolean clearLength = qfalse );
 qboolean FP_ForceDrainGrippableEnt( gentity_t *victim );
 
+qboolean IsPlayingOperationKnightfall(void);
+qboolean IsKnightfallBoss(gentity_t *ent);
+
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_saberDamageCapping;
@@ -10923,10 +10926,18 @@ void ForceGrip( gentity_t *self )
 		case CLASS_SHADOWTROOPER:
 		case CLASS_ALORA:
 		case CLASS_JEDI:
-			if ( traceEnt->NPC && traceEnt->NPC->rank > RANK_CIVILIAN && self->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
+			if ( traceEnt->NPC && traceEnt->NPC->rank > RANK_CIVILIAN && self->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2)
 			{
-				Jedi_PlayDeflectSound(traceEnt);
-				ForceThrow(traceEnt, qfalse);
+				if (IsPlayingOperationKnightfall() && !IsKnightfallBoss(traceEnt))
+				{
+					WP_ForcePowerStop(traceEnt, FP_ABSORB);
+					WP_ForcePowerStop(traceEnt, FP_PROTECT);
+				}
+				else
+				{
+					Jedi_PlayDeflectSound(traceEnt);
+					ForceThrow(traceEnt, qfalse);
+				}
 				return;
 			}
 			break;
@@ -11059,6 +11070,47 @@ void ForceGrip( gentity_t *self )
 			self->s.loopSound = G_SoundIndex( "sound/weapons/force/grip.mp3" );
 	//	}
 	}
+}
+
+qboolean IsPlayingOperationKnightfall()
+{
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
+
+	if (!strcmp(s, "ep3_ok_anakin_r1")
+		|| !strcmp(s, "ep3_ok_anakin_r2")
+		|| !strcmp(s, "ep3_ok_anakin_r3")
+		|| !strcmp(s, "ep3_ok_anakin_r4")
+		|| !strcmp(s, "ep3_ok_anakin_r5")
+		|| !strcmp(s, "ep3_ok_anakin_r6")
+		|| !strcmp(s, "ep3_ok_anakin_r7")
+		|| !strcmp(s, "ep3_ok_anakin_r8")) //playing Knightfall
+	{
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean IsKnightfallBoss(gentity_t *ent)
+{
+	if (IsPlayingOperationKnightfall())
+	{
+		// These NPCs are knightfall bosses
+		if (!Q_stricmp("Cin_Drallig", ent->NPC_type)
+			|| !Q_stricmp("Serra_Keto", ent->NPC_type)
+			|| !Q_stricmp("Shakkra_Kien", ent->NPC_type)
+			|| !Q_stricmp("Shaak_Ti", ent->NPC_type)
+			|| !Q_stricmp("Koffi_Arana", ent->NPC_type)
+			|| !Q_stricmp("Bultar_Swan", ent->NPC_type)
+			|| !Q_stricmp("Yaddle", ent->NPC_type)
+			|| !Q_stricmp("Sora_Bulq", ent->NPC_type)
+			|| !Q_stricmp("Shakkra_Kien", ent->NPC_type)
+			|| !Q_stricmp("Tera_Sinube", ent->NPC_type)
+			|| !Q_stricmp("Pablo-Jill", ent->NPC_type))
+			return qtrue;
+	
+	}
+	return qfalse;
 }
 
 qboolean ForceLightningCheck2Handed( gentity_t *self )
@@ -15787,11 +15839,27 @@ else
 			{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
 				if ((gripEnt->client->ps.forcePowersKnown & (1 << FP_PUSH)))
 				{
-					WP_ForceForceThrow(gripEnt);
-					//FIXME: I need to go into some pushed back anim...
-					WP_ForcePowerStop(self, FP_GRIP);
+					if (IsPlayingOperationKnightfall() && !IsKnightfallBoss(gripEnt))
+					{
+						WP_ForcePowerStop(gripEnt, FP_ABSORB);
+						WP_ForcePowerStop(gripEnt, FP_PROTECT);
+					}
+					else
+					{
+
+						WP_ForceForceThrow(gripEnt);
+						//FIXME: I need to go into some pushed back anim...
+						WP_ForcePowerStop(self, FP_GRIP);
+
+					}
+					return;
 				}
-				return;
+			}
+			else if (IsKnightfallBoss(gripEnt))
+			{
+				WP_ForceForceThrow(gripEnt);
+				//FIXME: I need to go into some pushed back anim...
+				WP_ForcePowerStop(self, FP_GRIP);
 			}
 			else if ( PM_SaberInAttack( self->client->ps.saberMove )
 				|| PM_SaberInStart( self->client->ps.saberMove ) )
@@ -15985,6 +16053,11 @@ else
 							{
 								gripDmg = floor((float)gripDmg/1.5f);
 							}
+						}
+						// Grip does extra damage in the Operation: Knightfall mission
+						if (IsPlayingOperationKnightfall)
+						{
+							gripDmg *= 3;
 						}
 						G_Damage( gripEnt, self, self, dir, gripOrg, gripDmg, DAMAGE_NO_ARMOR, MOD_CRUSH );//MOD_???
 					}
