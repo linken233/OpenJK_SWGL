@@ -1826,23 +1826,6 @@ void NPC_BehaviorSet_SandCreature( int bState )
 	}
 }
 
-void NPC_BehaviorSet_Vader(int bState)
-{
-	switch (bState)
-	{
-	case BS_STAND_GUARD:
-	case BS_PATROL:
-	case BS_STAND_AND_SHOOT:
-	case BS_HUNT_AND_KILL:
-	case BS_DEFAULT:
-		NPC_BSVader_Default();
-		break;
-	default:
-		NPC_BehaviorSet_Default(bState);
-		break;
-	}
-}
-
 /*
 -------------------------
 NPC_BehaviorSet_Droid

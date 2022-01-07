@@ -159,24 +159,6 @@ void NPC_Inquisitor_ClearTimers(gentity_t* ent)
 	TIMER_Set(NPC, "saber_switch", -level.time);
 }
 
-void NPC_BSVader_Default(void)
-{
-	if (TIMER_Done(NPC, "breathing"))
-	{
-		if (NPC->health > (NPC->max_health * .33))
-		{
-			G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
-			TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
-		}
-		else
-		{
-			G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
-			TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
-		}
-		
-	}
-}
-
 void NPC_Rosh_Dark_Precache( void )
 {
 	G_EffectIndex( "force/kothos_recharge.efx" );
@@ -7749,8 +7731,8 @@ void NPC_BSJedi_Default( void )
 		return;
 	}
 
-	if (TIMER_Done(NPC, "breathing") && 
-		(!Q_stricmp("Darth_Vader", NPC->NPC_type)
+	if (TIMER_Done(NPC, "breathing")
+		&&(!Q_stricmp("Darth_Vader", NPC->NPC_type)
 		|| !Q_stricmp("Sith_Stalker", NPC->NPC_type)
 		|| !Q_stricmp("Cybernetic_Reconstruction", NPC->NPC_type)
 		|| !Q_stricmp("Lord_Starkiller", NPC->NPC_type)

@@ -83,7 +83,6 @@ void NPC_BSST_Sleep( void );
 void NPC_BSJedi_Investigate( void );
 void NPC_BSJedi_Default( void );
 void NPC_BSJedi_FollowLeader( void );
-void NPC_BSVader_Default(void);
 
 // AI_DROID
 void NPC_BSDroid_Default( void );
