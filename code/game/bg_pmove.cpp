@@ -148,7 +148,10 @@ extern cvar_t	*g_debugMelee;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
+extern cvar_t	*g_char_model;
 extern int defaultDamageCopy[WP_NUM_WEAPONS];
+
+qboolean CasualWalker(pmove_t* pm);
 
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
@@ -8470,7 +8473,7 @@ static void PM_Footsteps( void )
 				}
 				else
 				{
-					PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALKBACK2,setAnimFlags);
+					PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALKBACK1,setAnimFlags);
 				}
 			}
 			else
@@ -8588,7 +8591,10 @@ static void PM_Footsteps( void )
 					}
 					else
 					{
-						PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALK2,setAnimFlags);
+						if (CasualWalker(pm))
+							PM_SetAnim(pm, SETANIM_LEGS, BOTH_WALK1, setAnimFlags);
+						else
+							PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALK2,setAnimFlags);
 					}
 				}
 				else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_WAMPA )
@@ -8734,6 +8740,42 @@ DoFootSteps:
 			PM_AddEvent( EV_SWIM );
 		}
 	}
+}
+
+qboolean CasualWalker(pmove_t *pm)
+{
+	gentity_t *ent = pm->gent;
+
+	if (ent == player)
+	{
+		// Lord Vader only does a casual walk with specific styles
+		if ((!Q_stricmp("anakin_dark", g_char_model->string)
+			&& (pm->ps->saberAnimLevel == SS_DESANN
+				|| pm->ps->saberAnimLevel == SS_TAVION)))
+			return qtrue;
+
+		// Kyle should always do it
+		else if(!Q_stricmp("kyle", g_char_model->string) || !Q_stricmp("kylejk2", g_char_model->string))
+			return qtrue;
+	}
+	else
+	{
+		// Lord Vader only does a casual walk with specific styles
+		if ((!Q_stricmp("ep3_vader", ent->NPC_type)
+			&& (pm->ps->saberAnimLevel == SS_DESANN
+				|| pm->ps->saberAnimLevel == SS_TAVION)))
+			return qtrue;
+
+		// Kyle should always do it
+		else if (!Q_stricmp("kyle", ent->NPC_type)
+			|| !Q_stricmp("kyle_boss", ent->NPC_type)
+			|| !Q_stricmp("KyleJK2", ent->NPC_type)
+			|| !Q_stricmp("KyleJK2noforce", ent->NPC_type))
+			return qtrue;
+
+	}
+	
+	return qfalse;
 }
 
 /*
@@ -9174,7 +9216,10 @@ int PM_ReadyPoseForSaberAnimLevel( void )
 	case SS_MEDIUM:
 	case SS_DESANN:
 	default:
-		anim = BOTH_STAND2;
+		if((!Q_stricmp("ep3_vader", pm->gent->NPC_type) || (pm->gent == player && !Q_stricmp("anakin_dark", g_char_model->string))) && pm->ps->saberAnimLevel != SS_MEDIUM)
+			anim = BOTH_SABERFAST_STANCE;
+		else
+			anim = BOTH_STAND2;
 		break;
 	}
 	return anim;
