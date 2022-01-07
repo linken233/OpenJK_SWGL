@@ -40,6 +40,8 @@ extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern stringID_table_t WPTable[];
 
+extern qboolean IsPlayingOperationKnightfall(void);
+
 extern cvar_t *g_allowAlignmentChange;
 
 #define		MAX_MODELS_PER_LEVEL	60
@@ -4573,11 +4575,17 @@ const char* setYounglingSkin(gentity_t* NPC)
 			skin = "head_b2|";
 			break;
 		case 4:
-			skin = "head_c1|";
-			break;
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c1|";
+				break;
+			}
 		case 5:
-			skin = "head_c2|";
-			break;
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c2|";
+				break;
+			}
 		case 6:
 			skin = "head_d1|";
 			break;
@@ -4643,11 +4651,17 @@ const char* setYounglingSkin(gentity_t* NPC)
 			skin = "head_b2|";
 			break;
 		case 4:
-			skin = "head_c1|";
-			break;
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c1|";
+				break;
+			}
 		case 5:
-			skin = "head_c2|";
-			break;
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c2|";
+				break;
+			}
 		default:
 			skin = "head_a1|";
 			break;
@@ -4683,8 +4697,11 @@ const char* setYounglingSkin(gentity_t* NPC)
 		skin = "head_b3|";
 		break;
 	case 6:
-		skin = "head_c1|";
-		break;
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin = "head_c1|";
+			break;
+		}
 	case 7:
 		skin = "head_c2|";
 		break;
@@ -4760,14 +4777,23 @@ const char* setYounglingSkin(gentity_t* NPC)
 	switch (torso)
 	{
 	case 0:
-		skin += "torso_a1|";
-		break;
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a1|";
+			break;
+		}
 	case 1:
-		skin += "torso_a2|";
-		break;
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a2|";
+			break;
+		}
 	case 2:
-		skin += "torso_a3|";
-		break;
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a3|";
+			break;
+		}
 	case 3:
 		skin += "torso_b1|";
 		break;
