@@ -32,6 +32,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
+extern cvar_t *g_char_model;
+
 #define	PHASER_HOLDFRAME	2
 extern void G_SoundOnEnt( gentity_t *ent, soundChannel_t channel, const char *soundPath );
 const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHeight,
@@ -2277,18 +2279,18 @@ extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 				{
 					if( Q_flrand(0.0f, 1.0f) > 0.5 )
 					{
-						if(!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+						if(!Q_stricmp(g_char_model->string, "kyle") || !Q_stricmp(g_char_model->string, "kyleJK2"))
 							G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk015.wav" ));
 					}
 					else
 					{
-						if (!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+						if (!Q_stricmp(g_char_model->string, "kyle") || !Q_stricmp(g_char_model->string, "kyleJK2"))
 							G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk016.wav" ));
 					}
 				}
 				else
 				{
-					if (!Q_stricmp(player->model, "kyle") || !Q_stricmp(player->model, "kyleJK2"))
+					if (!Q_stricmp(g_char_model->string, "kyle") || !Q_stricmp(g_char_model->string, "kyleJK2"))
 						G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/16kyk007.wav" ));
 				}
 				speechDebounceTime = cg.time + 3000;
