@@ -111,7 +111,7 @@ void Saboteur_Cloak( gentity_t *self )
 	{//FIXME: need to have this timer set once first?
 		if ( TIMER_Done( self, "nocloak" ) )
 		{//not sitting around waiting to cloak again
-			if ( !(self->NPC->aiFlags&NPCAI_SHIELDS) )
+			if ( !(self->NPC->aiFlags&NPCAI_SHIELDS) && (Q_stricmp("ep7_luke", self->NPC_type) && Q_stricmp("ep8_luke", self->NPC_type)))
 			{//not allowed to cloak, actually
 				Saboteur_Decloak( self );
 			}
@@ -121,7 +121,8 @@ void Saboteur_Cloak( gentity_t *self )
 				self->client->ps.powerups[PW_UNCLOAKING] = level.time + 2000;
 				//FIXME: debounce attacks?
 				//FIXME: temp sound
-				G_SoundOnEnt( self, CHAN_ITEM, "sound/chars/shadowtrooper/cloak.wav" );
+				if(Q_stricmp("ep7_luke", self->NPC_type) && Q_stricmp("ep8_luke", self->NPC_type))
+					G_SoundOnEnt( self, CHAN_ITEM, "sound/chars/shadowtrooper/cloak.wav" );
 			}
 		}
 	}
