@@ -253,6 +253,8 @@ cvar_t *g_NPClegs;
 
 cvar_t* g_darkkorriban;
 
+cvar_t *g_knightfall;
+
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
@@ -726,6 +728,8 @@ void G_InitCvars( void ) {
 	g_setSaberLocking = gi.cvar("g_setSaberLocking", "1", CVAR_INIT);//lets you pick up sabers that are dropped
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
+
+	g_knightfall = gi.cvar("g_knightfall", "0", CVAR_INIT);
 
 	g_forceLightningColor = gi.cvar("g_forceLightningColor", "0", CVAR_ARCHIVE);
 

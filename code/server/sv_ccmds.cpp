@@ -64,6 +64,9 @@ static bool SV_Map_( ForceReload_e eForceReload )
 						"t2_wedge", "t3_bounty", "t3_byss", "t3_hevil", "t3_rift", "t3_stamp", "taspir1", "taspir2", 
 						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2"};
 
+	char* knightfallMaps[] = { "ep3_ok_anakin_r1", "ep3_ok_anakin_r2", "ep3_ok_anakin_r3", "ep3_ok_anakin_r4", "ep3_ok_anakin_r5", "ep3_ok_anakin_r6",
+						"ep3_ok_anakin_r7", "ep3_ok_anakin_r8" };
+
 	map = Cmd_Argv(1);
 	kor_align = Cmd_Argv(2);
 
@@ -125,6 +128,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 	}
 
 	bool notJKMap = true;
+	bool notKnightfallMap = true;
 
 	for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
 	{
@@ -133,6 +137,15 @@ static bool SV_Map_( ForceReload_e eForceReload )
 			notJKMap = false;
 		}
 	}
+
+	for (int i = 0; i < (sizeof(knightfallMaps) / sizeof(knightfallMaps[0])); i++)
+	{
+		if (strcmp(map, knightfallMaps[i]) == 0)
+		{
+			notKnightfallMap = false;
+		}
+	}
+
 
 	for (int i = 0; i < (sizeof(jkamaps) / sizeof(jkamaps[0])); i++)
 	{
@@ -145,6 +158,15 @@ static bool SV_Map_( ForceReload_e eForceReload )
 	if (notJKMap)
 	{
 		Cvar_Set("g_newgameplus", "0");
+	}
+
+	if (!notKnightfallMap)
+	{
+		Cvar_Set("g_knightfall", "1");
+	}
+	else
+	{
+		Cvar_Set("g_knightfall", "0");
 	}
 	
 	if (!strcmp(kor_align, "dark") && (!strcmp(map, "kor1") || !strcmp(map, "kor2")))

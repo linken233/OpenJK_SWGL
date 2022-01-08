@@ -66,6 +66,7 @@ extern cvar_t	*g_saberRestrictForce;
 extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_newforcepowers;
+extern cvar_t	*g_knightfall;
 
 extern void WP_SetSaber(gentity_t* ent, int saberNum, const char* saberName);
 
@@ -11076,6 +11077,9 @@ qboolean IsPlayingOperationKnightfall()
 {
 	const char* info = CG_ConfigString(CS_SERVERINFO);
 	const char* s = Info_ValueForKey(info, "mapname");
+
+	if (g_knightfall->integer)
+		return qtrue;
 
 	if (!strcmp(s, "ep3_ok_anakin_r1")
 		|| !strcmp(s, "ep3_ok_anakin_r2")
