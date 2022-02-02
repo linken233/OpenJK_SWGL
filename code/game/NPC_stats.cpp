@@ -42,6 +42,8 @@ extern stringID_table_t WPTable[];
 
 extern qboolean IsPlayingOperationKnightfall(void);
 
+extern qboolean G_StandardHumanoid(const char* GLAName);
+
 extern cvar_t *g_allowAlignmentChange;
 
 #define		MAX_MODELS_PER_LEVEL	60
@@ -1172,7 +1174,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 		// Get The Cinematic GLA Name
 		//----------------------------
-		if (Q_stricmp(skeletonName, "_humanoid")==0)
+		if (G_StandardHumanoid(skeletonName))
 		{
 			const char* mapName = strrchr( level.mapname, '/' );
 			if (mapName)
@@ -1185,7 +1187,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 			}
 			char  skeletonMapName[MAX_QPATH];
 			Com_sprintf(skeletonMapName, MAX_QPATH, "_humanoid_%s", mapName);
-			const int normalGLAIndex = gi.G2API_PrecacheGhoul2Model("models/players/_humanoid/_humanoid.gla");//double check this always comes first!
+			const int normalGLAIndex = gi.G2API_PrecacheGhoul2Model(va("models/players/%s/_humanoid.gla", skeletonName));//double check this always comes first!
 
 			// Make Sure To Precache The GLAs (both regular and cinematic), And Remember Their Indicies
 			//------------------------------------------------------------------------------------------
@@ -1195,11 +1197,11 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 			const int cineGLAIndex = gi.G2API_PrecacheGhoul2Model( va("models/players/%s/%s.gla", skeletonMapName, skeletonMapName));
 			if (cineGLAIndex)
 			{
-				assert(cineGLAIndex == normalGLAIndex+1);
+				/*assert(cineGLAIndex == normalGLAIndex + 1);
 				if (cineGLAIndex != normalGLAIndex+1)
 				{
 					Com_Error(ERR_DROP,"Cinematic GLA was not loaded after the normal GLA.  Cannot continue safely.");
-				}
+				}*/
 				G_ParseAnimationFile(1,    skeletonMapName, fileIndex);
 				G_ParseAnimationEvtFile(1, skeletonMapName, fileIndex, cineGLAIndex, false/*flag for model specific*/);
 			}

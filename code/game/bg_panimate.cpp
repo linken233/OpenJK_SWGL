@@ -51,6 +51,9 @@ extern cvar_t	*g_saberAnimSpeed;
 extern cvar_t	*g_saberAutoAim;
 extern cvar_t	*g_speederControlScheme;
 extern cvar_t	*g_saberNewControlScheme;
+extern cvar_t	*g_char_model;
+extern cvar_t	*g_allowSaberTwirling;
+
 
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
 extern void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -107,6 +110,8 @@ saberMoveName_t PM_SaberDualJumpAttackMove( void );
 qboolean PM_CheckDualJumpAttackMove( void );
 saberMoveName_t PM_SaberLungeAttackMove( qboolean fallbackToNormalLunge );
 qboolean PM_CheckLungeAttackMove( void );
+qboolean NoSaberTwirlCharacter(gentity_t* ent);
+
 // Okay, here lies the much-dreaded Pat-created FSM movement chart...  Heretic II strikes again!
 // Why am I inflicting this on you?  Well, it's better than hardcoded states.
 // Ideally this will be replaced with an external file or more sophisticated move-picker
@@ -5181,7 +5186,8 @@ void PM_TorsoAnimLightsaber()
 	{
 		if (!G_IsRidingVehicle(pm->gent))
 		{
-			PM_SetSaberMove(LS_DRAW);
+			if (!NoSaberTwirlCharacter(pm->gent))
+				PM_SetSaberMove(LS_DRAW);
 		}
 		return;
 	}
@@ -5189,7 +5195,8 @@ void PM_TorsoAnimLightsaber()
 	{
 		if (!G_IsRidingVehicle(pm->gent))
 		{
-			PM_SetSaberMove(LS_PUTAWAY);
+			if (!NoSaberTwirlCharacter(pm->gent))
+				PM_SetSaberMove(LS_PUTAWAY);
 		}
 		return;
 	}
@@ -5501,7 +5508,30 @@ void PM_TorsoAnimLightsaber()
 	}
 }
 
+qboolean NoSaberTwirlCharacter(gentity_t* ent)
+{
+	if (ent == player)
+	{
+		if (!Q_stricmp("anakin_dark", g_char_model->string)
+			|| !Q_stricmp("oldben", g_char_model->string)
+			|| !Q_stricmp("am_vader", g_char_model->string)
+			|| !Q_stricmp("anakin_apprentice", g_char_model->string))
+			return qtrue;
+	}
+	else
+	{
+		if (!Q_stricmp("ep3_vader", ent->NPC_type)
+			|| !Q_stricmp("ben_kenobi", ent->NPC_type)
+			|| !Q_stricmp("darth_vader", ent->NPC_type)
+			|| !Q_stricmp("anakin_apprentice", ent->NPC_type))
+			return qtrue;
+	}
 
+	if (!g_allowSaberTwirling->integer)
+		return qtrue;
+
+	return qfalse;
+}
 
 
 /*

@@ -8749,9 +8749,10 @@ qboolean CasualWalker(pmove_t *pm)
 	if (ent == player)
 	{
 		// Lord Vader only does a casual walk with specific styles
-		if ((!Q_stricmp("anakin_dark", g_char_model->string)
+		if (((!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_apprentice", g_char_model->string))
 			&& (pm->ps->saberAnimLevel == SS_DESANN
-				|| pm->ps->saberAnimLevel == SS_TAVION)))
+				|| pm->ps->saberAnimLevel == SS_TAVION
+				|| pm->ps->saberAnimLevel == SS_FAST)))
 			return qtrue;
 
 		// Kyle should always do it
@@ -8761,9 +8762,10 @@ qboolean CasualWalker(pmove_t *pm)
 	else
 	{
 		// Lord Vader only does a casual walk with specific styles
-		if ((!Q_stricmp("ep3_vader", ent->NPC_type)
+		if (((!Q_stricmp("ep3_vader", ent->NPC_type) || !Q_stricmp("anakin_apprentice", ent->NPC_type))
 			&& (pm->ps->saberAnimLevel == SS_DESANN
-				|| pm->ps->saberAnimLevel == SS_TAVION)))
+				|| pm->ps->saberAnimLevel == SS_TAVION
+				|| pm->ps->saberAnimLevel == SS_FAST)))
 			return qtrue;
 
 		// Kyle should always do it
@@ -9216,7 +9218,7 @@ int PM_ReadyPoseForSaberAnimLevel( void )
 	case SS_MEDIUM:
 	case SS_DESANN:
 	default:
-		if((!Q_stricmp("ep3_vader", pm->gent->NPC_type) || (pm->gent == player && !Q_stricmp("anakin_dark", g_char_model->string))) && pm->ps->saberAnimLevel != SS_MEDIUM)
+		if((!Q_stricmp("ep3_vader", pm->gent->NPC_type) || !Q_stricmp("anakin_apprentice", pm->gent->NPC_type) || (pm->gent == player && (!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_apprentice", g_char_model->string)))) && pm->ps->saberAnimLevel != SS_MEDIUM)
 			anim = BOTH_SABERFAST_STANCE;
 		else
 			anim = BOTH_STAND2;

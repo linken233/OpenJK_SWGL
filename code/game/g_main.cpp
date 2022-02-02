@@ -255,6 +255,8 @@ cvar_t* g_darkkorriban;
 
 cvar_t *g_knightfall;
 
+cvar_t *g_allowSaberTwirling;
+
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
@@ -776,6 +778,8 @@ void G_InitCvars( void ) {
 	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCLightningColor = gi.cvar("g_NPCLightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
+
+	g_allowSaberTwirling = gi.cvar("g_allowSaberTwirling", "1", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
 
@@ -1527,6 +1531,54 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	assert(GLAName);
 
 	if ( !Q_stricmp( "models/players/_humanoid/_humanoid", GLAName ) )
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/JK2anims/JK2anims", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Clones/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Drallig/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_JBrute/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Jedi/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_lanakin/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Palpatine/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Serra/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected eto have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Shaak/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Shakkra/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_TDroid/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_TGuard/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}

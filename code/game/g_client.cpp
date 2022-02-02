@@ -946,6 +946,54 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/JK2anims/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Clones/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Drallig/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_JBrute/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Jedi/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_lanakin/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Palpatine/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Serra/", GLAName, 24))
+		{//only _humanoid skeleton is expected eto have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Shaak/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Shakkra/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_TDroid/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_TGuard/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if ( !Q_stricmp( "models/players/protocol/protocol", GLAName ) )
 		{//protocol droid duplicates many of these
 			return qtrue;
@@ -968,6 +1016,66 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		}
 		if ( !Q_stricmp( "models/players/wampa/wampa", GLAName ) )
 		{//rockettrooper duplicates many of these
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+qboolean G_StandardHumanoid(const char* GLAName)
+{
+	if (GLAName)
+	{
+		if (!Q_stricmp("_humanoid", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("JK2anims", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Clones", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Drallig", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_JBrute", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Jedi", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_lanakin", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Palpatine", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Serra", GLAName))
+		{// only _humanoid skeleton is expected eto have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Shaak", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Shakkra", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_TDroid", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_TGuard", GLAName))
+		{// only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 	}

@@ -459,6 +459,60 @@ model_t	*R_GetModelByHandle( qhandle_t index ) {
 	return mod;
 }
 
+/*
+** R_GetAnimModelByHandle
+*/
+model_t* R_GetAnimModelByHandle(CGhoul2Info* ghlInfo, qhandle_t index)
+{
+	model_t* mod;
+
+	// out of range gets the defualt model
+	if (index < 1 || index >= tr.numModels) {
+		return tr.models[0];
+	}
+
+	mod = tr.models[index];
+
+	if (ghlInfo->animModelIndexOffset)
+	{
+		// Have to recalculate offset to get map animations for JKA Campaign
+		index -= ghlInfo->animModelIndexOffset;
+		int i;
+		int mapIndex;
+		int offSet;
+		int len = sizeof(tr.models) / sizeof(tr.models[0]);
+		for (i = 0; i < len; i++)
+		{
+			if (!Q_stricmp(va("models/players/_humanoid/_humanoid.gla"), tr.models[i]->name))
+			{
+				mapIndex = i+1;
+				break;
+			}
+		}
+		
+		// Custom skeletons will be further along than the base _humanoid, don't modify for normal JKA skeletons 
+		if (index > mapIndex)
+		{
+			offSet = index - mapIndex;
+			mod = tr.models[index - offSet];
+		}
+		else
+		{
+			mod = tr.models[index + ghlInfo->animModelIndexOffset];
+		}
+
+
+	}
+	else
+	{
+		mod = tr.models[index];
+	}
+
+
+
+	return mod;
+}
+
 //===============================================================================
 
 /*
