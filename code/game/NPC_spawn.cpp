@@ -3312,8 +3312,6 @@ void SP_NPC_SWGL_Jedi(gentity_t *self)
 
 	SP_NPC_spawner(self);
 }
-
-
 /*QUAKED NPC_Prisoner(1 0 0) (-16 -16 -24) (16 16 40) ELDER x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
@@ -5552,49 +5550,49 @@ static void NPC_Spawn_f(void)
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
+	else if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
+	else if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 8;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("imperial", NPCspawner->NPC_type))
+	else if (!Q_stricmp("imperial", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
 		SP_NPC_Imperial(NPCspawner);
 	}
-	if (!Q_stricmp("impofficer", NPCspawner->NPC_type))
+	else if (!Q_stricmp("impofficer", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
 		SP_NPC_Imperial(NPCspawner);
 	}
-	if (!Q_stricmp("impcommander", NPCspawner->NPC_type))
+	else if (!Q_stricmp("impcommander", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
