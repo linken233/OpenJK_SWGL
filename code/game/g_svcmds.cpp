@@ -962,31 +962,31 @@ static void Svcmd_Spawn_f(void)
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
+	else if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
+	else if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
-	if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
+	else if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 8;
