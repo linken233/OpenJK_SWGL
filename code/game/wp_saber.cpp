@@ -11088,7 +11088,12 @@ qboolean IsPlayingOperationKnightfall()
 		|| !strcmp(s, "ep3_ok_anakin_r5")
 		|| !strcmp(s, "ep3_ok_anakin_r6")
 		|| !strcmp(s, "ep3_ok_anakin_r7")
-		|| !strcmp(s, "ep3_ok_anakin_r8")) //playing Knightfall
+		|| !strcmp(s, "ep3_ok_anakin_r8")
+		|| !strcmp(s, "ep3_ok_anakin_1")
+		|| !strcmp(s, "ep3_ok_anakin_2")
+		|| !strcmp(s, "ep3_ok_anakin_3")
+		|| !strcmp(s, "ep3_ok_anakin_4")
+		|| !strcmp(s, "ep3_ok_anakin_5")) //playing Knightfall
 	{
 		return qtrue;
 	}
