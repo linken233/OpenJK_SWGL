@@ -15828,6 +15828,7 @@ else
 				&& (gripEnt->client->NPC_class == CLASS_BOBAFETT || gripEnt->client->NPC_class == CLASS_MANDALORIAN || gripEnt->client->NPC_class == CLASS_JANGO || gripEnt->client->NPC_class == CLASS_ROCKETTROOPER)
 				&& self->client->ps.forcePowerDebounce[FP_GRIP] < level.time
 				&& !Q_irand( 0, 3 )
+				&& gripEnt->NPC->behaviorState != BS_CINEMATIC
 				)
 			{//boba fett - fly away!
 				gripEnt->client->ps.forceJumpCharge = 0;//so we don't play the force flip anim
