@@ -16065,7 +16065,7 @@ else
 							}
 						}
 						// Grip does extra damage in the Operation: Knightfall mission
-						if (IsPlayingOperationKnightfall)
+						if (IsPlayingOperationKnightfall())
 						{
 							gripDmg *= 3;
 						}

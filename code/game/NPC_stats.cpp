@@ -2000,7 +2000,7 @@ void NPC_BuildRandom( gentity_t *NPC )
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
 extern void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn );
-const char* setYounglingSkin(gentity_t* ent);
+void setYounglingSkin(gentity_t* NPC, char *custom_skin, int custom_skin_size);
 qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 {
 	const char	*token;
@@ -2660,7 +2660,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					|| !Q_stricmp("jedi_youngling4", NPC->NPC_type)
 					|| !Q_stricmp("jedi_youngling5", NPC->NPC_type)))
 			{
-				Q_strncpyz(customSkin, setYounglingSkin(NPC), sizeof(customSkin));
+				setYounglingSkin(NPC, customSkin, sizeof(customSkin));
 			}
 
 			// surfOff
@@ -4553,7 +4553,7 @@ void NPC_LoadParms( void )
 	
 }
 
-const char* setYounglingSkin(gentity_t* NPC)
+void setYounglingSkin(gentity_t* NPC, char *custom_skin, int custom_skin_size)
 {
 	std::string skin;
 	int head = 0;
@@ -4815,9 +4815,8 @@ const char* setYounglingSkin(gentity_t* NPC)
 		skin += "torso_a1|";
 		break;
 	}
-	
 
 	skin += "lower_a1";
 
-	return skin.c_str();
+	Q_strncpyz(custom_skin, skin.c_str(), custom_skin_size);
 }

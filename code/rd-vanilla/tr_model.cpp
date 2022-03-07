@@ -478,8 +478,8 @@ model_t* R_GetAnimModelByHandle(CGhoul2Info* ghlInfo, qhandle_t index)
 		// Have to recalculate offset to get map animations for JKA Campaign
 		index -= ghlInfo->animModelIndexOffset;
 		int i;
-		int mapIndex;
-		int offSet;
+		int mapIndex = 0;
+		int offSet = 0;
 		int len = sizeof(tr.models) / sizeof(tr.models[0]);
 		for (i = 0; i < len; i++)
 		{

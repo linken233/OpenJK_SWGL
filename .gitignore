@@ -119,6 +119,11 @@ Backup*/
 UpgradeLog*.XML
 
 
+#################
+## Visual Studio Code
+#################
+*.vscode
+
 
 ############
 ## Windows
