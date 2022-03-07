@@ -32,15 +32,23 @@ static qboolean is_player_scoped(gentity_t *ent)
 	return (qboolean)(cg.zoomMode >= ST_A280 && ent->client->ps.clientNum == 0);
 }
 
+// The reason why we set alt_fire here is because
+// of how "damage" and/or "velocity" will be evaluated
+// in WP_FireWeaponMissile.
 static void is_player_alt_firing(gentity_t *ent, weapon_t weapon_num, qboolean *alt_fire)
 {
 	if (ent->client->ps.clientNum == 0)
 	{
+		// The damage for the high powered shot gets
+		// set in bg_pmove so use main damage i.e. set
+		// alt_fire to false.
 		if (ent->client->ps.firing_attack & TERTIARY_ATTACK
 			&& weaponData[weapon_num].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED)
 		{
 			*alt_fire = qfalse;
 		}
+		// Set alt_fire to true if ALT_ATTACK is enabled (weapons
+		// like the clone carbine use ALT_ATTACK) or if scoped.
 		else if (ent->client->ps.firing_attack & ALT_ATTACK || cg.zoomMode >= ST_A280)
 		{
 			*alt_fire = qtrue;
