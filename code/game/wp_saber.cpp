@@ -6378,6 +6378,8 @@ qboolean WP_SaberValidateEnemy( gentity_t *self, gentity_t *enemy )
 		case CLASS_R5D2:
 		case CLASS_VEHICLE:
 			return qfalse;
+		default:
+			break;
 		}
 	}
 	//LOS?
