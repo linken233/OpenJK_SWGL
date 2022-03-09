@@ -345,6 +345,14 @@ int mindTrickTime[NUM_FORCE_POWER_LEVELS] =
 	30000//15000
 };
 
+int fearTime[NUM_FORCE_POWER_LEVELS] =
+{
+	0,//none
+	5000,//5000,
+	10000,//10000,
+	20000//15000
+};
+
 //NOTE: keep in synch with table below!!!
 int saberThrowDist[NUM_FORCE_POWER_LEVELS] =
 {
@@ -12159,17 +12167,21 @@ void ForceFear(gentity_t *self)
 					}
 
 					NPC_SetAnim(traceEnt, SETANIM_TORSO, BOTH_SONICPAIN_HOLD, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+					//FIXME: maybe pick an enemy right here?
+					//FIXME: does nothing to TEAM_FREE and TEAM_NEUTRALs!!!
+					traceEnt->client->savedEnemyTeam = traceEnt->client->enemyTeam;
+					traceEnt->client->savedPlayerTeam = traceEnt->client->playerTeam;
 					traceEnt->client->enemyTeam = TEAM_SOLO;
 					traceEnt->client->playerTeam = TEAM_SOLO;
+					//FIXME: need a *charmed* timer on this...?  Or do TEAM_PLAYERS assume that "confusion" means they should switch to team_enemy when done?
+					traceEnt->NPC->charmedTime = level.time + fearTime[self->client->ps.forcePowerLevel[FP_FEAR]];
 					G_Sound(self, G_SoundIndex("sound/weapons/force/horror.mp3"));
 					G_ClearEnemy(traceEnt);
-					
-					G_AddVoiceEvent(traceEnt, EV_FALL_MEDIUM, 1);
+
 					//FIXME: need a *charmed* timer on this...?  Or do TEAM_PLAYERS assume that "confusion" means they should switch to team_enemy when done?
-					traceEnt->NPC->charmedTime = level.time + mindTrickTime[self->client->ps.forcePowerLevel[FP_FEAR]];
 					if (traceEnt->ghoul2.size() && traceEnt->headBolt != -1)
 					{//FIXME: what if already playing effect?
-						G_PlayEffect(G_EffectIndex("force/drain_hand"), traceEnt->playerModel, traceEnt->headBolt, traceEnt->s.number, traceEnt->currentOrigin, mindTrickTime[self->client->ps.forcePowerLevel[FP_FEAR]], qtrue);
+						G_PlayEffect(G_EffectIndex("force/drain_hand"), traceEnt->playerModel, traceEnt->headBolt, traceEnt->s.number, traceEnt->currentOrigin, fearTime[self->client->ps.forcePowerLevel[FP_FEAR]], qtrue);
 					}
 				}
 			}
@@ -12203,38 +12215,28 @@ void ForceFear(gentity_t *self)
 
 qboolean CanBeFeared(gentity_t *self, gentity_t *traceEnt)
 {
-	int commonFSChance = 0;
-	int powerfulFSChance = 0;
+	int chance = 0;
 
 
 	// Very weak force fear should pose almost zero threat against any jedi and sith
 	if (self->client->ps.forcePowerLevel[FP_FEAR] < FORCE_LEVEL_2)
 	{
-		commonFSChance = 1000;
-		powerfulFSChance = 1000;
+		chance = 1000;
 	}
 	// An intermediate Force Fear might pose some threat against lesser Jedi and Sith, but powerful ones should have next to no chance to be affected (but still a chance)
 	else if (self->client->ps.forcePowerLevel[FP_FEAR] == FORCE_LEVEL_2)
 	{
-		commonFSChance = 20;
-		powerfulFSChance = 100;
+		chance = 20;
 	}
 	// A master of Force Fear should be able to scare a common Jedi or Sith with minimal effort, and still heavily struggle against the powerful ones.
 	else if (self->client->ps.forcePowerLevel[FP_FEAR] > FORCE_LEVEL_2)
 	{
-		commonFSChance = 4;
-		powerfulFSChance = 20;
+		chance = 4;
 	}
 
-	if (!Q_irand(0, commonFSChance) && (traceEnt->client->NPC_class == CLASS_JEDI
+	if (!Q_irand(0, chance) && (traceEnt->client->NPC_class == CLASS_JEDI
 		|| traceEnt->client->NPC_class == CLASS_REBORN
 		|| traceEnt->client->NPC_class == CLASS_SHADOWTROOPER))
-	{
-		return qfalse;
-	}
-
-
-	if (self->client->ps.forcePowerLevel[FP_FEAR] == FORCE_LEVEL_1 && !Q_irand(0, 1))
 	{
 		return qfalse;
 	}

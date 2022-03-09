@@ -743,6 +743,8 @@ public:
 	//Used to be in gentity_t, now here.. mostly formation stuff
 	team_t		playerTeam;
 	team_t		enemyTeam;
+	team_t		savedPlayerTeam;
+	team_t		savedEnemyTeam;
 	gentity_t	*leader;
 	class_t		NPC_class;
 
@@ -823,6 +825,8 @@ public:
 		saved_game.write<int32_t>(breathPuffTime);
 		saved_game.write<int32_t>(playerTeam);
 		saved_game.write<int32_t>(enemyTeam);
+		saved_game.write<int32_t>(savedEnemyTeam);
+		saved_game.write<int32_t>(savedPlayerTeam);
 		saved_game.write<int32_t>(leader);
 		saved_game.write<int32_t>(NPC_class);
 		saved_game.write<float>(hiddenDist);
@@ -889,6 +893,8 @@ public:
 		saved_game.read<int32_t>(breathPuffTime);
 		saved_game.read<int32_t>(playerTeam);
 		saved_game.read<int32_t>(enemyTeam);
+		saved_game.read<int32_t>(savedEnemyTeam);
+		saved_game.read<int32_t>(savedPlayerTeam);
 		saved_game.read<int32_t>(leader);
 		saved_game.read<int32_t>(NPC_class);
 		saved_game.read<float>(hiddenDist);

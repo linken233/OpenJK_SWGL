@@ -1564,6 +1564,32 @@ void G_CheckCharmed( gentity_t *self )
 		}
 	}
 
+	// Force Fear
+	if (self
+		&& self->client
+		&& self->client->playerTeam == TEAM_SOLO
+		&& self->NPC
+		&& self->NPC->charmedTime
+		&& (self->NPC->charmedTime < level.time || self->health <= 0))
+	{//we were charmed, set us back!
+	//NOTE: presumptions here...
+		team_t	savTeam = self->client->enemyTeam;
+		self->client->enemyTeam = self->client->savedEnemyTeam;
+		self->client->playerTeam = self->client->savedPlayerTeam;
+		self->client->leader = NULL;
+		self->NPC->charmedTime = 0;
+		if (self->health > 0)
+		{
+			if (self->NPC->tempBehavior == BS_FOLLOW_LEADER)
+			{
+				self->NPC->tempBehavior = BS_DEFAULT;
+			}
+			G_ClearEnemy(self);
+			//say something to let player know you've snapped out of it
+			G_AddVoiceEvent(self, Q_irand(EV_CONFUSE1, EV_CONFUSE3), 2000);
+		}
+	}
+
 }
 
 void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int modelIndex = 0 )
