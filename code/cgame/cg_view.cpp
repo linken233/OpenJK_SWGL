@@ -1423,18 +1423,19 @@ static qboolean	CG_CalcFov( void ) {
 		{
 			if ( !cg.zoomLocked )
 			{
-				if ( cg.zoomMode == 1 )
+				// I don't want to change the cg_zoomFov for the scope types.
+				if (cg.zoomMode < ST_A280)
 				{
-					// binoculars zooming either in or out
-					cg_zoomFov += cg.zoomDir * cg.frametime * 0.05f;
-				}
-				else if ( cg.zoomMode >= ST_A280 )
-				{
-				}
-				else
-				{
-					// disruptor zooming in faster
-					cg_zoomFov -= cg.frametime * 0.075f;
+					if ( cg.zoomMode == 1 )
+					{
+						// binoculars zooming either in or out
+						cg_zoomFov += cg.zoomDir * cg.frametime * 0.05f;
+					}
+					else
+					{
+						// disruptor zooming in faster
+						cg_zoomFov -= cg.frametime * 0.075f;
+					}
 				}
 
 				// Clamp zoomFov
@@ -1447,6 +1448,8 @@ static qboolean	CG_CalcFov( void ) {
 				{
 					cg_zoomFov = actualFOV;
 				}
+				// I don't want to play any zooming sound effects
+				// for the scope types.
 				else if ( cg.zoomMode < ST_A280 )
 				{//still zooming
 					static int zoomSoundTime = 0;
