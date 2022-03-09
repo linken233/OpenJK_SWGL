@@ -45,6 +45,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include <float.h>
+#include "NPC_SWGL.h"
 
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
@@ -8762,7 +8763,7 @@ qboolean CasualWalker(pmove_t *pm)
 	else
 	{
 		// Lord Vader only does a casual walk with specific styles
-		if (((!Q_stricmp("ep3_vader", ent->NPC_type) || !Q_stricmp("anakin_apprentice", ent->NPC_type))
+		if (((!Q_stricmp(EP3_VADER, ent->NPC_type) || !Q_stricmp("anakin_apprentice", ent->NPC_type))
 			&& (pm->ps->saberAnimLevel == SS_DESANN
 				|| pm->ps->saberAnimLevel == SS_TAVION
 				|| pm->ps->saberAnimLevel == SS_FAST)))
@@ -9218,7 +9219,7 @@ int PM_ReadyPoseForSaberAnimLevel( void )
 	case SS_MEDIUM:
 	case SS_DESANN:
 	default:
-		if((!Q_stricmp("ep3_vader", pm->gent->NPC_type) || !Q_stricmp("anakin_apprentice", pm->gent->NPC_type) || (pm->gent == player && (!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_apprentice", g_char_model->string)))) && pm->ps->saberAnimLevel != SS_MEDIUM)
+		if((!Q_stricmp(EP3_VADER, pm->gent->NPC_type) || !Q_stricmp("anakin_apprentice", pm->gent->NPC_type) || (pm->gent == player && (!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_apprentice", g_char_model->string)))) && pm->ps->saberAnimLevel != SS_MEDIUM)
 			anim = BOTH_SABERFAST_STANCE;
 		else
 			anim = BOTH_STAND2;

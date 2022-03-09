@@ -114,6 +114,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/NPC_sounds.cpp"
 	"${SPDir}/game/NPC_spawn.cpp"
 	"${SPDir}/game/NPC_stats.cpp"
+	"${SPDir}/game/NPC_SWGL.h"
 	"${SPDir}/game/NPC_utils.cpp"
 	"${SPDir}/game/Q3_Interface.h"
 	"${SPDir}/game/wp_atst.cpp"

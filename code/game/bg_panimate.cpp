@@ -37,6 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 
 extern pmove_t	*pm;
 extern pml_t	pml;
@@ -5520,7 +5521,7 @@ qboolean NoSaberTwirlCharacter(gentity_t* ent)
 	}
 	else
 	{
-		if (!Q_stricmp("ep3_vader", ent->NPC_type)
+		if (!Q_stricmp(EP3_VADER, ent->NPC_type)
 			|| !Q_stricmp("ben_kenobi", ent->NPC_type)
 			|| !Q_stricmp("darth_vader", ent->NPC_type)
 			|| !Q_stricmp("anakin_apprentice", ent->NPC_type))
