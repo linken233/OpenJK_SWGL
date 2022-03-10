@@ -380,6 +380,7 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		case MOD_ROCKET_ALT:
 		case MOD_CONC:
 		case MOD_CONC_ALT:
+		case MOD_HIGH_POWERED_SHOT:
 			return qtrue;
 			break;
 		//non-alt standard

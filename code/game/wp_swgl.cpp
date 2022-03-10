@@ -56,6 +56,20 @@ static void is_player_alt_firing(gentity_t *ent, weapon_t weapon_num, qboolean *
 	}
 }
 
+// If you have a high powered shot switch
+// the MOD to play the disintegration effect and 
+// let there be no knockback so the effect can
+// fully play out.
+static void check_means_of_death(gentity_t *ent, gentity_t *missile, weapon_t weapon_num)
+{
+	if (weaponData[weapon_num].tertiaryFireOpt[FIRING_TYPE] == FT_HIGH_POWERED
+		&& ent->client->ps.tertiaryMode)
+	{
+		missile->dflags = DAMAGE_NO_KNOCKBACK;
+		missile->methodOfDeath = MOD_HIGH_POWERED_SHOT;
+	}
+}
+
 //---------------
 //	E-5 Carbine
 //---------------
@@ -114,18 +128,9 @@ void WP_FireBattleDroidMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_BLASTER_ALT;
@@ -134,10 +139,13 @@ void WP_FireBattleDroidMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 	{
 		missile->methodOfDeath = MOD_BLASTER;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_BATTLEDROID);
 }
 
 //---------------------------------------------------------
@@ -246,18 +254,9 @@ void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_BLASTER_ALT;
@@ -266,10 +265,13 @@ void WP_FireFirstOrderMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 	{
 		missile->methodOfDeath = MOD_BLASTER;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_THEFIRSTORDER);
 }
 
 //---------------------------------------------------------
@@ -395,18 +397,9 @@ void WP_FireCloneCarbineMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboole
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_BLASTER_ALT;
@@ -415,10 +408,13 @@ void WP_FireCloneCarbineMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboole
 	{
 		missile->methodOfDeath = MOD_BLASTER;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_CLONECARBINE);
 }
 
 //---------------------------------------------------------
@@ -527,18 +523,9 @@ void WP_FireRebelBlasterMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboole
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_REBELBLASTER_ALT;
@@ -547,10 +534,13 @@ void WP_FireRebelBlasterMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboole
 	{
 		missile->methodOfDeath = MOD_REBELBLASTER;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_REBELBLASTER);
 }
 
 //---------------------------------------------------------
@@ -673,18 +663,9 @@ void WP_FireCloneRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_CLONERIFLE_ALT;
@@ -693,10 +674,13 @@ void WP_FireCloneRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 	{
 		missile->methodOfDeath = MOD_CLONERIFLE;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_CLONERIFLE);
 }
 
 //---------------------------------------------------------
@@ -920,18 +904,9 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		VectorSet(missile->maxs, CLONECOMMANDO_ALT_SIZE, CLONECOMMANDO_ALT_SIZE, CLONECOMMANDO_ALT_SIZE);
@@ -950,6 +925,7 @@ void WP_FireCloneCommandoMissile(gentity_t *ent, vec3_t start, vec3_t dir, qbool
 	{
 		missile->methodOfDeath = MOD_CLONECOMMANDO;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
@@ -1067,18 +1043,9 @@ void WP_FireRebelRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_REBELRIFLE_ALT;
@@ -1087,10 +1054,13 @@ void WP_FireRebelRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 	{
 		missile->methodOfDeath = MOD_REBELRIFLE;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_REBELRIFLE);
 }
 
 //---------------------------------------------------------
@@ -1237,13 +1207,6 @@ void WP_FireReyPistol( gentity_t *ent, qboolean alt_fire )
 		missile->count = count; // this will get used in the projectile rendering code to make a beefier effect
 	}
 
-//	if ( ent->client && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-//	{
-//		// in overcharge mode, so doing double damage
-//		missile->flags |= FL_OVERCHARGED;
-//		damage *= 2;
-//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 
@@ -1260,6 +1223,8 @@ void WP_FireReyPistol( gentity_t *ent, qboolean alt_fire )
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_REY);
 
 	if ( ent->weaponModel[1] > 0 )
 	{//dual pistols, toggle the muzzle point back and forth between the two pistols each time he fires
@@ -1325,18 +1290,9 @@ void WP_FireJangoPistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 		}
 	}
 
-	//	if ( ent->client )
-	//	{
-	//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-	//		{
-	//			// in overcharge mode, so doing double damage
-	//			missile->flags |= FL_OVERCHARGED;
-	//			damage *= 2;
-	//		}
-	//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
 	if (altFire)
 	{
 		missile->methodOfDeath = MOD_JANGO_ALT;
@@ -1345,10 +1301,13 @@ void WP_FireJangoPistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 	{
 		missile->methodOfDeath = MOD_JANGO;
 	}
+
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+	
+	check_means_of_death(ent, missile, WP_JANGO);
 
 	if (ent->weaponModel[1] > 0)
 	{
@@ -1462,32 +1421,15 @@ void WP_FireBobaRifleMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 		}
 	}
 
-//	if ( ent->client )
-//	{
-//		if ( ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > 0 && ent->client->ps.powerups[PW_WEAPON_OVERCHARGE] > cg.time )
-//		{
-//			// in overcharge mode, so doing double damage
-//			missile->flags |= FL_OVERCHARGED;
-//			damage *= 2;
-//		}
-//	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-
-/*	if (altFire)
-	{
-		missile->methodOfDeath = MOD_BOBA_ALT;
-	}
-	else*/
-//	{
-		missile->methodOfDeath = MOD_BOBA;
-//	}
-
+	missile->methodOfDeath = MOD_BOBA;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// we don't want it to bounce forever
-	missile->bounceCount = 8;	
+	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_BOBA);
 }
 
 //---------------------------------------------------------
@@ -1637,6 +1579,8 @@ void WP_FireClonePistolMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolea
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	check_means_of_death(ent, missile, WP_CLONEPISTOL);
 
 	if (ent->weaponModel[1] > 0)
 	{

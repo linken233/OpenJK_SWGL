@@ -3677,7 +3677,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	int			cliff_fall = 0;
 
 	//FIXME: somehow people are sometimes not completely dying???
-	if ( self->client->ps.pm_type == PM_DEAD && ((meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION) || (self->flags & FL_DISINTEGRATED)) )
+	if ( self->client->ps.pm_type == PM_DEAD && ((meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION && meansOfDeath != MOD_HIGH_POWERED_SHOT)
+		|| (self->flags & FL_DISINTEGRATED)) )
 	{//do dismemberment/twitching
 		if ( self->client->NPC_class == CLASS_MARK1 )
 		{
@@ -4140,7 +4141,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		TossClientItems( self );
 	}
 
-	if ( meansOfDeath == MOD_SNIPER || meansOfDeath == MOD_DESTRUCTION )
+	if ( meansOfDeath == MOD_SNIPER || meansOfDeath == MOD_DESTRUCTION 
+		|| meansOfDeath == MOD_HIGH_POWERED_SHOT)
 	{//I was disintegrated
 		if ( self->message )
 		{//I was holding a key
@@ -4264,7 +4266,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			NPC_SetAnim( self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		}
 	}
-	else if ( self->s.number && self->message && meansOfDeath != MOD_SNIPER )
+	else if ( self->s.number && self->message && meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_HIGH_POWERED_SHOT )
 	{//imp with a key on his arm
 		//pick a death anim that leaves key visible
 		switch ( Q_irand( 0, 3 ) )
@@ -4376,8 +4378,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{//drowned
 				anim = BOTH_DEATH17;
 			}
-			else if ( (meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION) //disintegrates
-				&& meansOfDeath != MOD_CONC_ALT )//does its own death throw
+			else if (meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION //disintegrates
+				&& meansOfDeath != MOD_CONC_ALT && meansOfDeath != MOD_HIGH_POWERED_SHOT)//does its own death throw
 			{
 				cliff_fall = G_CheckLedgeDive( self, 128, self->client->ps.velocity, qtrue, qfalse );
 				if ( cliff_fall == 2 )
@@ -4568,7 +4570,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			}
 		}
 		else if ( meansOfDeath == MOD_SNIPER 
-			|| (meansOfDeath == MOD_DESTRUCTION))
+			|| meansOfDeath == MOD_DESTRUCTION
+			|| meansOfDeath == MOD_HIGH_POWERED_SHOT)
 		{
 			gentity_t	*tent;
 			vec3_t		spot;
@@ -5608,7 +5611,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	if ( targ->health <= 0 && !targ->client )
 	{	// allow corpses to be disintegrated
-		if( (mod != MOD_SNIPER && mod != MOD_DESTRUCTION) || (targ->flags & FL_DISINTEGRATED))
+		if( (mod != MOD_SNIPER && mod != MOD_DESTRUCTION && mod != MOD_HIGH_POWERED_SHOT) || (targ->flags & FL_DISINTEGRATED))
 		return;
 	}
 
@@ -6064,6 +6067,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_LAVA:
 				case MOD_FALLING:
 				case MOD_MELEE:
+				case MOD_HIGH_POWERED_SHOT:
 					doSound = (qboolean)(Q_irand(0,4)==0);
 					switch ( targ->client->ps.forcePowerLevel[FP_PROTECT] )
 					{
