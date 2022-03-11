@@ -213,10 +213,10 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		{
 			ent->client->ps.forcePowerMax = atoi(args);
 
-			// Such a big number it turns negative
-			if (ent->client->ps.forcePowerMax < 0)
+			// Such a big number it turns negative 
+			if (ent->client->ps.forcePowerMax < 0 || ent->client->ps.forcePowerMax > 10000000)
 			{
-				ent->client->ps.forcePowerMax = 715827882;
+				ent->client->ps.forcePowerMax = 10000000;
 			}
 
 			ent->client->ps.forcePower = Com_Clampi(0, ent->client->ps.forcePowerMax, atoi(args));
@@ -315,6 +315,30 @@ void Cmd_Give_f( gentity_t *ent )
 	G_Give( ent, gi.argv(1), ConcatArgs( 2 ), gi.argc() );
 }
 
+void Cmd_ForceRegen_f( gentity_t* ent )
+{
+	if (!CheatsOk(ent)) 
+	{
+		return;
+	}
+	int amt = atoi(gi.argv(1));
+	
+	if(!amt)
+	{
+		gi.SendServerCommand(0, "print \"Usage: setForceRegen <number> \nDefault value is 100\nThe lower the value, the faster your force will regenerate\n\"");
+		return;
+	}
+
+	if (amt > 0)
+	{
+		player->client->ps.forcePowerRegenRate = amt;
+	}
+	else
+	{
+		gi.SendServerCommand(0, "print \"Invalid number, please input a number larger than 0\n\"");
+	}
+	return;
+}
 //------------------
 void Cmd_Fx( gentity_t *ent )
 {
@@ -575,6 +599,7 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 
 	gi.SendServerCommand( ent-g_entities, "print \"%s\"", msg);
 }
+
 
 
 /*
@@ -1455,6 +1480,8 @@ void ClientCommand( int clientNum ) {
 		Cmd_Undying_f (ent);
 	else if (Q_stricmp (cmd, "notarget") == 0)
 		Cmd_Notarget_f (ent);
+	else if (Q_stricmp(cmd, "setForceRegen") == 0)
+			Cmd_ForceRegen_f(ent);
 	else if (Q_stricmp (cmd, "noclip") == 0)
 	{
 		Cmd_Noclip_f (ent);

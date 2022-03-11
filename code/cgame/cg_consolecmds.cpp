@@ -319,6 +319,7 @@ static const char *gcmds[] = {
 	"scale",
 	"secrets",
 	"setForceAll",
+	"setForceRegen",
 	"setSaberAll",
 	"setobjective",
 	"setviewpos",
