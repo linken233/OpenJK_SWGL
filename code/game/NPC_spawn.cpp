@@ -54,7 +54,7 @@ extern void NPC_GalakMech_Init(gentity_t* ent);
 
 #define	NSF_DROP_TO_FLOOR	16
 
-gentity_t* traya;
+gentity_t* traya = NULL;
 
 
 /*
