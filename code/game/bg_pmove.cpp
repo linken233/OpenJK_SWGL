@@ -8763,7 +8763,7 @@ qboolean CasualWalker(pmove_t *pm)
 	else
 	{
 		// Lord Vader only does a casual walk with specific styles
-		if (((!Q_stricmp(EP3_VADER, ent->NPC_type) || !Q_stricmp("anakin_apprentice", ent->NPC_type))
+		if (((!Q_stricmp(EP3_VADER, ent->NPC_type) || !Q_stricmp(ANAKIN_INFINITIES, ent->NPC_type))
 			&& (pm->ps->saberAnimLevel == SS_DESANN
 				|| pm->ps->saberAnimLevel == SS_TAVION
 				|| pm->ps->saberAnimLevel == SS_FAST)))

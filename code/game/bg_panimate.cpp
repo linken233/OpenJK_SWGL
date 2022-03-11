@@ -5522,9 +5522,9 @@ qboolean NoSaberTwirlCharacter(gentity_t* ent)
 	else
 	{
 		if (!Q_stricmp(EP3_VADER, ent->NPC_type)
-			|| !Q_stricmp("ben_kenobi", ent->NPC_type)
-			|| !Q_stricmp("darth_vader", ent->NPC_type)
-			|| !Q_stricmp("anakin_apprentice", ent->NPC_type))
+			|| !Q_stricmp(BEN_KENOBI, ent->NPC_type)
+			|| !Q_stricmp(VADER, ent->NPC_type)
+			|| !Q_stricmp(ANAKIN_INFINITIES, ent->NPC_type))
 			return qtrue;
 	}
 

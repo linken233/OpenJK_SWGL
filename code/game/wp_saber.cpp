@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "../qcommon/tri_coll_test.h"
 #include "../cgame/cg_local.h"
+#include "NPC_SWGL.h"
 
 #define JK2_RAGDOLL_GRIPNOHEALTH
 
@@ -6705,11 +6706,11 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 		if ( thrown )
 		{
 			// Only inquisitors should do this, not the player or anyone else
-			if (self != player && (!Q_stricmp("Grand_Inquisitor", self->NPC_type)
-				|| !Q_stricmp("Second_Sister", self->NPC_type)
-				|| !Q_stricmp("Fifth_Brother", self->NPC_type)
-				|| !Q_stricmp("Seventh_Sister", self->NPC_type)
-				|| !Q_stricmp("Eighth_Brother", self->NPC_type)))
+			if (self != player && (!Q_stricmp(GRAND_INQ, self->NPC_type)
+				|| !Q_stricmp(SECOND_SIS, self->NPC_type)
+				|| !Q_stricmp(FIFTH_BRO, self->NPC_type)
+				|| !Q_stricmp(SEVENTH_SIS, self->NPC_type)
+				|| !Q_stricmp(EIGHTH_BRO, self->NPC_type)))
 			{
 				// Inquisitor sabers should switch to staff when thrown
 				if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))
@@ -11115,17 +11116,16 @@ qboolean IsKnightfallBoss(gentity_t *ent)
 	if (IsPlayingOperationKnightfall())
 	{
 		// These NPCs are knightfall bosses
-		if (!Q_stricmp("Cin_Drallig", ent->NPC_type)
-			|| !Q_stricmp("Serra_Keto", ent->NPC_type)
-			|| !Q_stricmp("Shakkra_Kien", ent->NPC_type)
-			|| !Q_stricmp("Shaak_Ti", ent->NPC_type)
-			|| !Q_stricmp("Koffi_Arana", ent->NPC_type)
-			|| !Q_stricmp("Bultar_Swan", ent->NPC_type)
-			|| !Q_stricmp("Yaddle", ent->NPC_type)
-			|| !Q_stricmp("Sora_Bulq", ent->NPC_type)
-			|| !Q_stricmp("Shakkra_Kien", ent->NPC_type)
-			|| !Q_stricmp("Tera_Sinube", ent->NPC_type)
-			|| !Q_stricmp("Pablo-Jill", ent->NPC_type))
+		if (!Q_stricmp(CIN_DRALLIG, ent->NPC_type)
+			|| !Q_stricmp(SERRA_KETO, ent->NPC_type)
+			|| !Q_stricmp(SHAKKRA_KIEN, ent->NPC_type)
+			|| !Q_stricmp(SHAAK_TI, ent->NPC_type)
+			|| !Q_stricmp(KOFFI_ARANA, ent->NPC_type)
+			|| !Q_stricmp(BULTAR_SWAN, ent->NPC_type)
+			|| !Q_stricmp(YADDLE, ent->NPC_type)
+			|| !Q_stricmp(SORA_BULQ, ent->NPC_type)
+			|| !Q_stricmp(TERA_SINUBE, ent->NPC_type)
+			|| !Q_stricmp(PABLO_JILL, ent->NPC_type))
 			return qtrue;
 	
 	}

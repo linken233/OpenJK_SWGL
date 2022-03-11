@@ -1,7 +1,114 @@
 #ifndef NPC_SWGL_H
 #define NPC_SWGL_H
 
-#define EP3_VADER "ep3_vader"
+// Old Republic
 
+
+
+// Sith Empire
+#define VITIATE "vitiate"
+#define NIHILUS "Darth_Nihilus"
+#define SION "Darth_Sion"
+#define SION_TFU "Darth_Sion_TFU"
+#define TRAYA "Darth_Traya"
+
+
+
+// Galactic Republic
+#define BULTAR_SWAN "Bultar_Swan"
+#define CIN_DRALLIG "Cin_Drallig"
+#define KOFFI_ARANA	"Koffi_Arana"
+#define EP3_VADER "ep3_vader"
+#define PABLO_JILL "Pablo-Jill"
+#define SERRA_KETO "Serra_Keto"
+#define SHAAK_TI "Shaak_Ti"
+#define SORA_BULQ "Sora_Bulq"
+#define TERA_SINUBE "Tera_Sinube"
+#define YADDLE "Yaddle"
+#define YODA "yoda"
+
+
+
+// Separatists
+#define DOOKU "Count_Dooku"
+
+
+
+// Rebellion
+#define BEN_KENOBI "ben_kenobi"
+#define K2SO "k-2so"
+
+
+
+
+// Empire
+#define DEATH_TROOPER "Death_Trooper"
+#define EMPEROR_PALPATINE "Emperor_Palpatine"
+#define KX_DROID "kx_droid"
+#define GRAND_INQ "Grand_Inquisitor"
+#define SECOND_SIS "Second_Sister"
+#define SEVENTH_SIS "Seventh_Sister"
+#define FIFTH_BRO "Fifth_Brother"
+#define EIGHTH_BRO "Eighth_Brother"
+#define GORC "Gorc"
+#define ISB_F "isb_agent_f"
+#define ISB_M "isb_agent_m"
+#define PURGE_TROOPER "Purge_Trooper"
+#define PURGE_BATONS "Purge_Trooper_Batons"
+#define PURGE_COMMANDER "Purge_Trooper_Commander"
+#define REBORN_ELITE "rebornelite"
+#define REBORN_ELITE_D "rebornelitedual"
+#define REBORN_ELITE_S "rebornelitestaff"
+#define ST_SHADOW "st_shadowtrooper"
+#define SHOCK_TROOPER "Imperial_Shock_Trooper"
+#define VADER "Darth_Vader"
+
+
+
+// Resistance
+
+
+
+// First Order
+#define SEE_PALPATINE "Sith_Eternal_Palpatine"
+#define SNOKE "Snoke"
+#define PHASMA "Captain_Phasma"
+
+
+
+// Bounty Hunter
+#define IG86 "ig-86"
+
+
+
+// Criminals
+#define GAMORREAN "Gamorrean"
+#define TRANDO_RC "trandoshan_rc"
+#define TRANDO_MERC "trandoshan_merc"
+#define TRANDO_ELITE "trandoshan_elite"
+
+
+
+// Civilians
+#define NOGHRI_BERSERKER "Noghri_Berserker"
+
+
+// Mandalorians
+#define MANDALORIAN "Mandalorian"
+
+
+
+// Force Users
+#define CAL_KESTIS "Cal_Kestis"
+#define VALKORION "valkorion"
+
+// Infinities
+#define ANAKIN_INFINITIES "anakin_apprentice"
+#define SHAKKRA_KIEN "Shakkra_Kien"
+#define STALKER "Sith_Stalker"
+#define CYBER_RECON "Cybernetic_Reconstruction"
+#define LORD_STK "Lord_Starkiller"
+#define LORD_STK_TAT "Lord_Starkiller_Tatooine"
+#define WONKA "Wilbur_Wonka"
 
 #endif /* NPC_SWGL_H */

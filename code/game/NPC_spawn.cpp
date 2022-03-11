@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 #include <ctime>
 
 extern qboolean G_CheckInSolid(gentity_t *self, qboolean fix);
@@ -52,6 +53,8 @@ extern void Howler_ClearTimers(gentity_t *self);
 extern void NPC_GalakMech_Init(gentity_t* ent);
 
 #define	NSF_DROP_TO_FLOOR	16
+
+gentity_t* traya;
 
 
 /*
@@ -325,11 +328,11 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			ent->behaviorSet[BSET_DEATH] = NULL;
 		}
 	}
-	else if (!Q_stricmp("purge_trooper_commander", ent->NPC_type))
+	else if (!Q_stricmp(PURGE_COMMANDER, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
 	}
-	else if (!Q_stricmp("ig-86", ent->NPC_type))
+	else if (!Q_stricmp(IG86, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
 	}
@@ -337,7 +340,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 	}
-	else if (!Q_stricmp("isb_agent_m", ent->NPC_type))
+	else if (!Q_stricmp(ISB_M, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 	}
@@ -345,35 +348,40 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 	}
-	else if (!Q_stricmp("Darth_Vader", ent->NPC_type))
+	else if (!Q_stricmp(VADER, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
 		NPC_Vader_ClearTimers(ent);
 	}
-	else if (!Q_stricmp("Gorc", ent->NPC_type))
+	else if (!Q_stricmp(TRAYA, ent->NPC_type))
+	{
+		//ent->NPC->scriptFlags |= NPC_TRAYA;
+		traya = ent;
+	}
+	else if (!Q_stricmp(GORC, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
 	}
-	else if (!Q_stricmp("Sith_Stalker", ent->NPC_type)
-		|| !Q_stricmp("Cybernetic_Reconstruction", ent->NPC_type)
-		|| !Q_stricmp("Lord_Starkiller", ent->NPC_type)
-		|| !Q_stricmp("Lord_Starkiller_Tatooine", ent->NPC_type))
+	else if (!Q_stricmp(STALKER, ent->NPC_type)
+		|| !Q_stricmp(CYBER_RECON, ent->NPC_type)
+		|| !Q_stricmp(LORD_STK, ent->NPC_type)
+		|| !Q_stricmp(LORD_STK_TAT, ent->NPC_type))
 	{
 		NPC_Vader_ClearTimers(ent); // For breathing
 	}
-	else if (!Q_stricmp("Cal_Kestis", ent->NPC_type))
+	else if (!Q_stricmp(CAL_KESTIS, ent->NPC_type))
 	{
 		NPC_Kestis_ClearTimers(ent);
 	}
-	else if (!Q_stricmp("Grand_Inquisitor", ent->NPC_type)
-		|| !Q_stricmp("Second_Sister", ent->NPC_type)
-		|| !Q_stricmp("Fifth_Brother", ent->NPC_type)
-		|| !Q_stricmp("Seventh_Sister", ent->NPC_type)
-		|| !Q_stricmp("Eighth_Brother", ent->NPC_type))
+	else if (!Q_stricmp(GRAND_INQ, ent->NPC_type)
+		|| !Q_stricmp(SECOND_SIS, ent->NPC_type)
+		|| !Q_stricmp(FIFTH_BRO, ent->NPC_type)
+		|| !Q_stricmp(SEVENTH_SIS, ent->NPC_type)
+		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type))
 	{
 		NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}
-	else if (!Q_stricmp("Darth_Sion", ent->NPC_type) || !Q_stricmp("Darth_Sion_TFU", ent->NPC_type))
+	else if (!Q_stricmp(SION, ent->NPC_type) || !Q_stricmp(SION_TFU, ent->NPC_type))
 	{
 		NPC->flags |= FL_UNDYING; // Sion is the lord of pain, he won't die immediately
 		ent->client->dismembered = qfalse;
@@ -460,16 +468,16 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
 	}
-	if (!Q_stricmp("Valkorion", ent->NPC_type) ||
-		!Q_stricmp("Snoke", ent->NPC_type) ||
-		!Q_stricmp("Vitiate", ent->NPC_type) ||
-		!Q_stricmp("Emperor_Palpatine", ent->NPC_type) ||
-		!Q_stricmp("Sith_Eternal_Palpatine", ent->NPC_type))
+	if (!Q_stricmp(VALKORION, ent->NPC_type) ||
+		!Q_stricmp(SNOKE, ent->NPC_type) ||
+		!Q_stricmp(VITIATE, ent->NPC_type) ||
+		!Q_stricmp(EMPEROR_PALPATINE, ent->NPC_type) ||
+		!Q_stricmp(SEE_PALPATINE, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
 		ent->flags |= FL_SHIELDED;
 	}
-	if (!Q_stricmp("Captain_Phasma", ent->NPC_type))
+	if (!Q_stricmp(PHASMA, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 		ent->flags |= FL_SHIELDED;
@@ -488,8 +496,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		ent->NPC->ignorePain = qtrue;
 	}
 	if (!Q_stricmp("chewie", ent->NPC_type)
-		|| !Q_stricmp("k-2so", ent->NPC_type)
-		|| !Q_stricmp("kx_droid", ent->NPC_type))
+		|| !Q_stricmp(K2SO, ent->NPC_type)
+		|| !Q_stricmp(KX_DROID, ent->NPC_type))
 	{
 		//in case chewie ever loses his gun...
 		// KX droids are pretty hands-on
@@ -1841,14 +1849,14 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 	}
 
 	newent->classname = "NPC";
-	if (!Q_stricmp(ent->NPC_type, "Count_Dooku"))
+	if (!Q_stricmp(ent->NPC_type, DOOKU))
 	{
 		std::time_t tp = std::time(NULL);
 
 		std::tm* ts = std::localtime(&tp);
 		if (ts->tm_mon == 3 && ts->tm_mday == 1)
 		{
-			ent->NPC_type = "Wilbur_Wonka";
+			ent->NPC_type = WONKA;
 		}
 	}
 	newent->NPC_skin = G_NewString(ent->NPC_skin);
@@ -3421,18 +3429,18 @@ void SP_NPC_Human_Merc(gentity_t *self)
 				{
 				case 0:
 				case 1:
-					self->NPC_type = "trandoshan_rc";
+					self->NPC_type = TRANDO_RC;
 					break;
 				case 2:
 				case 3:
-					self->NPC_type = "trandoshan_merc";
+					self->NPC_type = TRANDO_MERC;
 					break;
 				case 4:
 				case 5:
 					self->NPC_type = "human_merc_bow";
 					break;
 				case 6:
-					self->NPC_type = "trandoshan_elite";
+					self->NPC_type = TRANDO_ELITE;
 					break;
 				default:
 					self->NPC_type = "human_merc_bow";
@@ -3457,10 +3465,10 @@ void SP_NPC_Human_Merc(gentity_t *self)
 					self->NPC_type = "human_merc_rep";
 					break;
 				case 1:
-					self->NPC_type = "IG-86";
+					self->NPC_type = IG86;
 					break;
 				case 2:
-					self->NPC_type = "Gamorrean";
+					self->NPC_type = GAMORREAN;
 					break;
 				default:
 					self->NPC_type = "human_merc_rep";
@@ -3485,7 +3493,7 @@ void SP_NPC_Human_Merc(gentity_t *self)
 					self->NPC_type = "human_merc_rep";
 					break;
 				case 2:
-					self->NPC_type = "Mandalorian";
+					self->NPC_type = MANDALORIAN;
 					break;
 				default:
 					self->NPC_type = "human_merc_flc";
@@ -3506,7 +3514,7 @@ void SP_NPC_Human_Merc(gentity_t *self)
 					self->NPC_type = "human_merc_cnc";
 					break;
 				case 1:
-					self->NPC_type = "Mandalorian";
+					self->NPC_type = MANDALORIAN;
 					break;
 				default:
 					self->NPC_type = "human_merc_cnc";
@@ -3561,10 +3569,10 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stofficeralt";
 					break;
 				case 1:
-					self->NPC_type = "purge_trooper";
+					self->NPC_type = PURGE_TROOPER;
 					break;
 				case 2:
-					self->NPC_type = "death_trooper";
+					self->NPC_type = DEATH_TROOPER;
 					break;
 
 				default:
@@ -3588,13 +3596,13 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stcommander";
 					break;
 				case 1:
-					self->NPC_type = "purge_trooper";
+					self->NPC_type = PURGE_TROOPER;
 					break;
 				case 2:
-					self->NPC_type = "Purge_Trooper_Batons";
+					self->NPC_type = PURGE_BATONS;
 					break;
 				case 3:
-					self->NPC_type = "purge_trooper_commander";
+					self->NPC_type = PURGE_COMMANDER;
 					break;
 
 				default:
@@ -3619,13 +3627,13 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stofficer";
 					break;
 				case 1:
-					self->NPC_type = "purge_trooper";
+					self->NPC_type = PURGE_TROOPER;
 					break;
 				case 2:
-					self->NPC_type = "Purge_Trooper_Batons";
+					self->NPC_type = PURGE_BATONS;
 					break;
 				case 3:
-					self->NPC_type = "purge_trooper_commander";
+					self->NPC_type = PURGE_COMMANDER;
 					break;
 
 				default:
@@ -3661,7 +3669,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stormtrooper2";
 					break;
 				case 2:
-					self->NPC_type = "Imperial_Shock_Trooper";
+					self->NPC_type = SHOCK_TROOPER;
 					break;
 				default:
 					self->NPC_type = "stormtrooper";
@@ -3737,10 +3745,10 @@ void SP_NPC_Tie_Pilot(gentity_t *self)
 			self->NPC_type = "stormpilot";
 			break;
 		case 1:
-			self->NPC_type = "ISB_Agent_F";
+			self->NPC_type = ISB_F;
 			break;
 		case 2:
-			self->NPC_type = "ISB_Agent_M";
+			self->NPC_type = ISB_M;
 			break;
 
 		default:
@@ -3961,11 +3969,11 @@ void SP_NPC_Rodian(gentity_t *self)
 					break;
 
 				case 1:
-					self->NPC_type = "Gamorrean";
+					self->NPC_type = GAMORREAN;
 					break;
 
 				case 2:
-					self->NPC_type = "IG-86";
+					self->NPC_type = IG86;
 					break;
 
 				default:
@@ -4079,7 +4087,7 @@ void SP_NPC_Noghri(gentity_t *self)
 				self->NPC_type = "noghri";
 				break;
 			case 1:
-				self->NPC_type = "noghri_berserker";
+				self->NPC_type = NOGHRI_BERSERKER;
 				break;
 			default:
 				self->NPC_type = "noghri";
@@ -4152,7 +4160,7 @@ void SP_NPC_Imperial(gentity_t *self)
 					self->NPC_type = "reborn";
 					break;
 				case 2:
-					self->NPC_type = "death_trooper";
+					self->NPC_type = DEATH_TROOPER;
 					break;
 
 				default:
@@ -4236,10 +4244,10 @@ void SP_NPC_ImpWorker(gentity_t *self)
 			self->NPC_type = "impworker";
 			break;
 		case 1:
-			self->NPC_type = "kx_droid";
+			self->NPC_type = KX_DROID;
 			break;
 		case 2:
-			self->NPC_type = "death_trooper";
+			self->NPC_type = DEATH_TROOPER;
 			break;
 		default:
 			self->NPC_type = "impworker";
@@ -4329,13 +4337,13 @@ void SP_NPC_Reborn(gentity_t *self)
 				self->NPC_type = "rebornboss";
 				break;
 			case 1:
-				self->NPC_type = "rebornelite";
+				self->NPC_type = REBORN_ELITE;
 				break;
 			case 2:
-				self->NPC_type = "rebornelitedual";
+				self->NPC_type = REBORN_ELITE_D;
 				break;
 			case 3:
-				self->NPC_type = "rebornelitestaff";
+				self->NPC_type = REBORN_ELITE_S;
 				break;
 			default:
 				self->NPC_type = "rebornboss";
@@ -4542,7 +4550,7 @@ void SP_NPC_Cultist_Saber(gentity_t *self)
 					self->NPC_type = "rebornboss";
 					break;
 				case 2:
-					self->NPC_type = "purge_trooper";
+					self->NPC_type = PURGE_TROOPER;
 					break;
 				default:
 					self->NPC_type = "cultist_saber_all_throw";
@@ -4638,7 +4646,7 @@ void SP_NPC_Cultist_Saber_Powers(gentity_t *self)
 				self->NPC_type = "rebornboss";
 				break;
 			case 2:
-				self->NPC_type = "purge_trooper";
+				self->NPC_type = PURGE_TROOPER;
 				break;
 			default:
 				self->NPC_type = "cultist_saber_all_throw2";
@@ -4860,7 +4868,7 @@ void SP_NPC_Saboteur(gentity_t *self)
 				self->NPC_type = "saboteursniper";
 				break;
 			case 4:
-				self->NPC_type = "st_shadowtrooper";
+				self->NPC_type = ST_SHADOW;
 				break;
 			default:
 				self->NPC_type = "saboteur";

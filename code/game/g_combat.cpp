@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "Q3_Interface.h"
 #include "g_navigator.h"
+#include "NPC_SWGL.h"
 
 #define TURN_OFF			0x00000100
 
@@ -52,6 +53,9 @@ extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_dismemberProbabilities;
 
 gentity_t *g_lastClientDamaged;
+
+
+extern gentity_t* traya;
 
 extern int killPlayerTimer;
 
@@ -5592,7 +5596,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	gclient_t	*client;
 	int			take;
 	int			asave = 0;
-	int			knockback;
+	int			knockback; 
 	vec3_t		newDir;
 	qboolean	alreadyDead = qfalse;
 
@@ -5608,7 +5612,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			return;
 		}
 	}
-
+	
 	if ( targ->health <= 0 && !targ->client )
 	{	// allow corpses to be disintegrated
 		if( (mod != MOD_SNIPER && mod != MOD_DESTRUCTION && mod != MOD_HIGH_POWERED_SHOT) || (targ->flags & FL_DISINTEGRATED))
@@ -5723,6 +5727,26 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		attacker = &g_entities[ENTITYNUM_WORLD];
 	}
 
+	// Traya gains strength while her allies suffer.
+	if (traya &&
+		targ->client->playerTeam == traya->client->playerTeam
+		&& traya->client->playerTeam != TEAM_SOLO)
+	{
+		if (traya->health > 0 && traya->health <= 2000000000)
+		{
+			if (!Q_stricmp(NIHILUS, targ->NPC_type)
+				|| !Q_stricmp(SION, targ->NPC_type)
+				|| !Q_stricmp(SION_TFU, targ->NPC_type))
+			{
+				traya->health += damage;
+			}
+			else
+			{
+				traya->health += 5;
+			}
+		}
+	}
+
 	// no more weakling allies!
 //	if ( attacker->s.number != 0 && damage >= 2 && targ->s.number != 0 && attacker->client && attacker->client->playerTeam == TEAM_PLAYER )
 //	{//player-helpers do only half damage to enemies
@@ -5764,6 +5788,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		if ( (targ->flags&FL_GODMODE) || (targ->flags&FL_UNDYING) )
 		{//have god or undying on, so ignore no protection flag
 			dflags &= ~DAMAGE_NO_PROTECTION;
+		}
+	}
+
+	// Traya doesn't approve of her enemies fighting in a team. She'll punish any attacker who is not her active enemy (doesn't care if the enemy is TEAM_SOLO)
+	if (traya
+		&& traya == targ)
+	{
+		if (attacker
+			&& attacker->client
+			&& traya->enemy
+			&& (attacker != targ->enemy)
+			&& ((attacker->client->playerTeam == traya->enemy->client->playerTeam && traya->enemy->client->playerTeam != TEAM_SOLO)))
+		{
+			if(!Q_irand(0,2))
+				G_Damage(attacker, targ, targ, 0, 0, Q_irand(1,3), DAMAGE_NO_KILL, MOD_GAS, HL_CHEST);
 		}
 	}
 
@@ -6807,8 +6846,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 							G_ActivateBehavior( targ, BSET_DEATH );
 						}
 						targ->health = 1;
-						if (!Q_stricmp("Darth_Sion", targ->NPC_type)
-							|| !Q_stricmp("Darth_Sion_TFU", targ->NPC_type))
+						if (!Q_stricmp(SION, targ->NPC_type)
+							|| !Q_stricmp(SION_TFU, targ->NPC_type))
 						{
 							NPC_SetAnim(targ, SETANIM_BOTH, BOTH_FORCE_RAGE, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
 							targ->health = ((targ->max_health/(Q_irand(1,4)))+1);
