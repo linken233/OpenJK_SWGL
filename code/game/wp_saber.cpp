@@ -11092,19 +11092,19 @@ qboolean IsPlayingOperationKnightfall()
 	if (g_knightfall->integer)
 		return qtrue;
 
-	if (!strcmp(s, "ep3_ok_anakin_r1")
-		|| !strcmp(s, "ep3_ok_anakin_r2")
-		|| !strcmp(s, "ep3_ok_anakin_r3")
-		|| !strcmp(s, "ep3_ok_anakin_r4")
-		|| !strcmp(s, "ep3_ok_anakin_r5")
-		|| !strcmp(s, "ep3_ok_anakin_r6")
-		|| !strcmp(s, "ep3_ok_anakin_r7")
-		|| !strcmp(s, "ep3_ok_anakin_r8")
-		|| !strcmp(s, "ep3_ok_anakin_1")
-		|| !strcmp(s, "ep3_ok_anakin_2")
-		|| !strcmp(s, "ep3_ok_anakin_3")
-		|| !strcmp(s, "ep3_ok_anakin_4")
-		|| !strcmp(s, "ep3_ok_anakin_5")) //playing Knightfall
+	if (!Q_stricmp(s, "ep3_ok_anakin_r1")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r2")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r3")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r4")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r5")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r6")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r7")
+		|| !Q_stricmp(s, "ep3_ok_anakin_r8")
+		|| !Q_stricmp(s, "ep3_ok_anakin_1")
+		|| !Q_stricmp(s, "ep3_ok_anakin_2")
+		|| !Q_stricmp(s, "ep3_ok_anakin_3")
+		|| !Q_stricmp(s, "ep3_ok_anakin_4")
+		|| !Q_stricmp(s, "ep3_ok_anakin_5")) //playing Knightfall
 	{
 		return qtrue;
 	}

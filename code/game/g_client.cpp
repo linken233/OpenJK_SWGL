@@ -31,6 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "objectives.h"
 #include "b_local.h"
+#include "NPC_SWGL.h"
 
 extern int WP_SaberInitBladeData( gentity_t *ent );
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
@@ -2182,7 +2183,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		G_InitPlayerFromCvars( ent );
 		return;
 	}
-	if (Q_stricmp("Captain_Phasma", newModel) == 0)
+	if (Q_stricmp(PHASMA, newModel) == 0)
 	{
 		ent->flags |= FL_SHIELDED;
 	}

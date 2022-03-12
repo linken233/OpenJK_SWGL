@@ -5469,7 +5469,7 @@ static void NPC_Spawn_f(void)
 		}
 		else if (!Q_stricmp("health", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
 		{
-			NPCspawner->health = atoi(gi.argv(++spawnCommand));
+			NPCspawner->health = std::stoi(gi.argv(++spawnCommand));
 
 		}
 		else if (!Q_stricmp("snd", gi.argv(spawnCommand)) && gi.argv(spawnCommand + 1))
@@ -5513,14 +5513,14 @@ static void NPC_Spawn_f(void)
 		NPCspawner->NPC_team = G_NewString(team);
 	}
 
-	if (!Q_stricmp(NPCspawner->NPC_type, "Count_Dooku"))
+	if (!Q_stricmp(NPCspawner->NPC_type, DOOKU))
 	{
 		std::time_t tp = std::time(NULL);
 
 		std::tm* ts = std::localtime(&tp);
 		if (ts->tm_mon == 3 && ts->tm_mday == 1)
 		{
-			NPCspawner->NPC_type = "Wilbur_Wonka";
+			NPCspawner->NPC_type = WONKA;
 		}
 	}
 

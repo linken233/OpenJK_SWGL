@@ -40,7 +40,6 @@
 
 
 
-
 // Empire
 #define DEATH_TROOPER "Death_Trooper"
 #define EMPEROR_PALPATINE "Emperor_Palpatine"
@@ -93,6 +92,7 @@
 #define NOGHRI_BERSERKER "Noghri_Berserker"
 
 
+
 // Mandalorians
 #define MANDALORIAN "Mandalorian"
 
@@ -101,6 +101,8 @@
 // Force Users
 #define CAL_KESTIS "Cal_Kestis"
 #define VALKORION "valkorion"
+
+
 
 // Infinities
 #define ANAKIN_INFINITIES "anakin_apprentice"

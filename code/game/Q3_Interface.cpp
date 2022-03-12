@@ -42,6 +42,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_navigator.h"
 #include "qcommon/ojk_saved_game_helper.h"
 #include <ctime>
+#include "NPC_SWGL.h"
 
 extern	cvar_t	*com_buildScript;
 
@@ -9607,7 +9608,7 @@ extern void LockDoors(gentity_t *const ent);
 
 	case SET_SABER1:
 	case SET_SABER2:
-		if (!Q_stricmp(data, "Count_Dooku"))
+		if (!Q_stricmp(data, DOOKU))
 		{
 			std::time_t tp = std::time(NULL);
 

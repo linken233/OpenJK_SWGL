@@ -3741,7 +3741,9 @@ static void S_MenuMusic_f(void)
 			return;
 		}
 
-		int music_pick = Q_irand(0, 21);
+		// Using Q_irand(0, 21) always kept give us 9.
+		// Idk why, so I guess we will use rand().
+		int music_pick = rand() % 22;
 
 		switch (music_pick)
 		{
