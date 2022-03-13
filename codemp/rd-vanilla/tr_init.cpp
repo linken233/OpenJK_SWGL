@@ -284,7 +284,7 @@ void R_Splash()
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
 */	
-	// Using Q_irand(0, 4) always kept give us 2.
+	// Using Q_irand(0, 4) always kept giving us 2.
 	// Idk why, so I guess we will use rand().
 	int splashPick = rand() % 5;
 	switch (splashPick)

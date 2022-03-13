@@ -3724,7 +3724,6 @@ static void S_Music_f( void ) {
 
 static void S_MenuMusic_f(void) 
 {
-	
 	if (atoi(Cvar_VariableString("disableMusicRepeat")) != 1) 
 	{
 		std::time_t tp = std::time(NULL);
@@ -3734,14 +3733,23 @@ static void S_MenuMusic_f(void)
 		// April Fools day gets a special treat :)
 		if (ts->tm_mon == 3 && ts->tm_mday == 1)
 		{
-			if(!Q_irand(0,1))
+			// Using Q_irand(0, 1) always kept giving us 0.
+			// Idk why, so I guess we will use rand().
+			qboolean is_feelin_good_tonight = (qboolean)(rand() % 2);
+
+			if (is_feelin_good_tonight)
+			{
 				S_StartBackgroundTrack("music/imhansolo.mp3", "music/imhansolo.mp3", qfalse);
+			}
 			else
+			{
 				S_StartBackgroundTrack("music/empiretoday.mp3", "music/empiretoday.mp3", qfalse);
+			}
+
 			return;
 		}
 
-		// Using Q_irand(0, 21) always kept give us 9.
+		// Using Q_irand(0, 21) always kept giving us 9.
 		// Idk why, so I guess we will use rand().
 		int music_pick = rand() % 22;
 
