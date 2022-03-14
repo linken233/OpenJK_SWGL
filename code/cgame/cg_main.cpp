@@ -1736,6 +1736,31 @@ Ghoul2 Insert End
 		}
 	}
 
+	// Preregister all of the weapons that were not already
+	// registered to avoid lag when using cheats like "give all".
+	for (i = 0; i < WP_NUM_WEAPONS; i++)
+	{
+		// We don't have a jawa gun.
+		if (i != WP_JAWA)
+		{
+			CG_RegisterWeapon(i);
+		}
+
+		// We are going to register the current weapon twice
+		// as we need to register the secondary model.
+		if (weaponData[i].weaponMdl2[0])
+		{
+			// Enabling it so the secondary model can be registered.
+			weaponData[i].secondaryMdl = qtrue;
+			cg_weapons[i].registered = qfalse;
+
+			CG_RegisterWeapon(i);
+			
+			// Since it was registered, turn if off.
+			weaponData[i].secondaryMdl = qfalse;
+		}
+	}
+
 	CG_LoadingString( "static models" );
 	CG_CreateMiscEnts();
 
