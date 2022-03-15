@@ -1310,6 +1310,29 @@ HUDMenuItem_t otherHUDBits[] =
 	"gfx/mp/f_icon_saber_throw"		//FP_SABERTHROW
 };
 */
+
+/*
+=================
+CG_IsWeaponUsablePlayer
+
+These weapons are not really used by the player, so let's not preregister them.
+Some weapons like the noghri stick can be used by the player
+but those are in special circumstances.
+=================
+*/
+static qboolean CG_IsWeaponUsablePlayer(int weaponNum)
+{
+    if (weaponNum == WP_ATST_MAIN || weaponNum == WP_ATST_SIDE || weaponNum == WP_EMPLACED_GUN
+        || weaponNum == WP_BOT_LASER || weaponNum == WP_TURRET || weaponNum == WP_TIE_FIGHTER
+        || weaponNum == WP_RAPID_FIRE_CONC || weaponNum == WP_JAWA || weaponNum == WP_TUSKEN_RIFLE
+        || weaponNum == WP_TUSKEN_STAFF || weaponNum == WP_SCEPTER || weaponNum == WP_NOGHRI_STICK)
+    {
+        return qfalse;
+    }
+
+    return qtrue;
+}
+
 extern void CG_NPC_Precache ( gentity_t *spawner );
 qboolean NPCsPrecached = qfalse;
 /*
@@ -1740,24 +1763,23 @@ Ghoul2 Insert End
 	// registered to avoid lag when using cheats like "give all".
 	for (i = 0; i < WP_NUM_WEAPONS; i++)
 	{
-		// We don't have a jawa gun.
-		if (i != WP_JAWA)
+		if (CG_IsWeaponUsablePlayer(i))
 		{
 			CG_RegisterWeapon(i);
-		}
 
-		// We are going to register the current weapon twice
-		// as we need to register the secondary model.
-		if (weaponData[i].weaponMdl2[0])
-		{
-			// Enabling it so the secondary model can be registered.
-			weaponData[i].secondaryMdl = qtrue;
-			cg_weapons[i].registered = qfalse;
+			// We are going to register the current weapon twice
+			// as we need to register the secondary model.
+			if (weaponData[i].weaponMdl2[0])
+			{
+				// Enabling it so the secondary model can be registered.
+				weaponData[i].secondaryMdl = qtrue;
+				cg_weapons[i].registered = qfalse;
 
-			CG_RegisterWeapon(i);
-			
-			// Since it was registered, turn if off.
-			weaponData[i].secondaryMdl = qfalse;
+				CG_RegisterWeapon(i);
+				
+				// Since it was registered, turn if off.
+				weaponData[i].secondaryMdl = qfalse;
+			}
 		}
 	}
 
