@@ -133,7 +133,8 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	if ( activator->client ) {
+	if (activator 
+		&& activator->client ) {
 		gi.SendServerCommand( activator-g_entities, "cp \"%s\"", ent->message );
 	}
 }
