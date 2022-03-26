@@ -1936,8 +1936,14 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 	}
 	else
 	{
-		//NOTE: it still loads the default skin's tga's because they're referenced in the .glm.
-		ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, va("models/players/%s/model.glm", modelName), G_ModelIndex( va("models/players/%s/model.glm", modelName) ), G_SkinIndex( skinName ), NULL_HANDLE, 0, 0 );
+		//NOTE: attempting to load a special SP glm for models with their own animations
+		ent->playerModel = gi.G2API_InitGhoul2Model(ent->ghoul2, va("models/players/%s/model_sp.glm", modelName), G_ModelIndex(va("models/players/%s/model_sp.glm", modelName)), G_SkinIndex(skinName), NULL_HANDLE, 0, 0);
+
+		if (ent->playerModel == -1)
+		{
+			//NOTE: it still loads the default skin's tga's because they're referenced in the .glm.
+			ent->playerModel = gi.G2API_InitGhoul2Model(ent->ghoul2, va("models/players/%s/model.glm", modelName), G_ModelIndex(va("models/players/%s/model.glm", modelName)), G_SkinIndex(skinName), NULL_HANDLE, 0, 0);
+		}
 	}
 	if (ent->playerModel == -1)
 	{//try the stormtrooper as a default
