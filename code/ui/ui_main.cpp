@@ -139,6 +139,8 @@ static void		UI_UpdateSaberHilt( qboolean secondSaber );
 //static void		UI_UpdateSaberColor( qboolean secondSaber );
 static void		UI_InitWeaponSelect( void );
 static void		UI_WeaponHelpActive( void );
+static void		UI_AnglesEsc();
+static void		UI_OpenedAngles();
 
 #ifndef JK2_MODE
 static void		UI_UpdateFightingStyle ( void );
@@ -351,6 +353,8 @@ static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
 static int gamecodetoui[] = {4,2,3,0,5,1,6};
 
 uiInfo_t uiInfo;
+
+qboolean openedAngles;
 
 static void UI_RegisterCvars( void );
 void UI_Load(void);
@@ -1327,6 +1331,14 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			UI_InitAllocForcePowers(forceName);
 		}
+		else if (Q_stricmp(name, "anglesesc") == 0)
+		{
+			UI_AnglesEsc();
+		}
+		else if (Q_stricmp(name, "openedangles") == 0)
+		{
+			UI_OpenedAngles();
+		}
 		else if (Q_stricmp(name, "affectforcepowerlevel") == 0)
 		{
 			const char *forceName;
@@ -1843,6 +1855,28 @@ static void UI_HandleLoadSelection()
 		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4));
 	}
 #endif
+}
+
+/*
+* We've opened the angles menu, so we need the escape button to behave a little different
+*/
+static void UI_OpenedAngles()
+{
+	// If NPC freeze is already online, we'll assume the player froze the NPCs themselves, so let's not do anything to ruin it.
+	if(!Cvar_VariableIntegerValue("d_npcfreeze"))
+		openedAngles = qtrue;
+}
+
+/*
+* If we opened the angles menu, need to turn off NPC freeze, otherwise leave it on/don't change it.
+*/
+static void UI_AnglesEsc()
+{
+	if (openedAngles)
+	{
+		Cvar_Set("d_npcfreeze", "0");
+		openedAngles = qfalse;
+	}	
 }
 
 /*

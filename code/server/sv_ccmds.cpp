@@ -41,6 +41,7 @@ These commands can only be entered from stdin or by a remote operator datagram
 */
 
 qboolean qbLoadTransition = qfalse;
+extern qboolean openedAngles;
 
 
 //=========================================================
@@ -191,6 +192,8 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		SG_WipeSavegame("auto");
 	}
 
+	Cvar_Set("d_npcfreeze", "0"); // Turn off NPC freeze since you don't need it between maps
+	openedAngles = qfalse;
 	SV_SpawnServer( map, eForceReload, qtrue );	// start up the map
 	return true;
 }
