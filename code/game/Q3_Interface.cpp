@@ -471,6 +471,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FIRE_WEAPON),
 	ENUM2STRING(SET_FIRE_WEAPON_NO_ANIM),
 	ENUM2STRING(SET_SABERLOCKING),
+	ENUM2STRING(SET_FORCE_REGEN),
 	ENUM2STRING(SET_SAFE_REMOVE),
 	ENUM2STRING(SET_BOBA_JET_PACK),
 	ENUM2STRING(SET_INACTIVE),
@@ -498,6 +499,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_USE_SUBTITLES),
 	ENUM2STRING(SET_CLEAN_DAMAGING_ENTS),
 	ENUM2STRING(SET_HUD),
+	ENUM2STRING(SET_FORCE_CHOKING),
 	//JKA
 	ENUM2STRING(SET_NO_PVS_CULL),
 	ENUM2STRING(SET_CLOAK),
@@ -6672,6 +6674,77 @@ static void Q3_SetNoKnockback( int entID, qboolean noKnockback )
 	}
 }
 
+static void Q3_ForceChoke(int entID, qboolean choking)
+{
+	gentity_t* ent = &g_entities[entID];
+
+	if (!ent)
+	{
+		Quake3Game()->DebugPrint(IGameInterface::WL_WARNING, "Q3_ForceChoke: invalid entID %d\n", entID);
+		return;
+	}
+
+	if (choking)
+	{
+		// An entity choking will be doing the choke anim, may or may not lose their weapon, will raise up in the air a little bit, and can't attack
+
+		// Set gravity to 0
+		ent->svFlags |= SVF_CUSTOM_GRAVITY;
+		ent->client->ps.gravity = 0.0f;
+
+		ent->client->ps.legsAnimTimer = ent->client->ps.torsoAnimTimer = 0;
+		NPC_SetAnim(ent, SETANIM_BOTH, BOTH_CHOKE3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		ent->client->ps.torsoAnimTimer = ent->client->ps.legsAnimTimer = -1;
+		ent->client->ps.SaberDeactivate();
+		NPCInfo->ignorePain = qtrue;
+
+
+		// Set their behavior
+		if (!Q3_SetBState(entID, "BS_CINEMATIC"))
+		{
+			Q3_TaskIDSet(ent, TID_BSTATE, SET_BEHAVIOR_STATE);
+		}
+
+		// Adjust origin
+		vec3_t vector_data;
+
+		vector_data[0] = ent->currentOrigin[0];
+		vector_data[1] = ent->currentOrigin[1];
+		vector_data[2] = ent->currentOrigin[2]+30;
+
+
+		G_SetOrigin(ent, vector_data);
+		gi.linkentity(ent);
+
+		// Force immunity
+		ent->NPC->scriptFlags |= SCF_NO_FORCE;
+		ent->enemy = NULL;
+		ent->client->leader = NULL;
+
+		VectorClear(ent->client->ps.velocity);
+		VectorClear(ent->client->ps.moveDir);
+	}
+	else
+	{
+		// Set gravity to 0
+		ent->svFlags &= ~SVF_CUSTOM_GRAVITY;
+		ent->client->ps.gravity = 800.0f;
+
+		Q3_SetAnimHoldTime(entID, 1, qfalse);
+		Q3_SetAnimHoldTime(entID, 1, qtrue);
+
+		// Set their behavior
+		if (!Q3_SetBState(entID, "BS_DEFAULT"))
+		{
+			Q3_TaskIDSet(ent, TID_BSTATE, SET_BEHAVIOR_STATE);
+		}
+
+		ent->NPC->scriptFlags &= ~SCF_NO_FORCE;
+	}
+
+	return;
+}
+
 /*
 ============
 Q3_SetCleanDamagingEnts
@@ -9447,6 +9520,17 @@ extern void LockDoors(gentity_t *const ent);
 		}
 		break;
 
+	case SET_FORCE_CHOKING:
+		if (!Q_stricmp("true", ((char*)data)))
+		{
+			Q3_ForceChoke(entID, qtrue);
+		}
+		else
+		{
+			Q3_ForceChoke(entID, qfalse);
+		}
+		break;
+
 	case SET_VIDEO_PLAY:
 		// don't do this check now, James doesn't want a scripted cinematic to also skip any Video cinematics as well,
 		//	the "timescale" and "skippingCinematic" cvars will be set back to normal in the Video code, so doing a
@@ -9655,6 +9739,17 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_VEHICLE:
 		Use( entID, (char *)data );
 //		G_DriveVehicle( &g_entities[entID], NULL, (char *)data );
+		break;
+
+	case SET_FORCE_REGEN:
+		if (&g_entities[entID] == player)
+		{
+			int amount = atoi(data);
+			if (amount < 1)
+				amount = 1;
+
+			player->client->ps.forcePowerRegenRate = amount;
+		}
 		break;
 
 	case SET_SECURITY_KEY:

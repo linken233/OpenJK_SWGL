@@ -189,6 +189,7 @@ typedef enum //# setType_e
 	SET_SABER2BLADEOFF,//## %d="0.0" # Deactivate a specific blade of Saber 2 (0 - (MAX_BLADES - 1)).
 	SET_DAMAGEENTITY,	//## %d="5" # Damage this entity with set amount.
 	SET_SABERLOCKING, //## %d="1" # Allow Saber Locking. 0 = Turn it off, 1 = Turn it on.
+	SET_FORCE_REGEN, //## %d="10" # Change force regen rate. 10 = default, 1 = Fastest
 
 	//# #sep booleans
 	SET_IGNOREPAIN,//## %t="BOOL_TYPES" # Do not react to pain
@@ -255,6 +256,7 @@ typedef enum //# setType_e
 	SET_USE_SUBTITLES,//## %t="BOOL_TYPES" # When true NPC will always display subtitle regardless of subtitle setting
 	SET_CLEAN_DAMAGING_ENTS,//## %t="BOOL_TYPES" # Removes entities that could muck up cinematics, explosives, turrets, seekers.
 	SET_HUD,//## %t="BOOL_TYPES" # Turns on/off HUD
+	SET_FORCE_CHOKING,//## %t="BOOL_TYPES" # Sets ent into force choking state, unable to act
 	//JKA
 	SET_NO_PVS_CULL,//## %t="BOOL_TYPES" # This entity will *always* be drawn - use only for special case cinematic NPCs that have anims that cover multiple rooms!!!
 	SET_CLOAK,		//## %t="BOOL_TYPES" # Set a Saboteur to cloak (true) or un-cloak (false).
