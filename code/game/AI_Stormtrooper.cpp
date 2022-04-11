@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
+#include "NPC_SWGL.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
 
@@ -2658,7 +2659,7 @@ void NPC_BSST_Attack( void )
 
 	if ( NPC->enemy && NPC->enemy->enemy )
 	{
-		if ( NPC->enemy->s.weapon == WP_SABER && NPC->enemy->enemy->s.weapon == WP_SABER )
+		if ( Q_stricmp(HAVOC_MAJOR, NPC->NPC_type) && NPC->enemy->s.weapon == WP_SABER && NPC->enemy->enemy->s.weapon == WP_SABER)
 		{//don't shoot at an enemy jedi who is fighting another jedi, for fear of injuring one or causing rogue blaster deflections (a la Obi Wan/Vader duel at end of ANH)
 			shoot = qfalse;
 		}

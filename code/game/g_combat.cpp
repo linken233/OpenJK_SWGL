@@ -5566,6 +5566,7 @@ qboolean G_ImmuneToGas( gentity_t *ent )
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern void G_StartRoll( gentity_t *ent, int anim );
 extern void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
+int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
 
 /*
 ============
@@ -5943,6 +5944,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			}
 		}
 	}
+
+	// Calculate damage for False Emperor (since there are rules)
+	damage = FalseEmperorDamage(damage, attacker, targ, mod);
+
 
 	if (targ
 		&& targ->client
@@ -7047,6 +7052,64 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 }
 
+extern qboolean FalseEmperorMission();
+int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
+{
+	// If we're not playing False Emperor, just skip everything
+	if (FalseEmperorMission())
+	{
+		// Damage changes per map, so we need this information
+		const char* info = CG_ConfigString(CS_SERVERINFO);
+		const char* s = Info_ValueForKey(info, "mapname");
+
+		// Jedi Knight deals more damage with a lightsaber and takes less damage from a lightsaber
+		if (!Q_stricmp(s, "swtor_fe_jedi"))
+		{
+			if (mod == MOD_SABER)
+			{
+				// Player deals 3x damage with a lightsaber and takes 50% less damage from a lightsaber.
+				if (attacker == player)
+					damage *= 1.5f;
+			}
+			if (targ == player)
+				damage /= 2;
+		}
+		// Sith Inquisitor deals more damage with Force Powers and takes less damage from Force Powers
+		else if (!Q_stricmp(s, "swtor_fe_sith"))
+		{
+			if (mod == MOD_BLAST
+				|| mod == MOD_FORCE_GRIP
+				|| mod == MOD_FORCE_LIGHTNING
+				|| mod == MOD_FORCE_DRAIN
+				|| mod == MOD_STRIKE)
+			{
+				// Player deals 5x damage with the Force and takes 50% less damage from the Force.
+				if (attacker == player)
+					damage *= 5;
+				else if (targ == player)
+					damage /= 2;
+			}
+		}
+		// Bounty Hunter gets a decent damage boost but no defensive boost since they can fly away anyway
+		else if (!Q_stricmp(s, "swtor_fe_hunter"))
+		{
+			if (attacker == player)
+				damage *= 3;
+		}
+		// Trooper is the real MVP since they have no natural defense.
+		else
+		{
+			// 80% less damage from Malgus
+			if (targ == player)
+				damage *= 0.8f;
+			// 5x more damage against Malgus
+			else if (attacker == player)
+				damage *= 5;
+		}
+	}
+
+	return damage;
+}
 
 /*
 ============

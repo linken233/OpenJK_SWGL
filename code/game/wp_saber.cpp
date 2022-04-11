@@ -7502,6 +7502,7 @@ void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlo
 	}
 }
 
+qboolean FalseEmperorMission();
 void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 {
 	float		dist;
@@ -7838,7 +7839,7 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 					}
 					else if ( (self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER) )
 					{//else, try to force-throw it away
-						if ( (!ent->owner || !OnSameTeam( self, ent->owner )) && !(ent->s.powerups & (1 << PW_FORCE_PROJECTILE) && ent->s.weapon == WP_ROCKET_LAUNCHER))
+						if ( (!ent->owner || !OnSameTeam( self, ent->owner )) && !(ent->s.powerups & (1 << PW_FORCE_PROJECTILE) && ent->s.weapon == WP_ROCKET_LAUNCHER) && !FalseEmperorMission())
 						{
 							//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
 							ForceThrow( self, qfalse );
@@ -9622,7 +9623,8 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 							&& push_list[x]->s.weapon != WP_SABER
 							&& push_list[x]->s.weapon != WP_MELEE
 							&& push_list[x]->s.weapon != WP_THERMAL
-							&& push_list[x]->s.weapon != WP_CONCUSSION	// so rax can't drop his
+							&& push_list[x]->s.weapon != WP_CONCUSSION// so rax can't drop his
+							&&!FalseEmperorMission() // Player shouldn't be disarmed in the False Emperor mission (because that would be very bad)
 							)
 						{//yank the weapon - NOTE: level 1 just knocks them down, not take weapon
 							//FIXME: weapon yank anim if not a knockdown?
@@ -10957,6 +10959,7 @@ void ForceGrip( gentity_t *self )
 				&& traceEnt->client->NPC_class != CLASS_JANGO
 				&& traceEnt->client->NPC_class != CLASS_ASSASSIN_DROID
 				&& traceEnt->s.weapon != WP_CONCUSSION	// so rax can't drop his
+				&& !FalseEmperorMission() // Player shouldn't be disarmed in the False Emperor mission (because that would be very bad)
 				)
 			{
 				if (traceEnt->client->NPC_class == CLASS_BOBAFETT || traceEnt->client->NPC_class == CLASS_MANDALORIAN || traceEnt->client->NPC_class == CLASS_JANGO)
@@ -11020,6 +11023,25 @@ void ForceGrip( gentity_t *self )
 			self->s.loopSound = G_SoundIndex( "sound/weapons/force/grip.mp3" );
 	//	}
 	}
+}
+
+qboolean FalseEmperorMission()
+{
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
+
+	// Malgus should not push away rockets during the False Emperor mission
+	if (!Q_stricmp(s, "swtor_fe_jedi")
+		|| !Q_stricmp(s, "swtor_fe_sith")
+		|| !Q_stricmp(s, "swtor_fe_trooper")
+		|| !Q_stricmp(s, "swtor_fe_hunter"))
+	{
+		// Since there are no other enemies in False Emperor except Malgus and he doesn't fire rockets out of his ass, we can just return true. 
+		return qtrue;
+	}
+
+	return qfalse;
+		
 }
 
 qboolean IsPlayingOperationKnightfall()

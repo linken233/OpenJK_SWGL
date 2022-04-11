@@ -2,11 +2,13 @@
 #define NPC_SWGL_H
 
 // Old Republic
+#define HAVOC_MAJOR "Havoc_Major"
 
 
 
 // Sith Empire
 #define VITIATE "vitiate"
+#define MALGUS "Darth_Malgus"
 #define NIHILUS "Darth_Nihilus"
 #define SION "Darth_Sion"
 #define SION_TFU "Darth_Sion_TFU"
