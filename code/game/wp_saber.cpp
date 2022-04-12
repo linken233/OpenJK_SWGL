@@ -7084,14 +7084,18 @@ void WP_SaberPull( gentity_t *self, gentity_t *saber )
 	}
 }
 
-const char *saberColorStringForColor[SABER_PURPLE+1] =
+const char *saberColorStringForColor[SABER_DARKSABER+1] =
 {
 	"red",//SABER_RED
 	"orange",//SABER_ORANGE
 	"yellow",//SABER_YELLOW
 	"green",//SABER_GREEN
 	"blue",//SABER_BLUE
-	"purple"//SABER_PURPLE
+	"purple",//SABER_PURPLE
+	"unstable_red",//SABER_UNSTABLE_RED
+	"black",//SABER_BLACK
+	"darksaber"//SABER_DARKSABER
+
 };
 
 // Check if we are throwing it, launch it if needed, update position if needed.
