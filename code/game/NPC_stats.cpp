@@ -2095,6 +2095,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 		stats->walkSpeed	= 90;
 		stats->runSpeed		= 300;
 		stats->acceleration	= 15;//Increase/descrease speed this much per frame (20fps)
+
 	}
 	else
 	{
@@ -2104,6 +2105,15 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	Q_strncpyz( ci->name, NPCName, sizeof( ci->name ) );
 
 	NPC->playerModel = -1;
+
+	if (parsingPlayer)
+	{
+		//Clear stuff when running the playermodel command, that way force powers and dual lightsabers don't carry from one character to another.
+		for (int i = 0; i < NUM_FORCE_POWERS; i++)
+			NPC->client->ps.forcePowerLevel[i] = 0;
+
+		NPC->client->ps.dualSabers = qfalse;
+	}
 
 	//Set defaults
 	//FIXME: should probably put default torso and head models, but what about enemies
