@@ -56,6 +56,7 @@ extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName
 extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 extern qboolean UI_SaberSkinForSaber( const char *saberName, char *saberSkin );
 extern void UI_SaberAttachToChar( itemDef_t *item );
+extern void Menu_SetItemText(const menuDef_t* menu, const char* itemName, const char* text);
 
 extern qboolean PC_Script_Parse(const char **out);
 
@@ -109,6 +110,7 @@ void			UI_GetVideoSetup ( void );
 void			UI_UpdateVideoSetup ( void );
 static void		UI_UpdateCharacterCvars ( void );
 static void		UI_GetCharacterCvars ( void );
+static void		UI_GetCharacterCustomization( void );
 static void		UI_GetNPCCvars(void);
 static void		UI_UpdateSaberCvars ( void );
 static void		UI_GetSaberCvars ( void );
@@ -356,6 +358,10 @@ uiInfo_t uiInfo;
 
 qboolean openedAngles;
 
+const char* npcCode;
+
+const char* missionCode;
+
 static void UI_RegisterCvars( void );
 void UI_Load(void);
 
@@ -413,6 +419,13 @@ vmCvar_t	ui_screenshotType;
 vmCvar_t	ui_npc_faction;
 vmCvar_t	ui_npc_custom;
 vmCvar_t	ui_npc_saber;
+
+// Mission cvars (add more as more missions get mechanics)
+vmCvar_t	ui_knightfall;
+vmCvar_t	ui_fe_jedi;
+vmCvar_t	ui_fe_sith;
+vmCvar_t	ui_fe_trooper;
+vmCvar_t	ui_fe_bh;
 
 static void UI_UpdateScreenshot( void )
 {
@@ -502,6 +515,11 @@ static cvarTable_t cvarTable[] =
 	{ &ui_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_npc_saber,	"ui_npc_saber",	"0", NULL },
+	{ &ui_knightfall,			"ui_knightfall",		"0", NULL, CVAR_ARCHIVE},
+	{ &ui_fe_jedi,				"ui_fe_jedi",		"0", NULL, CVAR_ARCHIVE},
+	{ &ui_fe_sith,				"ui_fe_sith",		"0", NULL, CVAR_ARCHIVE},
+	{ &ui_fe_trooper,			"ui_fe_trooper",		"0", NULL, CVAR_ARCHIVE},
+	{ &ui_fe_bh,				"ui_fe_bh",		"0", NULL, CVAR_ARCHIVE},
 
 
 };
@@ -1298,6 +1316,35 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_GetCharacterCvars();
 		}
+		else if (Q_stricmp(name, "missionMechanic") == 0)
+		{
+			const char* code;
+			String_Parse(args, &code);
+
+			missionCode = code;
+			
+			if (!Q_stricmp("ep3_ok_anakin_r1", code) && !Cvar_VariableIntegerValue("ui_knightfall"))
+			{
+				Menus_OpenByName("missionMechanicMenu");
+				ui.Cvar_Set("ui_knightfall", "1");
+
+				menuDef_t* menu = Menu_GetFocused();
+				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_KNIGHTFALL_INFO");
+			}
+			else
+			{
+				ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", missionCode));
+			}
+
+		}
+		else if (Q_stricmp(name, "goToMission") == 0)
+		{
+			ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", missionCode));
+		}
+		else if (Q_stricmp(name, "getcharcustom") == 0)
+		{
+			UI_GetCharacterCustomization();
+		}
 		else if (Q_stricmp(name, "getnpccvars") == 0)
 		{
 			UI_GetNPCCvars();
@@ -1330,6 +1377,17 @@ static qboolean UI_RunMenuScript ( const char **args )
 			String_Parse(args, &forceName);
 
 			UI_InitAllocForcePowers(forceName);
+		}
+		else if (Q_stricmp(name, "getNPCcode") == 0)
+		{
+			const char* code;
+			String_Parse(args, &code);
+			npcCode = code;
+		}
+		else if (Q_stricmp(name, "applycharacter") == 0)
+		{
+			ui.Cmd_ExecuteText(EXEC_APPEND, va("playermodel %s\n", npcCode));
+			ui.Cmd_ExecuteText(EXEC_APPEND, va("playermodel %s %s %s %s\n", Cvar_VariableString("ui_char_model"), Cvar_VariableString("ui_char_skin_head"), Cvar_VariableString("ui_char_skin_torso"), Cvar_VariableString("ui_char_skin_legs")));
 		}
 		else if (Q_stricmp(name, "anglesesc") == 0)
 		{
@@ -4481,6 +4539,17 @@ static void UI_GetCharacterCvars ( void )
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
 		if ( !Q_stricmp(model, uiInfo.playerSpecies[i].Name) )
+		{
+			uiInfo.playerSpeciesIndex = i;
+		}
+	}
+}
+
+static void UI_GetCharacterCustomization(void)
+{
+	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
+	{
+		if (!Q_stricmp(Cvar_VariableString("ui_char_model"), uiInfo.playerSpecies[i].Name))
 		{
 			uiInfo.playerSpeciesIndex = i;
 		}
