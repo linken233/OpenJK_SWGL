@@ -1060,47 +1060,71 @@ qboolean G_StandardHumanoid(const char* GLAName)
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Clones", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Drallig", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_DVader", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_jabba", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_JBrute", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Jedi", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Jedi2", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_lanakin", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_OldBen", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Palpatine", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Serra", GLAName))
-		{// only _humanoid skeleton is expected eto have these
+		{//only _humanoid skeleton is expected eto have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Shaak", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Shakkra", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Sidious", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_TDroid", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_TGuard", GLAName))
-		{// only _humanoid skeleton is expected to have these
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Vader", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 	}
