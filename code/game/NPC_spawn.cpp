@@ -310,8 +310,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		ent->behaviorSet[BSET_FLEE] = NULL;
 		ent->behaviorSet[BSET_DEATH] = NULL;
 	}
-	else if (NPC->client->ps.weapon == WP_CLONECARBINE || NPC->client->ps.weapon == WP_CLONERIFLE ||
-		NPC->client->ps.weapon == WP_CLONECOMMANDO || NPC->client->ps.weapon == WP_REBELRIFLE)
+	else if (NPC->client->ps.weapon == WP_CLONECARBINE || NPC->client->ps.weapon == WP_CLONECOMMANDO
+				|| NPC->client->ps.weapon == WP_REBELRIFLE)
 	{
 		ent->NPC->scriptFlags |= (SCF_ALT_FIRE | SCF_CHASE_ENEMIES);
 
@@ -579,7 +579,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			}
 			if (ent->client->ps.weapon != WP_SABER)
 			{
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+				G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handRBolt, 0);
 			}
 		}
 		else
@@ -588,42 +588,45 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				&& ent->client->ps.weapon != WP_SABER //sabers done above
 				&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 			{
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+				G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handRBolt, 0);
 			}
-			switch (ent->client->ps.weapon)
+
+			if (CG_IsWeaponPistol(ent) || ent->client->ps.weapon == WP_BRYAR_PISTOL)
 			{
-			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
-			case WP_BLASTER_PISTOL:
-			case WP_JANGO:
-			case WP_CLONEPISTOL:
 				if ((ent->client->NPC_class == CLASS_REBORN || ent->client->NPC_class == CLASS_JANGO)
 					&& ent->NPC->rank >= RANK_LT_COMM
 					&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 				{//dual blaster pistols, so add the left-hand one, too
-					G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+					G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handLBolt, 1);
 				}
 				break;
-			case WP_DISRUPTOR:
-			case WP_BOWCASTER:
-			case WP_REPEATER:
-			case WP_DEMP2:
-			case WP_FLECHETTE:
-			case WP_ROCKET_LAUNCHER:
-			case WP_CONCUSSION:
-			default:
-				break;
-			case WP_THERMAL:
-			case WP_BLASTER:
-				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
-				//ent->health = 25;
-				//FIXME: not necc. a ST
-				ST_ClearTimers(ent);
-				if (ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL)
-				{//officers, grenade-throwers use alt-fire
-					//ent->health = 50;
-					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+			}
+			else
+			{
+				switch (ent->client->ps.weapon)
+				{
+				case WP_DISRUPTOR:
+				case WP_BOWCASTER:
+				case WP_REPEATER:
+				case WP_DEMP2:
+				case WP_FLECHETTE:
+				case WP_ROCKET_LAUNCHER:
+				case WP_CONCUSSION:
+				default:
+					break;
+				case WP_THERMAL:
+				case WP_BLASTER:
+					//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+					//ent->health = 25;
+					//FIXME: not necc. a ST
+					ST_ClearTimers(ent);
+					if (ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL)
+					{//officers, grenade-throwers use alt-fire
+						//ent->health = 50;
+						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					break;
 				}
-				break;
 			}
 		}
 		if (!Q_stricmp("galak_mech", ent->NPC_type))
@@ -689,7 +692,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			}
 			if (ent->client->ps.weapon != WP_SABER)
 			{
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+				G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handRBolt, 0);
 			}
 		}
 		else if (ent->client->NPC_class == CLASS_PROBE || ent->client->NPC_class == CLASS_REMOTE ||
@@ -706,72 +709,76 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				&& ent->client->ps.weapon != WP_SABER//sabers done above
 				&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 			{
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+				G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handRBolt, 0);
 			}
-			switch (ent->client->ps.weapon)
+
+			if (CG_IsWeaponPistol(ent))
 			{
-			case WP_BRYAR_PISTOL:
-				break;
-			case WP_BLASTER_PISTOL:
-			case WP_CLONEPISTOL:
-			case WP_JANGO:
 				NPCInfo->scriptFlags |= SCF_PILOT;
 				if (ent->client->NPC_class == CLASS_REBORN
 					&& ent->NPC->rank >= RANK_LT_COMM
 					&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 				{//dual blaster pistols, so add the left-hand one, too
-					G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+					G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handLBolt, 1);
 				}
 				break;
-			case WP_DISRUPTOR:
-				//Sniper
-				//ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
-				break;
-			case WP_BOWCASTER:
-				NPCInfo->scriptFlags |= SCF_PILOT;
-				break;
-			case WP_REPEATER:
-				NPCInfo->scriptFlags |= SCF_PILOT;
-				//machine-gunner
-				break;
-			case WP_DEMP2:
-				break;
-			case WP_FLECHETTE:
-				NPCInfo->scriptFlags |= SCF_PILOT;
-				//shotgunner
-				if (!Q_stricmp("stofficeralt", ent->NPC_type))
+			}
+			else
+			{
+				switch (ent->client->ps.weapon)
 				{
-					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-				}
-				break;
-			case WP_ROCKET_LAUNCHER:
-				break;
-			case WP_CONCUSSION:
-				break;
-			case WP_THERMAL:
-				//Gran, use main, bouncy fire
-//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-				break;
-			case WP_MELEE:
-				break;
-			case WP_NOGHRI_STICK:
-				break;
-			default:
-			case WP_BLASTER:
-				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
-				//FIXME: not necc. a ST
-				NPCInfo->scriptFlags |= SCF_PILOT;
+				case WP_BRYAR_PISTOL:
+					break;
+				case WP_DISRUPTOR:
+					//Sniper
+					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
+					break;
+				case WP_BOWCASTER:
+					NPCInfo->scriptFlags |= SCF_PILOT;
+					break;
+				case WP_REPEATER:
+					NPCInfo->scriptFlags |= SCF_PILOT;
+					//machine-gunner
+					break;
+				case WP_DEMP2:
+					break;
+				case WP_FLECHETTE:
+					NPCInfo->scriptFlags |= SCF_PILOT;
+					//shotgunner
+					if (!Q_stricmp("stofficeralt", ent->NPC_type))
+					{
+						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					break;
+				case WP_ROCKET_LAUNCHER:
+					break;
+				case WP_CONCUSSION:
+					break;
+				case WP_THERMAL:
+					//Gran, use main, bouncy fire
+	//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					break;
+				case WP_MELEE:
+					break;
+				case WP_NOGHRI_STICK:
+					break;
+				default:
+				case WP_BLASTER:
+					//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+					//FIXME: not necc. a ST
+					NPCInfo->scriptFlags |= SCF_PILOT;
 
-				ST_ClearTimers(ent);
-				if (ent->NPC->rank >= RANK_COMMANDER)
-				{//commanders use alt-fire
-					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					ST_ClearTimers(ent);
+					if (ent->NPC->rank >= RANK_COMMANDER)
+					{//commanders use alt-fire
+						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					if (!Q_stricmp("rodian2", ent->NPC_type))
+					{
+						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					break;
 				}
-				if (!Q_stricmp("rodian2", ent->NPC_type))
-				{
-					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-				}
-				break;
 			}
 		}
 		if (!Q_stricmp("galak_mech", ent->NPC_type))
@@ -788,19 +795,17 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 			&& ent->client->ps.weapon != WP_SABER//sabers done above
 			&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 		{
-			G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handRBolt, 0);
+			G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handRBolt, 0);
 		}
 
-		if (ent->client->ps.weapon == WP_BLASTER_PISTOL
-			|| ent->client->ps.weapon == WP_CLONEPISTOL
-			|| ent->client->ps.weapon == WP_JANGO)
+		if (CG_IsWeaponPistol(ent))
 		{
 			NPCInfo->scriptFlags |= SCF_PILOT;
 			if (ent->client->NPC_class == CLASS_REBORN
 				&& ent->NPC->rank >= RANK_LT_COMM
 				&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
 			{//dual blaster pistols, so add the left-hand one, too
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+				G_CreateG2AttachedWeaponModel(ent, CG_GetCurrentWeaponModel(ent), ent->handLBolt, 1);
 			}
 		}
 		break;

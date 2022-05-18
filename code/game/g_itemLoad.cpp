@@ -157,28 +157,29 @@ static void IT_Name(const char **holdBuf)
 		itemNum = ITM_SCEPTER_PICKUP;
 	else if (!Q_stricmp(tokenStr,"ITM_NOGHRI_STICK_PICKUP"))
 		itemNum = ITM_NOGHRI_STICK_PICKUP;
-	else if (!Q_stricmp(tokenStr, "ITM_BATTLEDROID_PICKUP"))
-		itemNum = ITM_BATTLEDROID_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_THEFIRSTORDER_PICKUP"))
 		itemNum = ITM_THEFIRSTORDER_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_CLONECARBINE_PICKUP"))
 		itemNum = ITM_CLONECARBINE_PICKUP;
-	else if (!Q_stricmp(tokenStr, "ITM_REBELBLASTER_PICKUP"))
-		itemNum = ITM_REBELBLASTER_PICKUP;
-	else if (!Q_stricmp(tokenStr, "ITM_CLONERIFLE_PICKUP"))
-		itemNum = ITM_CLONERIFLE_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_CLONECOMMANDO_PICKUP"))
 		itemNum = ITM_CLONECOMMANDO_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_REBELRIFLE_PICKUP"))
 		itemNum = ITM_REBELRIFLE_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_BOBA_PICKUP"))
+		itemNum = ITM_BOBA_PICKUP;
+
 	else if (!Q_stricmp(tokenStr, "ITM_REY_PICKUP"))
 		itemNum = ITM_REY_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_BATTLEDROID_PICKUP"))
+		itemNum = ITM_BATTLEDROID_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_JANGO_PICKUP"))
 		itemNum = ITM_JANGO_PICKUP;
-	else if (!Q_stricmp(tokenStr, "ITM_BOBA_PICKUP"))
-		 itemNum = ITM_BOBA_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_REBELBLASTER_PICKUP"))
+		itemNum = ITM_REBELBLASTER_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CLONERIFLE_PICKUP"))
+		itemNum = ITM_CLONERIFLE_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_CLONEPISTOL_PICKUP"))
-	 	 itemNum = ITM_CLONEPISTOL_PICKUP;
+		itemNum = ITM_CLONEPISTOL_PICKUP;
 
 	//ammo
 	else if (!Q_stricmp(tokenStr,"ITM_AMMO_FORCE_PICKUP"))
@@ -397,28 +398,16 @@ static void IT_Tag(const char **holdBuf)
 		tag = WP_SCEPTER;
 	else if (!Q_stricmp(tokenStr,"WP_NOGHRI_STICK"))
 		tag = WP_NOGHRI_STICK;
-	else if (!Q_stricmp(tokenStr, "WP_BATTLEDROID"))
-		tag = WP_BATTLEDROID;
 	else if (!Q_stricmp(tokenStr, "WP_THEFIRSTORDER"))
 		tag = WP_THEFIRSTORDER;
 	else if (!Q_stricmp(tokenStr, "WP_CLONECARBINE"))
 		tag = WP_CLONECARBINE;
-	else if (!Q_stricmp(tokenStr, "WP_REBELBLASTER"))
-		tag = WP_REBELBLASTER;
-	else if (!Q_stricmp(tokenStr, "WP_CLONERIFLE"))
-		tag = WP_CLONERIFLE;
 	else if (!Q_stricmp(tokenStr, "WP_CLONECOMMANDO"))
 		tag = WP_CLONECOMMANDO;
 	else if (!Q_stricmp(tokenStr, "WP_REBELRIFLE"))
 		tag = WP_REBELRIFLE;
-	else if (!Q_stricmp(tokenStr, "WP_REY"))
-		tag = WP_REY;
-	else if (!Q_stricmp(tokenStr, "WP_JANGO"))
-		tag = WP_JANGO;
 	else if (!Q_stricmp(tokenStr, "WP_BOBA"))
-	  tag = WP_BOBA;
-	else if (!Q_stricmp(tokenStr, "WP_CLONEPISTOL"))
-		tag = WP_CLONEPISTOL;
+		tag = WP_BOBA;
 	else if (!Q_stricmp(tokenStr,"AMMO_FORCE"))
 		tag = AMMO_FORCE;
 	else if (!Q_stricmp(tokenStr,"AMMO_BLASTER"))
@@ -437,6 +426,18 @@ static void IT_Tag(const char **holdBuf)
 		tag = AMMO_TRIPMINE;
 	else if (!Q_stricmp(tokenStr,"AMMO_DETPACK"))
 		tag = AMMO_DETPACK;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_REY"))
+		tag = DYN_WP_REY;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_BATTLEDROID"))
+		tag = DYN_WP_BATTLEDROID;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_JANGO"))
+		tag = DYN_WP_JANGO;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_REBELBLASTER"))
+		tag = DYN_WP_REBELBLASTER;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_CLONERIFLE"))
+		tag = DYN_WP_CLONERIFLE;
+	else if (!Q_stricmp(tokenStr,"DYN_WP_CLONEPISTOL"))
+		tag = DYN_WP_CLONEPISTOL;
 	else if (!Q_stricmp(tokenStr,"FP_HEAL"))
 	{
 		tag = FP_HEAL;
@@ -584,6 +585,8 @@ static void IT_Type(const char **holdBuf)
 		type = IT_BAD;
 	else if (!Q_stricmp(tokenStr,"IT_WEAPON"))
 		type = IT_WEAPON;
+	else if (!Q_stricmp(tokenStr,"IT_DYN_WEAPON"))
+		type = IT_DYN_WEAPON;
 	else if (!Q_stricmp(tokenStr,"IT_AMMO"))
 		type = IT_AMMO;
 	else if (!Q_stricmp(tokenStr,"IT_ARMOR"))

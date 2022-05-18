@@ -467,7 +467,7 @@ model_t* R_GetAnimModelByHandle(CGhoul2Info* ghlInfo, qhandle_t index)
 	model_t* mod;
 
 	// out of range gets the defualt model
-	if (index < 1 || index > tr.numModels) {
+	if (index < 1 || index >= tr.numModels) {
 		return tr.models[0];
 	}
 

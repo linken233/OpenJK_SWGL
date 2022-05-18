@@ -4346,7 +4346,10 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 	{
 		return;
 	}
-	if ( !ent->s.number && ((cg_trueguns.integer || CG_PlayerIsDualWielding(ent->client->ps.weapon)) || (!cg.renderingThirdPerson && (ent->client->ps.weapon == WP_SABER || ent->client->ps.weapon == WP_MELEE)) ) )
+	// Removing CG_ChangeViewDualWielding might cause bugs later on, but we'll see.
+	// It was removed to avoid the glitch where if the player is dual wielding and idle,
+	// they will start gliding on the ground instead of walking.
+	if ( !ent->s.number && (cg_trueguns.integer || (!cg.renderingThirdPerson && (ent->client->ps.weapon == WP_SABER || ent->client->ps.weapon == WP_MELEE)) ) )
 	{
 		return;
 	}

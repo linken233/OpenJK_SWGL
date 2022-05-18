@@ -1546,14 +1546,6 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
-	if (!Q_stricmp("models/players/_humanoid_DVader/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
-	if (!Q_stricmp("models/players/_humanoid_jabba/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
 	if (!Q_stricmp("models/players/_humanoid_JBrute/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
@@ -1562,15 +1554,7 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
-	if (!Q_stricmp("models/players/_humanoid_Jedi2/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
 	if (!Q_stricmp("models/players/_humanoid_lanakin/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
-	if (!Q_stricmp("models/players/_humanoid_OldBen/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
@@ -1590,19 +1574,11 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
-	if (!Q_stricmp("models/players/_humanoid_Sidious/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
 	if (!Q_stricmp("models/players/_humanoid_TDroid/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
 	if (!Q_stricmp("models/players/_humanoid_TGuard/_humanoid", GLAName))
-	{//only _humanoid skeleton is expected to have these
-		return qtrue;
-	}
-	if (!Q_stricmp("models/players/_humanoid_Vader/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
