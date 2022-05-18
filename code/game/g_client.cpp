@@ -959,6 +959,14 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_DVader/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_jabba/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmpn("models/players/_humanoid_JBrute/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
@@ -967,7 +975,15 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_Jedi2/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmpn("models/players/_humanoid_lanakin/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_OldBen/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
@@ -987,11 +1003,19 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_Sidious/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmpn("models/players/_humanoid_TDroid/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 		if (!Q_stricmpn("models/players/_humanoid_TGuard/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Vader/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
