@@ -101,7 +101,6 @@ extern void		ForceJump( gentity_t *self, usercmd_t *ucmd );
 extern void		G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 
 extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
-extern int CG_GetDynWpnNum(int weaponNum, int dynWpnVal);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // External Data
@@ -661,6 +660,7 @@ void	Boba_Fire()
 					{
 						Boba_Printf("ALT FIRE On");
 						NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+						// This is for DYN_WP_JANGO
 						NPC_ChangeWeapon(WP_BLASTER);			// Update Delay Timers
 					}
 				}
@@ -671,6 +671,7 @@ void	Boba_Fire()
 					{
 						Boba_Printf("ALT FIRE Off");
 						NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+						// This is for DYN_WP_JANGO
 						NPC_ChangeWeapon(WP_BLASTER);			// Update Delay Timers
 					}
 				}

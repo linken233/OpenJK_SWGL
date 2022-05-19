@@ -1790,9 +1790,9 @@ void WPN_WeaponModel2(const char **holdBuf)
 
 
 /*
-====================
-Dynamic Weapon
-====================
+===============
+Dynamic Weapons
+===============
 */
 
 void DYN_WPN_WeaponType(const char **holdBuf)
