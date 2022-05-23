@@ -852,7 +852,7 @@ void CG_DrawWeaponSelect( void );
 void CG_OutOfAmmoChange( void );	// should this be in pmove?
 
 qboolean CG_IsWeaponPistol(gentity_t *ent);
-qboolean CG_ChangeViewDualWielding(void);
+qboolean CG_ChangeFirstPersonView(void);
 
 qboolean CG_IsWeaponDynamic(int weaponNum);
 int CG_GetDynWpnNum(int weaponNum, int dynWpnVal);

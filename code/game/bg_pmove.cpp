@@ -231,7 +231,7 @@ qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 
 qboolean BG_AllowThirdPersonSpecialMove( playerState_t *ps )
 {
-	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || CG_ChangeViewDualWielding()) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
+	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || CG_ChangeFirstPersonView()) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
 }
 /*
 ===============

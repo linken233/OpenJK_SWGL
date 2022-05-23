@@ -1671,7 +1671,7 @@ static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 
 	if ( !client
 		|| cg_drawBreath.integer == 0
-		|| (!cg.renderingThirdPerson && !((cg_trueguns.integer || CG_ChangeViewDualWielding()) || client->ps.weapon == WP_MELEE || client->ps.weapon == WP_SABER ))
+		|| (!cg.renderingThirdPerson && !((cg_trueguns.integer || CG_ChangeFirstPersonView()) || client->ps.weapon == WP_MELEE || client->ps.weapon == WP_SABER ))
 		|| client->ps.pm_type == PM_DEAD
 		|| client->breathPuffTime > cg.time )
 	{
@@ -3057,7 +3057,7 @@ static void CG_PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t torso[3], v
 	int			i;
 	qboolean	looking = qfalse, talking = qfalse;
 
-	if ( (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeViewDualWielding()) && !cg.zoomMode) || cent->gent->client->ps.weapon == WP_SABER || cent->gent->client->ps.weapon == WP_MELEE) && cent->gent && cent->gent->s.number == 0 )
+	if ( (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode) || cent->gent->client->ps.weapon == WP_SABER || cent->gent->client->ps.weapon == WP_MELEE) && cent->gent && cent->gent->s.number == 0 )
 	{
 		// If we are rendering third person, we should just force the player body to always fully face
 		//	whatever way they are looking, otherwise, you can end up with gun shots coming off of the
@@ -8025,7 +8025,7 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
-	if(cent->currentState.number == 0 && !cg.renderingThirdPerson && (!(cg_trueguns.integer || CG_ChangeViewDualWielding()) || cg.zoomMode))//!cg_thirdPerson.integer )
+	if(cent->currentState.number == 0 && !cg.renderingThirdPerson && (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) || cg.zoomMode))//!cg_thirdPerson.integer )
 	{
 		calcedMp = qtrue;
 	}
@@ -8076,7 +8076,7 @@ Ghoul2 Insert Start
 			{//no viewentity
 				if ( cent->currentState.number == cg.snap->ps.clientNum )
 				{//I am the player
-					if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeViewDualWielding()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+					if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 					{//not using saber or fists
 						ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 					}
@@ -8084,7 +8084,7 @@ Ghoul2 Insert Start
 			}
 			else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 			{//I am the view entity
-				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeViewDualWielding()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using first person saber test or, if so, not using saber
 					ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -8405,7 +8405,7 @@ Ghoul2 Insert Start
 		if ( cent->currentState.number != 0
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
-			|| ( (cg_trueguns.integer || CG_ChangeViewDualWielding()) && !cg.zoomMode )
+			|| ( (cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode )
 			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
 			)
 		{//in some third person mode or NPC
@@ -8460,7 +8460,7 @@ Ghoul2 Insert Start
 		//Restrict True View Model changes to the player and do the True View camera view work.
 		if (cg.snap && cent->currentState.number == cg.snap->ps.viewEntity && cg_truebobbing.integer)
 		{
-			if ( !cg.renderingThirdPerson && ((cg_trueguns.integer || CG_ChangeViewDualWielding()) || cent->currentState.weapon == WP_SABER
+			if ( !cg.renderingThirdPerson && ((cg_trueguns.integer || CG_ChangeFirstPersonView()) || cent->currentState.weapon == WP_SABER
 											  || cent->currentState.weapon == WP_MELEE) && !cg.zoomMode)
 			{
 				//<True View varibles
@@ -8738,7 +8738,7 @@ SkipTrueView:
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
 			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )  //First person saber
-			|| ( (cg_trueguns.integer || CG_ChangeViewDualWielding()) && !cg.zoomMode )
+			|| ( (cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode )
 			)
 		{//if NPC, third person, or dead, unless using saber
 			//Get eyePoint & eyeAngles
@@ -9043,7 +9043,7 @@ SkipTrueView:
 
 				if (/*( cent->currentState.eFlags & EF_FIRING || cent->currentState.eFlags & EF_ALT_FIRING ) &&*/ effect )
 				{
-					if ( (cent->gent && cent->gent->NPC) || CG_ChangeViewDualWielding() )
+					if ( (cent->gent && cent->gent->NPC) || CG_ChangeFirstPersonView() )
 					{
 						if ( !VectorCompare( oldMP, vec3_origin )
 							&& !VectorCompare( oldMD, vec3_origin ) )
@@ -9293,7 +9293,7 @@ Ghoul2 Insert End
 		{//no viewentity
 			if ( cent->currentState.number == cg.snap->ps.clientNum )
 			{//I am the player
-				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeViewDualWielding()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using saber or fists
 					renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -9301,7 +9301,7 @@ Ghoul2 Insert End
 		}
 		else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 		{//I am the view entity
-			if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeViewDualWielding()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+			if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 			{//not using saber or fists
 				renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 			}
@@ -9648,7 +9648,7 @@ Ghoul2 Insert End
 	}
 
 	//FIXME: for debug, allow to draw a cone of the NPC's FOV...
-	if ( cent->currentState.number == 0 && (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeViewDualWielding()) && !cg.zoomMode)) )
+	if ( cent->currentState.number == 0 && (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode)) )
 	{
 		playerState_t *ps = &cg.predicted_player_state;
 

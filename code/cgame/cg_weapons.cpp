@@ -1123,7 +1123,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	if ( cg.renderingThirdPerson )
 		return;
 	
-	if ( (cg_trueguns.integer || CG_ChangeViewDualWielding()) && !cg.zoomMode )
+	if ( (cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode )
 		return;
 
 	if ( ps->pm_type == PM_INTERMISSION )
@@ -2987,11 +2987,11 @@ qboolean CG_IsWeaponPistol(gentity_t *ent)
 }
 
 /*
-=========================
-CG_ChangeViewDualWielding
-=========================
+========================
+CG_ChangeFirstPersonView
+========================
 */
-qboolean CG_ChangeViewDualWielding(void)
+qboolean CG_ChangeFirstPersonView(void)
 {
 	return (qboolean)(cg_dualWielding.integer && CG_IsWeaponPistol(player));
 }
