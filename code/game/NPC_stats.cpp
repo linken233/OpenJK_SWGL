@@ -3190,7 +3190,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else if ( parsingPlayer )
 				{
-					NPC->client->ps.stats[STAT_MAX_HEALTH] = NPC->client->pers.maxHealth = NPC->max_health = n;
+					NPC->client->ps.stats[STAT_MAX_HEALTH] = NPC->health = n;
+					NPC->client->ps.stats[STAT_ARMOR] = NPC->health = n;
 				}
 				continue;
 			}
@@ -4031,6 +4032,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 							NPC->client->ps.saber[0].blade[n].color = color;
 						}
 					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
 				}
 				else if (strlen(token)==11)
 				{
@@ -4047,6 +4052,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					if (!forcedRGBSaberColours[0][index])
 					{
 						NPC->client->ps.saber[0].blade[index].color = TranslateSaberColor( value );
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
 					}
 				}
 				else
@@ -4082,6 +4091,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 							NPC->client->ps.saber[1].blade[n].color = color;
 						}
 					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
 				}
 				else if (strlen(token)==12)
 				{
@@ -4098,6 +4111,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					if (!forcedRGBSaberColours[1][n])
 					{
 						NPC->client->ps.saber[1].blade[n].color = TranslateSaberColor( value );
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
 					}
 				}
 				else
@@ -4127,6 +4144,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						NPC->client->ps.saber[0].blade[n].color = color;
 					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
 				}
 				else if (strlen(token)==14)
 				{
@@ -4142,6 +4163,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					}
 					forcedRGBSaberColours[0][index] = qtrue;
 					NPC->client->ps.saber[0].blade[index].color = TranslateSaberColor( value );
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
 				}
 				else
 				{
@@ -4170,6 +4195,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						NPC->client->ps.saber[1].blade[n].color = color;
 					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
 				}
 				else if (strlen(token)==15)
 				{
@@ -4185,6 +4214,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					}
 					forcedRGBSaberColours[1][n] = qtrue;
 					NPC->client->ps.saber[1].blade[n].color = TranslateSaberColor( value );
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
 				}
 				else
 				{
