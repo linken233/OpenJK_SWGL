@@ -16535,6 +16535,26 @@ void WP_CheckForcedPowers( gentity_t *self, usercmd_t *ucmd )
 				ucmd->buttons |= BUTTON_FORCE_DRAIN;
 				//holds until cleared
 				break;
+			case FP_BLAST:
+				ForceBlast(self);
+				//do only once
+				self->client->ps.forcePowersForced &= ~(1 << forcePower);
+				break;
+			case FP_DESTRUCTION:
+				ForceDestruction(self);
+				//do only once
+				self->client->ps.forcePowersForced &= ~(1 << forcePower);
+				break;
+			case FP_FEAR:
+				ForceFear(self);
+				//do only once
+				self->client->ps.forcePowersForced &= ~(1 << forcePower);
+				break;
+			case FP_LIGHTNING_STRIKE:
+				ForceLightningStrike(self);
+				//do only once
+				self->client->ps.forcePowersForced &= ~(1 << forcePower);
+				break;
 			case FP_SEE:
 				//nothing
 				break;

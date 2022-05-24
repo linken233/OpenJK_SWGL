@@ -2097,11 +2097,26 @@ void G_SetSabersFromCVars( gentity_t *ent )
 		}
 	}
 	else if ( g_saber_color->string )
-	{//FIXME: how to specify color for each blade and/or color for second saber?
-		saber_colors_t color = TranslateSaberColor( g_saber_color->string );
-		for ( int n = 0; n < MAX_BLADES; n++ )
+	{
+		// Grievous's saber colors are always following a blue/green pattern. But allow for other colors to mix and match.
+		if (!Q_stricmp("grievous_right", g_saber->string) || !Q_stricmp("grievous_left", g_saber->string))
 		{
-			ent->client->ps.saber[0].blade[n].color = color;
+			ent->client->ps.saber[0].blade[0].color = TranslateSaberColor(g_saber_color->string);
+
+			// Just in case the player only wants 1 of the grievous sabers
+			if(g_saber2_color->string)
+				ent->client->ps.saber[0].blade[1].color = TranslateSaberColor(g_saber2_color->string);
+			else
+				ent->client->ps.saber[0].blade[1].color = TranslateSaberColor(g_saber_color->string);
+		}
+		else
+		{
+			//FIXME: how to specify color for each blade and/or color for second saber?
+			saber_colors_t color = TranslateSaberColor(g_saber_color->string);
+			for (int n = 0; n < MAX_BLADES; n++)
+			{
+				ent->client->ps.saber[0].blade[n].color = color;
+			}
 		}
 	}
 	if ( g_saber2->string
@@ -2139,11 +2154,22 @@ void G_SetSabersFromCVars( gentity_t *ent )
 					}
 				}
 				else if ( g_saber2_color->string )
-				{//FIXME: how to specify color for each blade and/or color for second saber?
-					saber_colors_t color = TranslateSaberColor( g_saber2_color->string );
-					for ( int n = 0; n < MAX_BLADES; n++ )
+				{
+					// Grievous's saber colors are always following a blue/green pattern. But allow for other colors to mix and match.
+					if (!Q_stricmp("grievous_left", g_saber2->string) || !Q_stricmp("grievous_right", g_saber2->string))
 					{
-						ent->client->ps.saber[1].blade[n].color = color;
+						// Don't bother checking for dual wielding since we know that's already the case.
+						ent->client->ps.saber[1].blade[0].color = TranslateSaberColor(g_saber2_color->string);
+						ent->client->ps.saber[1].blade[1].color = TranslateSaberColor(g_saber_color->string);
+					}
+					else
+					{
+						//FIXME: how to specify color for each blade and/or color for second saber?
+						saber_colors_t color = TranslateSaberColor(g_saber2_color->string);
+						for (int n = 0; n < MAX_BLADES; n++)
+						{
+							ent->client->ps.saber[1].blade[n].color = color;
+						}
 					}
 				}
 			}
@@ -2287,12 +2313,12 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 			if (ent == player)
 			{
 				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
-				gi.cvar_set("g_saber_color", GetSaberColor(ent->client->ps.saber[0].blade[0].color));
+				gi.cvar_set("g_saber_color", g_saber_color->string);
 
 				if (player->client->ps.dualSabers)
 				{
-					gi.cvar_set("g_saber2", ent->client->ps.saber[0].name);
-					gi.cvar_set("g_saber2_color", GetSaberColor(ent->client->ps.saber[1].blade[0].color));
+					gi.cvar_set("g_saber2", ent->client->ps.saber[1].name);
+					gi.cvar_set("g_saber2_color", g_saber2_color->string);
 				}
 				else
 				{

@@ -1938,13 +1938,13 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
 
-						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
 						{
 							ForceStasis(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
 						{
 							ForceFear(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
@@ -1956,13 +1956,13 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
 						{
 							ForceDestruction(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
 						}
 
-						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_BLAST, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_BLAST, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
 						{
 							ForceBlast(NPC);
 							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
