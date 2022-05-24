@@ -273,12 +273,12 @@ typedef enum //# setType_e
 	SET_FORCE_PROTECT,//## %t="BOOL_TYPES" # Causes this ent to start a force protect at whatever level of force protect they have
 	SET_FORCE_ABSORB,//## %t="BOOL_TYPES" # Causes this ent to do start a force absorb at whatever level of force absorb they have
 	SET_FORCE_DRAIN,//## %t="BOOL_TYPES" # Causes this ent to start force draining their enemy at whatever level of force drain they have (will drain until scripted to stop)
-	SET_FORCE_STASIS,
-	SET_FORCE_BLAST,
-	SET_FORCE_GRASP,
-	SET_FORCE_DESTRUCTION,
-	SET_FORCE_LIGHTNING_STRIKE,
-	SET_FORCE_FEAR,
+	SET_FORCE_STASIS,//## %t="BOOL_TYPES" # Causes this ent to do Force Stasis at whatever level of Force Stasis they have.
+	SET_FORCE_BLAST,//## %t="BOOL_TYPES" # Causes this ent to do Force Blast at whatever level of Force Blast they have.
+	SET_FORCE_GRASP,//## %t="BOOL_TYPES" # Causes this ent to do Force Grasp at whatever level of Force Grasp they have (will grasp until scripted to stop).
+	SET_FORCE_DESTRUCTION,//## %t="BOOL_TYPES" # Causes this ent to fire Force Destruction at whatever level of Force Destruction they have.
+	SET_FORCE_LIGHTNING_STRIKE,//## %t="BOOL_TYPES" # Causes this ent to fire Lightning Strike at whatever level of Lightning Strike they have.
+	SET_FORCE_FEAR,//## %t="BOOL_TYPES" # Causes this ent to fire Force Fear at whatever level of Force Fear they have.
 	SET_WINTER_GEAR, //## %t="BOOL_TYPES" # Set the player to wear his/her winter gear (skins torso_g1 and lower_e1), or restore the default skins.
 	SET_NO_ANGLES, //## %t="BOOL_TYPES" # This NPC/player will not have any bone angle overrides or pitch or roll (should only be used in cinematics)
 				   
