@@ -349,6 +349,9 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 		case WP_NOGHRI_STICK:
 			attDelay += Q_irand( 0, 500 );
 			break;
+		case WP_SBD:
+			attDelay += Q_irand( 0, 500 );
+			break;
 
 		/*
 		case WP_DEMP2:
@@ -1027,6 +1030,21 @@ void ChangeWeapon(gentity_t *ent, int newWeapon)
 			ent->NPC->burstSpacing = 750;//attack debounce
 		break;
 
+	case WP_SBD:
+		ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
+		ent->NPC->burstMin = 3;
+#ifdef BASE_SAVE_COMPAT
+		ent->NPC->burstMean = 3;
+#endif
+		ent->NPC->burstMax = 3;
+		if (g_spskill->integer == 0)
+			ent->NPC->burstSpacing = 1500;//attack debounce
+		else if (g_spskill->integer == 1)
+			ent->NPC->burstSpacing = 1000;//attack debounce
+		else
+			ent->NPC->burstSpacing = 500;//attack debounce
+		break;
+
 	default:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
 		break;
@@ -1506,6 +1524,7 @@ float NPC_MaxDistSquaredForWeapon (void)
 	case WP_CLONECOMMANDO:
 	case WP_REBELRIFLE:
 	case WP_BOBA:
+	case WP_SBD:
 		return 1024 * 1024;//should be shorter?
 		break;
 

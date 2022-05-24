@@ -14108,6 +14108,7 @@ static void PM_Weapon( void )
 				break;
 
 			case WP_BLASTER:
+			case WP_SBD:
 				PM_SetAnim( pm, SETANIM_TORSO, BOTH_ATTACK3, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART);
 				break;
 
@@ -15078,7 +15079,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
-	if (pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode)
+	if ((pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode) || pm->ps->weapon == WP_SBD)
 	{
 		// Don't let the alt-fire get through.
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;

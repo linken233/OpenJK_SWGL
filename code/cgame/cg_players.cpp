@@ -8861,7 +8861,7 @@ SkipTrueView:
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, cent->gent->client->renderInfo.muzzlePoint );
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, cent->gent->client->renderInfo.muzzleDir );
 				}
-				else if ( cent->gent && cent->gent->client && cent->gent->client->NPC_class == CLASS_GALAKMECH )
+				else if ( cent->gent && cent->gent->client && (cent->gent->client->NPC_class == CLASS_GALAKMECH || cent->gent->client->ps.weapon == WP_SBD) )
 				{
 					int bolt = -1;
 					if ( cent->gent->lockCount )

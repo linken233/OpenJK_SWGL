@@ -6024,6 +6024,7 @@ void PM_TorsoAnimation( void )
 
 				case WP_BLASTER:
 				case WP_THEFIRSTORDER:
+				case WP_SBD:
 					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
 					//PM_SetAnim(pm,SETANIM_LEGS,BOTH_ATTACK2,SETANIM_FLAG_NORMAL);
 					break;
@@ -6343,6 +6344,7 @@ void PM_TorsoAnimation( void )
 					break;
 
 				case WP_BLASTER:
+				case WP_SBD:
 					if ( weaponBusy )
 					{
 						PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);

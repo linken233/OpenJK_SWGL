@@ -120,6 +120,17 @@ void AddScore( gentity_t *ent, int score ) {
 	ent->client->ps.persistant[PERS_SCORE] += score;
 }
 
+static qboolean IsWeaponDroppable(int weapon)
+{
+	switch (weapon)
+	{
+		case WP_SBD:
+			return qfalse;
+		default:
+			return qtrue;
+	}
+}
+
 /*
 =================
 TossClientItems
@@ -214,7 +225,7 @@ gentity_t *TossClientItems( gentity_t *self )
 				item = FindItemForWeapon( (weapon_t) weapon );
 			}
 		}
-		if ( item && !dropped )
+		if ( item && !dropped && IsWeaponDroppable(weapon) )
 		{
 			// spawn the item
 			dropped = Drop_Item( self, item, 0, qtrue );
@@ -5448,8 +5459,9 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_BLASTER:
 		case MOD_BLASTER_ALT:
 			weapon = WP_BLASTER;
-			weapon = WP_THEFIRSTORDER;
-			weapon = WP_CLONECARBINE;
+			break;
+		case MOD_SBD:
+			weapon = WP_SBD;
 			break;
 		case MOD_CLONECOMMANDO:
 		case MOD_CLONECOMMANDO_ALT:
@@ -6050,6 +6062,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_REBELRIFLE_ALT:
 				case MOD_BOBA:
 				case MOD_BOBA_ALT:
+				case MOD_SBD:
 				case MOD_REPEATER:
 				case MOD_FLECHETTE:
 				case MOD_WATER:

@@ -285,7 +285,8 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 			NPC->s.weapon==WP_CLONECARBINE ||
 			NPC->s.weapon==WP_CLONECOMMANDO ||
 			NPC->s.weapon==WP_REBELRIFLE ||
-			NPC->s.weapon==WP_BOBA)
+			NPC->s.weapon==WP_BOBA ||
+			NPC->s.weapon==WP_SBD)
 		{
 			yawSpeed *= 10.0f;
 		}

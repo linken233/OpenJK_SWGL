@@ -510,6 +510,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 	case WP_THEFIRSTORDER:
 	case WP_REBELRIFLE:
 	case WP_BOBA:
+	case WP_SBD:
 		cgs.effects.blasterShotEffect			= theFxScheduler.RegisterEffect( "blaster/shot" );
 													theFxScheduler.RegisterEffect( "blaster/NPCshot" );
 //		cgs.effects.blasterOverchargeEffect		= theFxScheduler.RegisterEffect( "blaster/overcharge" );
@@ -1593,6 +1594,7 @@ const char *weaponDesc[WP_NUM_WEAPONS - 1] =
 "CLONECOMMANDO_DESC",
 "REBELRIFLE_DESC",
 "BOBA_DESC",
+"SBD_DESC",
 };
 
 const char *dynWpnDesc[DYN_WP_NUM_WEAPONS-1] =
@@ -2993,7 +2995,7 @@ CG_ChangeFirstPersonView
 */
 qboolean CG_ChangeFirstPersonView(void)
 {
-	return (qboolean)(cg_dualWielding.integer && CG_IsWeaponPistol(player));
+	return (qboolean)((cg_dualWielding.integer && CG_IsWeaponPistol(player)) || player->client->ps.weapon == WP_SBD);
 }
 
 /*
@@ -3463,6 +3465,7 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 	case WP_THEFIRSTORDER:
 	case WP_REBELRIFLE:
 	case WP_BOBA:
+	case WP_SBD:
 		FX_BlasterWeaponHitWall( origin, dir );
 		break;
 
@@ -3643,6 +3646,7 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 	case WP_THEFIRSTORDER:
 	case WP_REBELRIFLE:
 	case WP_BOBA:
+	case WP_SBD:
 		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 

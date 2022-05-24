@@ -170,6 +170,7 @@ qboolean playerUsableWeapons[WP_NUM_WEAPONS] =
 	qtrue,//WP_CLONECOMMANDO,
 	qtrue,//WP_REBELRIFLE,
 	qtrue,//WP_BOBA
+	qtrue//WP_SBD
 
 	//# #eol
 	//WP_NUM_WEAPONS
@@ -302,7 +303,8 @@ const int defaultDamage[] = {
 	CLONECARBINE_DAMAGE,		// WP_CLONECARBINE
 	CLONECOMMANDO_DAMAGE,		// WP_CLONECOMMANDO
 	REBELRIFLE_DAMAGE,			// WP_REBELRIFLE
-	BOBA_DAMAGE				// WP_BOBA
+	BOBA_DAMAGE,				// WP_BOBA
+	SBD_DAMAGE					// WP_SBD
 };
 
 const int defaultAltDamage[] = {
@@ -345,7 +347,8 @@ const int defaultAltDamage[] = {
 	CLONECARBINE_ALT_DAMAGE, // WP_CLONECARBINE
 	CLONECOMMANDO_ALT_DAMAGE,// WP_CLONECOMMANDO
 	REBELRIFLE_SCOPE_DAMAGE,// WP_REBELRIFLE
-	BOBA_SCOPE_DAMAGE		// WP_BOBA
+	BOBA_SCOPE_DAMAGE,		// WP_BOBA
+	0						// WP_SBD
 };
 
 const int defaultSplashDamage[] = {
@@ -388,7 +391,8 @@ const int defaultSplashDamage[] = {
 	0,				   				// WP_CLONECARBINE
 	0,				   				// WP_CLONECOMMANDO
 	0,						   	 	// WP_REBELRIFLE
-	0				   				// WP_BOBA
+	0,				   				// WP_BOBA
+	0				   				// WP_SBD
 };
 
 const float defaultSplashRadius[] = {
@@ -431,7 +435,8 @@ const float defaultSplashRadius[] = {
 	0.0f,							// WP_CLONECARBINE
 	0.0f,							// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
-	0.0f							// WP_BOBA
+	0.0f,							// WP_BOBA
+	0.0f							// WP_SBD
 };
 
 const int defaultAltSplashDamage[] = {
@@ -474,7 +479,8 @@ const int defaultAltSplashDamage[] = {
 	0,								// WP_CLONECARBINE
 	CLONECOMMANDO_ALT_SPLASH_DAMAGE,// WP_CLONECOMMANDO
 	0,				   				// WP_REBELRIFLE
-	0				   				// WP_BOBA
+	0,				   				// WP_BOBA
+	0				   				// WP_SBD
 };
 
 const float defaultAltSplashRadius[] = {
@@ -517,7 +523,8 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_CLONECARBINE
 	CLONECOMMANDO_ALT_SPLASH_RADIUS,// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
-	0.0f							// WP_BOBA
+	0.0f,							// WP_BOBA
+	0.0f							// WP_SBD
 };
 
 wpnParms_t WpnParms[] =
@@ -681,6 +688,8 @@ void WPN_WeaponType( const char **holdBuf)
 		weaponNum = WP_REBELRIFLE;
 	else if (!Q_stricmp(tokenStr, "WP_BOBA"))
 		weaponNum = WP_BOBA;
+	else if (!Q_stricmp(tokenStr, "WP_SBD"))
+		weaponNum = WP_SBD;
 	else
 	{
 		weaponNum = 0;

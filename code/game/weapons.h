@@ -84,6 +84,7 @@ typedef enum //# weapon_e
 	WP_CLONECOMMANDO,
 	WP_REBELRIFLE,
 	WP_BOBA,
+	WP_SBD,
 
 	//# #eol
 	// Make sure to update MAX_NUM_WEAPONS
@@ -566,6 +567,18 @@ typedef struct dynamicWpnData_s
 #define BOBA_NPC_DAMAGE_EASY	6
 #define BOBA_NPC_DAMAGE_NORMAL	12
 #define BOBA_NPC_DAMAGE_HARD	16
+
+// Super Battle Droid
+//---------
+#define SBD_VELOCITY			2300
+#define SBD_NPC_VEL_CUT			0.5f
+#define SBD_NPC_HARD_VEL_CUT	0.7f
+#define SBD_DAMAGE				12
+#define SBD_NPC_DAMAGE_EASY		3
+#define SBD_NPC_DAMAGE_NORMAL	6
+#define SBD_NPC_DAMAGE_HARD		8
+#define SBD_LEFT_SHOT			-3.0f
+#define SBD_RIGHT_SHOT			5.0f
 
 
 #endif//#ifndef __WEAPONS_H__

@@ -893,3 +893,61 @@ void WP_FireBobaRifle( gentity_t *ent, qboolean alt_fire )
 		WP_FireBobaRifleMissile( ent, muzzle, dir, alt_fire );
 	}
 }
+
+//---------------
+//	Super Battle Droid
+//---------------
+void WP_FireSBD(gentity_t *ent)
+{
+	int velocity = SBD_VELOCITY;
+	int damage = SBD_DAMAGE;
+	float scalers[2] = {SBD_LEFT_SHOT, SBD_RIGHT_SHOT};
+
+	// If an enemy is shooting at us, lower the velocity so you have a chance to evade
+	if (ent->client && ent->client->ps.clientNum != 0)
+	{
+		if ( g_spskill->integer < 2 )
+		{
+			velocity *= SBD_NPC_VEL_CUT;
+		}
+		else
+		{
+			velocity *= SBD_NPC_HARD_VEL_CUT;
+		}
+	}
+
+	WP_TraceSetStart(ent, muzzle, vec3_origin, vec3_origin);
+
+	for (int i = 0; i < 2; i++)
+	{
+		VectorMA(muzzle, scalers[i], vrightVec, muzzle);
+
+		gentity_t *missile = CreateMissile(muzzle, forwardVec, velocity, 10000, ent, qfalse);
+
+		missile->classname = "blaster_proj";
+		missile->s.weapon = WP_SBD;
+
+		// Do the damages
+		if (ent->s.number != 0)
+		{
+			if ( g_spskill->integer == 0 )
+			{
+				damage = SBD_NPC_DAMAGE_EASY;
+			}
+			else if ( g_spskill->integer == 1 )
+			{
+				damage = SBD_NPC_DAMAGE_NORMAL;
+			}
+			else
+			{
+				damage = SBD_NPC_DAMAGE_HARD;
+			}
+		}
+
+		missile->damage = damage;
+		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+		missile->methodOfDeath = MOD_SBD;
+		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+		missile->bounceCount = 8;
+	}
+}

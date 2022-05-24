@@ -95,3 +95,4 @@ void WP_FireRebelRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean
 void WP_FireRebelRifle(gentity_t *ent, qboolean alt_fire);
 void WP_FireBobaRifleMissile(gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire);
 void WP_FireBobaRifle(gentity_t *ent, qboolean alt_fire);
+void WP_FireSBD(gentity_t *ent);

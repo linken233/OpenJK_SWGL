@@ -1025,6 +1025,7 @@ static const netField_t	playerStateFields[] =
 { PSF(dynWpnVals[31]), 6 },
 { PSF(dynWpnVals[32]), 6 },
 { PSF(dynWpnVals[33]), 6 },
+{ PSF(dynWpnVals[34]), 6 },
 { PSF(weaponstate),	  4 },
 { PSF(batteryCharge),	16 },
 { PSF(viewangles[0]), 0 },
