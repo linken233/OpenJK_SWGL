@@ -6708,6 +6708,7 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 			// Only inquisitors should do this, not the player or anyone else
 			if (self != player && (!Q_stricmp(GRAND_INQ, self->NPC_type)
 				|| !Q_stricmp(SECOND_SIS, self->NPC_type)
+				|| !Q_stricmp(THIRD_SIS, self->NPC_type)
 				|| !Q_stricmp(FIFTH_BRO, self->NPC_type)
 				|| !Q_stricmp(SEVENTH_SIS, self->NPC_type)
 				|| !Q_stricmp(EIGHTH_BRO, self->NPC_type)))

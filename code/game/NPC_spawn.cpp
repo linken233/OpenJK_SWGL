@@ -377,6 +377,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	}
 	else if (!Q_stricmp(GRAND_INQ, ent->NPC_type)
 		|| !Q_stricmp(SECOND_SIS, ent->NPC_type)
+		|| !Q_stricmp(THIRD_SIS, ent->NPC_type)
 		|| !Q_stricmp(FIFTH_BRO, ent->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, ent->NPC_type)
 		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type))
