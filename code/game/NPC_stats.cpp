@@ -3145,6 +3145,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 
+				// Special Mechanic
+				if (!Q_stricmp(token, "specialMechanic")) 
+				{
+					// To fill in later, for now just to stop the error message
+					continue;
+				}
+
 				// race
 		//		if ( !Q_stricmp( token, "race" ) )
 		//		{
@@ -3190,8 +3197,9 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else if ( parsingPlayer )
 				{
-					NPC->client->ps.stats[STAT_MAX_HEALTH] = NPC->health = n;
-					NPC->client->ps.stats[STAT_ARMOR] = NPC->health = n;
+					player->client->ps.stats[STAT_MAX_HEALTH] = n;
+
+					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);
 				}
 				continue;
 			}
