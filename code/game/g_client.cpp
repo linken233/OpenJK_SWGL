@@ -2069,6 +2069,9 @@ extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 void G_SetSabersFromCVars( gentity_t *ent )
 {
+	// Set dual sabers to false so we start with a clean slate when changing sabers from dual to single.
+	ent->client->ps.dualSabers = qfalse;
+
 	if ( g_saber->string
 		&& g_saber->string[0]
 		&& Q_stricmp( "none", g_saber->string )
