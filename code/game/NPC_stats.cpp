@@ -3200,6 +3200,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					player->client->ps.stats[STAT_MAX_HEALTH] = n;
 
 					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);
+
+					player->client->ps.stats[STAT_ARMOR] = n;
 				}
 				continue;
 			}
