@@ -1293,6 +1293,19 @@ void SP_trigger_hurt( gentity_t *self )
 	if ( !self->damage ) {
 		self->damage = 5;
 	}
+	else if (self->damage < 0)
+	{
+		 // Assuming a damage of -1 or lower is intended as a deathdrop (popular in Multiplayer maps)
+		self->damage = 9999999;
+		if (!(self->spawnflags & 32))
+		{
+			self->spawnflags |= 32;
+		}
+		if (!(self->spawnflags & 16))
+		{
+			self->spawnflags |= 16;
+		}
+	}
 
 	self->delay *= 1000;
 	self->wait *= 1000;
