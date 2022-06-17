@@ -1906,6 +1906,8 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 		if (!Q_stricmp(ent->NPC_type, "player"))
 		{// Or check NPC_type against player's NPC_type?
 			newent->NPC->aiFlags |= NPCAI_MATCHPLAYERWEAPON;
+			if (!newent->NPC_team)
+				newent->client->playerTeam = player->client->playerTeam;
 		}
 		else if (!Q_stricmp(ent->NPC_type, "test"))
 		{
