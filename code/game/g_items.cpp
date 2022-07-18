@@ -1672,6 +1672,9 @@ void ItemUse_Bacta(gentity_t *ent)
 
 	ent->client->ps.inventory[INV_BACTA_CANISTER]--;
 
-	G_SoundOnEnt( ent, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", Q_irand( 1, 4 ), g_sex->string[0] ) );
+	if (!Q_stricmp("kyle", ent->client->clientInfo.customBasicSoundDir))
+		G_SoundOnEnt(ent, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", Q_irand(1, 4)));
+	else
+		G_SoundOnEnt( ent, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", Q_irand( 1, 4 ), g_sex->string[0] ) );
 }
 

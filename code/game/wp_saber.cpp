@@ -15258,7 +15258,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 				int index = Q_irand( 1, 4 );
 				if ( self->s.number < MAX_CLIENTS )
 				{
-					G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", index, g_sex->string[0] ) );
+					if(!Q_stricmp("kyle", self->client->clientInfo.customBasicSoundDir))
+						G_SoundOnEnt(self, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", index));
+					else
+						G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", index, g_sex->string[0] ) );
 				}
 				else if ( self->NPC )
 				{
@@ -15270,7 +15273,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 							if ( self->NPC->stats.sex == SEX_MALE
 								|| self->NPC->stats.sex == SEX_NEUTRAL )
 							{
-								G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_m.mp3", index ) );
+								if (!Q_stricmp("kyle", self->soundSet))
+									G_SoundOnEnt(self, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", index));
+								else
+									G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_m.mp3", index ) );
 							}
 							else//all other sexes use female sounds
 							{

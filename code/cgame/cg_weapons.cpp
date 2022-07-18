@@ -338,6 +338,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgi_S_RegisterSound( "sound/weapons/force/speedloop.mp3" );
 		for ( i = 1; i < 5; i++ )
 		{
+			cgi_S_RegisterSound(va("sound/weapons/force/heal%d.mp3", i));
 			cgi_S_RegisterSound( va( "sound/weapons/force/heal%d_m.mp3", i ) );
 			cgi_S_RegisterSound( va( "sound/weapons/force/heal%d_f.mp3", i ) );
 		}
@@ -787,6 +788,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 		case INV_BACTA_CANISTER:
 			for ( int i = 1; i < 5; i++ )
 			{
+				cgi_S_RegisterSound(va("sound/weapons/force/heal%d.mp3", i));
 				cgi_S_RegisterSound( va( "sound/weapons/force/heal%d_m.mp3", i ) );
 				cgi_S_RegisterSound( va( "sound/weapons/force/heal%d_f.mp3", i ) );
 			}
