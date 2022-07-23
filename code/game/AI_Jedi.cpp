@@ -7802,7 +7802,7 @@ void NPC_BSJedi_Default( void )
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("2nd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "2nd_brother");
+				WP_SetSaber(NPC, 0, "2nd_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("3rd_sister", NPC->client->ps.saber[0].name))
 			{
@@ -7810,7 +7810,7 @@ void NPC_BSJedi_Default( void )
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("3rd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "3rd_brother");
+				WP_SetSaber(NPC, 0, "3rd_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("4th_sister", NPC->client->ps.saber[0].name))
 			{
@@ -7818,7 +7818,7 @@ void NPC_BSJedi_Default( void )
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("4th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "4th_brother");
+				WP_SetSaber(NPC, 0, "4th_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("5th_brother", NPC->client->ps.saber[0].name))
 			{
@@ -7842,7 +7842,7 @@ void NPC_BSJedi_Default( void )
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("9th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "9th_brother");
+				WP_SetSaber(NPC, 0, "9th_sister");
 			}
 		}
 
