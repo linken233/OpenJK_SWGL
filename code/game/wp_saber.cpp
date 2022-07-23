@@ -6720,15 +6720,39 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 				// Inquisitor sabers should switch to staff when thrown
-				if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
+				else if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
 				{
 					WP_SetSaber(self, 0, "7th_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 				// Inquisitor sabers should switch to staff when thrown
-				if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
+				else if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
 				{
 					WP_SetSaber(self, 0, "5th_brother_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("2nd_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "2nd_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("3rd_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "3rd_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("4th_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "4th_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("9th_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "9th_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 			}
