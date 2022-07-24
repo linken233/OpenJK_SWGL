@@ -239,11 +239,11 @@ int forcePowerNeeded[NUM_FORCE_POWERS] =
 	20,//FP_SEE,//duration - detect/see hidden enemies
 
 	20,//FP_STASIS,//Duration
-	30,//FP_BLAST,//Instant
+	40,//FP_BLAST,//Instant
 	1,//FP_GRASP,//hold/duration
 
 	// Dark Side
-	1,//FP_DESTRUCTION,
+	70,//FP_DESTRUCTION,
 	30,//FP_LIGHTNING_STRIKE,
 	20,//FP_FEAR,
 
