@@ -2820,5 +2820,61 @@ void ClientDisconnect( int clientNum ) {
 
 }
 
+qboolean PlayingMission()
+{
+	// All mission maps in JKO, JKA, and SWGL
+	char* jk2maps[] = { "kejim_post", "kejim_base", "artus_mine", "artus_detention", "artus_topside",
+		"valley", "yavin_temple", "yavin_trial", "ns_streets", "ns_hideout", "ns_starpad",
+		"bespin_undercity", "bespin_streets", "bespin_platform", "cairn_bay", "cairn_assembly",
+		"cairn_reactor", "cairn_dock1", "doom_comm", "doom_detention", "doom_shields", "yavin_swamp",
+		"yavin_canyon", "yavin_courtyard", "yavin_final" };
+
+	char* jkamaps[] = { "academy1", "academy2", "academy3", "academy4", "academy5", "academy6",
+						"hoth2", "hoth3", "kor1", "kor2", "t1_danger", "t1_fatal", "t1_inter",
+						"t1_rail", "t1_sour", "t1_surprise", "t2_dpred", "t2_rancor", "t2_rogue", "t2_trip",
+						"t2_wedge", "t3_bounty", "t3_byss", "t3_hevil", "t3_rift", "t3_stamp", "taspir1", "taspir2",
+						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2" };
+
+	// Not including cutscene-only maps (because the player isn't in control so it doesn't matter)
+	char* swglmaps[] = { 
+						 "ep1_dotf_obi",  "ep1_dotf_qui", "ep1_dotf_qui_3", "ep1_dotf_qui_4", "ep1_dotf_maul", "ep1_dotf_maul_3", "ep1_dotf_maul_7", "ep1_dotf_maul_8",
+						 "ep3_ok_anakin_2", "ep3_ok_anakin_3", "ep3_ok_anakin_4", "ep3_ok_anakin_5", "ep3_ok_anakin_r1", "ep3_ok_anakin_r2", "ep3_ok_anakin_r3", "ep3_ok_anakin_r4", "ep3_ok_anakin_r5", "ep3_ok_anakin_r6", "ep3_ok_anakin_r7", "ep3_ok_anakin_r8",
+						 "ep3_ok_clone_1", "ep3_ok_drallig_2", "ep3_ok_drallig_3", "ep3_ok_drallig_4",
+						 "ep3_fotr_windu", "ep3_fotr_palpatine",
+						 "ep4_hfd_stormie", "ep4_dr_ben", "ep4_dr_luke",
+						 "ep6_fvs_luke", "ep6_fvs_vader", "ep6_fvs_palpatine",
+						 "ep8_tlj_kylo",
+						 "kotor_sf_revan", "kotor_ttc_meetra", "order66_maul", "order66_quiobi", "order66_revan", "swtor_fe_hunter", "swtor_fe_jedi", "swtor_fe_sith", "swtor_fe_trooper", "tcw_yhbar_sidious_2"};
+
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
+
+	for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+	{
+		if (strcmp(s, jk2maps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(jkamaps) / sizeof(jkamaps[0])); i++)
+	{
+		if (strcmp(s, jkamaps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(swglmaps) / sizeof(swglmaps[0])); i++)
+	{
+		if (strcmp(s, swglmaps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
 
 

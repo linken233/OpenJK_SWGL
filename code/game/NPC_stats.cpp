@@ -44,6 +44,8 @@ extern qboolean IsPlayingOperationKnightfall(void);
 
 extern qboolean G_StandardHumanoid(const char* GLAName);
 
+extern qboolean PlayingMission();
+
 extern cvar_t *g_allowAlignmentChange;
 
 #define		MAX_MODELS_PER_LEVEL	60
@@ -3195,7 +3197,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					stats->health = n;
 				}
-				else if ( parsingPlayer )
+				else if ( parsingPlayer && !PlayingMission())
 				{
 					player->client->ps.stats[STAT_MAX_HEALTH] = n;
 
