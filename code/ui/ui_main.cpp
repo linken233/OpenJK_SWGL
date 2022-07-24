@@ -1385,7 +1385,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			missionCode = code;
 			
-			if (!Q_stricmp("ep3_ok_anakin_r1", code) && !Cvar_VariableIntegerValue("ui_knightfall"))
+			if ((!Q_stricmp("ep3_ok_anakin_r1", code) || !Q_stricmp("ep3_ok_anakin_1", code)) && !Cvar_VariableIntegerValue("ui_knightfall"))
 			{
 				Menus_OpenByName("missionMechanicMenu");
 				ui.Cvar_Set("ui_knightfall", "1");
