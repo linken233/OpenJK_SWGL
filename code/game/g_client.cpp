@@ -2839,7 +2839,8 @@ qboolean PlayingMission()
 	char* swglmaps[] = { 
 						 "ep1_dotf_obi",  "ep1_dotf_qui", "ep1_dotf_qui_3", "ep1_dotf_qui_4", "ep1_dotf_maul", "ep1_dotf_maul_3", "ep1_dotf_maul_7", "ep1_dotf_maul_8",
 						 "ep3_ok_anakin_2", "ep3_ok_anakin_3", "ep3_ok_anakin_4", "ep3_ok_anakin_5", "ep3_ok_anakin_r1", "ep3_ok_anakin_r2", "ep3_ok_anakin_r3", "ep3_ok_anakin_r4", "ep3_ok_anakin_r5", "ep3_ok_anakin_r6", "ep3_ok_anakin_r7", "ep3_ok_anakin_r8",
-						 "ep3_ok_clone_1", "ep3_ok_drallig_2", "ep3_ok_drallig_3", "ep3_ok_drallig_4",
+						 "ep3_ok_drallig_1", "ep3_ok_drallig_2", "ep3_ok_drallig_3", "ep3_ok_drallig_4",
+						 "ep3_ok_clone_1", "ep3_ok_clone_2", "ep3_ok_clone_3", "ep3_ok_clone_4",
 						 "ep3_fotr_windu", "ep3_fotr_palpatine",
 						 "ep4_hfd_stormie", "ep4_dr_ben", "ep4_dr_luke",
 						 "ep6_fvs_luke", "ep6_fvs_vader", "ep6_fvs_palpatine",
