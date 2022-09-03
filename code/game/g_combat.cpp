@@ -5733,7 +5733,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		targ->client->playerTeam == traya->client->playerTeam
 		&& traya->client->playerTeam != TEAM_SOLO)
 	{
-		if (traya->health > 0 && traya->health <= 2000000000)
+		if (traya->health > 0 && traya->health < (traya->max_health * 2) && traya->health <= 2000000000)
 		{
 			if (!Q_stricmp(NIHILUS, targ->NPC_type)
 				|| !Q_stricmp(SION, targ->NPC_type)
