@@ -57,6 +57,7 @@ extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel )
 extern qboolean UI_SaberSkinForSaber( const char *saberName, char *saberSkin );
 extern void UI_SaberAttachToChar( itemDef_t *item );
 extern void Menu_SetItemText(const menuDef_t* menu, const char* itemName, const char* text);
+extern void Menu_ShowItemByName(menuDef_t* menu, const char* p, qboolean bShow);
 
 extern qboolean PC_Script_Parse(const char **out);
 
@@ -112,6 +113,7 @@ static void		UI_UpdateCharacterCvars ( void );
 static void		UI_GetCharacterCvars ( void );
 static void		UI_GetCharacterCustomization( void );
 static void		UI_GetNPCCvars(void);
+static void		UI_RGBSaberCvars(void);
 static void		UI_UpdateSaberCvars ( void );
 static void		UI_GetSaberCvars ( void );
 static void		UI_ResetSaberCvars ( void );
@@ -174,6 +176,14 @@ void			UI_ResetDefaults( void );
 void			UI_AdjustSaveGameListBox( int currentLine );
 
 void			Menus_CloseByName(const char *p);
+
+static void UI_ApplyCharWeapons(void);
+
+static void UI_RecordCharWeapons(const char** args);
+
+static void UI_UpdateNPCCvars(void);
+
+static void UI_HiltChange(int i);
 
 // Movedata Sounds
 enum
@@ -362,6 +372,11 @@ const char* npcCode;
 
 const char* missionCode;
 
+int weaponOne;
+int weaponTwo;
+int weaponThree;
+int weaponFour;
+
 static void UI_RegisterCvars( void );
 void UI_Load(void);
 
@@ -419,6 +434,26 @@ vmCvar_t	ui_screenshotType;
 vmCvar_t	ui_npc_faction;
 vmCvar_t	ui_npc_custom;
 vmCvar_t	ui_npc_saber;
+
+vmCvar_t	ui_npc_type;
+vmCvar_t	ui_npc_skin;
+vmCvar_t	ui_npc_head;
+vmCvar_t	ui_npc_torso;
+vmCvar_t	ui_npc_legs;
+vmCvar_t	ui_npc_team;
+vmCvar_t	ui_npc_health;
+vmCvar_t	ui_npc_saberone;
+vmCvar_t	ui_npc_saberonecolor;
+vmCvar_t	ui_npc_sabertwo;
+vmCvar_t	ui_npc_sabertwocolor;
+vmCvar_t	ui_npc_weapon;
+vmCvar_t	ui_npc_lightningcolor;
+vmCvar_t	ui_npc_spawnscript;
+vmCvar_t	ui_npc_fleescript;
+vmCvar_t	ui_npc_deathscript;
+
+
+vmCvar_t	ui_saber_edit;
 
 // Mission cvars (add more as more missions get mechanics)
 vmCvar_t	ui_knightfall;
@@ -520,6 +555,23 @@ static cvarTable_t cvarTable[] =
 	{ &ui_fe_sith,				"ui_fe_sith",		"0", NULL, CVAR_ARCHIVE},
 	{ &ui_fe_trooper,			"ui_fe_trooper",		"0", NULL, CVAR_ARCHIVE},
 	{ &ui_fe_bh,				"ui_fe_bh",		"0", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_type,				"ui_npc_type",	"stormtrooper", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_skin,				"ui_npc_skin",	"default", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_head,				"ui_npc_head",	"model_default", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_torso,			"ui_npc_torso",	"model_default", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_legs,				"ui_npc_legs",	"model_default", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_team,				"ui_npc_team",	"enemy", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_health,			"ui_npc_health",	"100", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_saberone,			"ui_npc_saberone",	"single_1", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_saberonecolor,	"ui_npc_saberonecolor",	"red", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_sabertwo,			"ui_npc_sabertwo",	"single_1", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_sabertwocolor,	"ui_npc_sabertwocolor",	"red", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_weapon,			"ui_npc_weapon",	"WP_BLASTER", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_lightningcolor,	"ui_npc_lightningcolor",	"blue", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_spawnscript,		"ui_npc_spawnscript",	"spawnscripts/no_follow", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_fleescript,		"ui_npc_fleescript",	"fleescripts/surrender", NULL, CVAR_ARCHIVE},
+	{ &ui_npc_deathscript,		"ui_npc_deathscript",	"deathscripts/losehead", NULL, CVAR_ARCHIVE},
+	{ &ui_saber_edit,			"ui_saber_edit",		"0", NULL},
 
 
 };
@@ -1296,6 +1348,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_UpdateSaberHilt( qfalse );
 		}
+		else if (Q_stricmp(name, "hilt_change") == 0)
+		{	
+			const char* num;
+			String_Parse(args, &num);
+			UI_HiltChange(atoi(num));
+		}
 		else if (Q_stricmp(name, "saber_color") == 0)
 		{
 //			UI_UpdateSaberColor( qfalse );
@@ -1312,6 +1370,10 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_UpdateCharacterCvars();
 		}
+		else if (Q_stricmp(name, "updatenpccvars") == 0)
+		{
+			UI_UpdateNPCCvars();
+		}
 		else if (Q_stricmp(name, "getcharcvars") == 0)
 		{
 			UI_GetCharacterCvars();
@@ -1323,13 +1385,45 @@ static qboolean UI_RunMenuScript ( const char **args )
 
 			missionCode = code;
 			
-			if (!Q_stricmp("ep3_ok_anakin_r1", code) && !Cvar_VariableIntegerValue("ui_knightfall"))
+			if ((!Q_stricmp("ep3_ok_anakin_r1", code) || !Q_stricmp("ep3_ok_anakin_1", code)) && !Cvar_VariableIntegerValue("ui_knightfall"))
 			{
 				Menus_OpenByName("missionMechanicMenu");
 				ui.Cvar_Set("ui_knightfall", "1");
 
 				menuDef_t* menu = Menu_GetFocused();
 				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_KNIGHTFALL_INFO");
+			}
+			else if (!Q_stricmp("swtor_fe_sith", code) && !Cvar_VariableIntegerValue("ui_fe_sith"))
+			{
+				Menus_OpenByName("missionMechanicMenu");
+				ui.Cvar_Set("ui_fe_sith", "1");
+
+				menuDef_t* menu = Menu_GetFocused();
+				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_SITH_INFO");
+			}
+			else if (!Q_stricmp("swtor_fe_jedi", code) && !Cvar_VariableIntegerValue("ui_fe_jedi"))
+			{
+				Menus_OpenByName("missionMechanicMenu");
+				ui.Cvar_Set("ui_fe_jedi", "1");
+
+				menuDef_t* menu = Menu_GetFocused();
+				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_JEDI_INFO");
+			}
+			else if (!Q_stricmp("swtor_fe_hunter", code) && !Cvar_VariableIntegerValue("ui_fe_bh"))
+			{
+				Menus_OpenByName("missionMechanicMenu");
+				ui.Cvar_Set("ui_fe_bh", "1");
+
+				menuDef_t* menu = Menu_GetFocused();
+				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_BH_INFO");
+			}
+			else if (!Q_stricmp("swtor_fe_trooper", code) && !Cvar_VariableIntegerValue("ui_fe_trooper"))
+			{
+				Menus_OpenByName("missionMechanicMenu");
+				ui.Cvar_Set("ui_fe_trooper", "1");
+
+				menuDef_t* menu = Menu_GetFocused();
+				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_TROOPER_INFO");
 			}
 			else
 			{
@@ -1340,6 +1434,26 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "goToMission") == 0)
 		{
 			ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", missionCode));
+		}
+		else if (Q_stricmp(name, "savePage") == 0)
+		{
+			const char* page;
+			String_Parse(args, &page);
+			menuDef_t* savedMenu = Menu_GetFocused();
+			savedMenu->savedPage = page;
+		}
+		else if (Q_stricmp(name, "goToSavedPage") == 0)
+		{
+			menuDef_t* menu = Menu_GetFocused();
+
+			if (menu->savedPage)
+			{
+				Menu_ShowItemByName(menu, menu->savedPage, qtrue);
+			}
+			else
+			{
+				Menu_ShowItemByName(menu, "Page1", qtrue);
+			}
 		}
 		else if (Q_stricmp(name, "getcharcustom") == 0)
 		{
@@ -1352,6 +1466,10 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "updatesabercvars") == 0)
 		{
 			UI_UpdateSaberCvars();
+		}
+		else if (Q_stricmp(name, "rgbsabercvars") == 0)
+		{
+			UI_RGBSaberCvars();
 		}
 		else if (Q_stricmp(name, "getsabercvars") == 0)
 		{
@@ -1453,6 +1571,14 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "clearweapons") == 0)
 		{
 			UI_ClearWeapons();
+		}
+		else if (Q_stricmp(name, "recordcharweapons") == 0)
+		{
+			UI_RecordCharWeapons(args);
+		}
+		else if (Q_stricmp(name, "applycharweapons") == 0)
+		{
+			UI_ApplyCharWeapons();
 		}
 		else if (Q_stricmp(name, "stopgamesounds") == 0)
 		{
@@ -2154,7 +2280,7 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
 		{
-			Cvar_Set("g_NPChead", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
+			Cvar_Set("ui_npc_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
 			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
 		}
 	}
@@ -2171,7 +2297,7 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
 		{
-			Cvar_Set("g_NPCtorso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
+			Cvar_Set("ui_npc_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
 			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[index].name);
 		}
 	}
@@ -2188,7 +2314,7 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
 		{
-			Cvar_Set("g_NPClegs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
+			Cvar_Set("ui_npc_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
 			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name);
 		}
 	}
@@ -4524,6 +4650,26 @@ static void UI_UpdateCharacterCvars ( void )
 	Cvar_Set ( "g_char_color_blue", Cvar_VariableString ( "ui_char_color_blue" ) );
 }
 
+static void UI_UpdateNPCCvars()
+{
+	Cvar_Set("g_NPCtype", Cvar_VariableString("ui_npc_type"));
+	Cvar_Set("g_NPCskin", Cvar_VariableString("ui_npc_skin"));
+	Cvar_Set("g_NPChead", Cvar_VariableString("ui_npc_head"));
+	Cvar_Set("g_NPCtorso", Cvar_VariableString("ui_npc_torso"));
+	Cvar_Set("g_NPClegs", Cvar_VariableString("ui_npc_legs"));
+	Cvar_Set("g_NPCteam", Cvar_VariableString("ui_npc_team"));
+	Cvar_Set("g_NPCweapon", Cvar_VariableString("ui_npc_weapon"));
+	Cvar_Set("g_NPCsaber", Cvar_VariableString("ui_npc_saberone"));
+	Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_npc_saberonecolor"));
+	Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_npc_sabertwo"));
+	Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_npc_sabertwocolor"));
+	Cvar_Set("g_NPCLightningColor", Cvar_VariableString("ui_npc_lightningcolor"));
+	Cvar_Set("g_NPCspawnscript", Cvar_VariableString("ui_npc_spawnscript"));
+	Cvar_Set("g_NPCfleescript", Cvar_VariableString("ui_npc_fleescript"));
+	Cvar_Set("g_NPCdeathscript", Cvar_VariableString("ui_npc_deathscript"));
+	Cvar_Set("g_NPChealth", Cvar_VariableString("ui_npc_health"));
+}
+
 static void UI_GetCharacterCvars ( void )
 {
 	Cvar_Set ( "ui_char_skin_head", Cvar_VariableString ( "g_char_skin_head" ) );
@@ -4558,9 +4704,9 @@ static void UI_GetCharacterCustomization(void)
 
 static void UI_GetNPCCvars(void)
 {
-	Cvar_Set("ui_char_skin_head", Cvar_VariableString("g_NPChead"));
-	Cvar_Set("ui_char_skin_torso", Cvar_VariableString("g_NPCtorso"));
-	Cvar_Set("ui_char_skin_legs", Cvar_VariableString("g_NPClegs"));
+	Cvar_Set("ui_char_skin_head", Cvar_VariableString("ui_npc_head"));
+	Cvar_Set("ui_char_skin_torso", Cvar_VariableString("ui_npc_torso"));
+	Cvar_Set("ui_char_skin_legs", Cvar_VariableString("ui_npc_legs"));
 	Cvar_Set("ui_char_color_red", Cvar_VariableString("g_npc_color_red"));
 	Cvar_Set("ui_char_color_green", Cvar_VariableString("g_npc_color_green"));
 	Cvar_Set("ui_char_color_blue", Cvar_VariableString("g_npc_color_blue"));
@@ -4591,10 +4737,10 @@ static void UI_UpdateSaberCvars ( void )
 	}
 	else
 	{
-		Cvar_Set("g_NPCsaber", Cvar_VariableString("ui_saber"));
-		Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_saber2"));
-		Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_saber_color"));
-		Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_saber2_color"));
+		Cvar_Set("ui_npc_saberone", Cvar_VariableString("ui_saber"));
+		Cvar_Set("ui_npc_sabertwo", Cvar_VariableString("ui_saber2"));
+		Cvar_Set("ui_npc_saberonecolor", Cvar_VariableString("ui_saber_color"));
+		Cvar_Set("ui_npc_sabertwocolor", Cvar_VariableString("ui_saber2_color"));
 	}
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber_color")) >= SABER_RGB)
@@ -4609,7 +4755,7 @@ static void UI_UpdateSaberCvars ( void )
 		}
 		else
 		{
-			Cvar_Set("g_NPCsabercolor", rgbColor);
+			Cvar_Set("ui_npc_saberonecolor", rgbColor);
 		}
 	}
 
@@ -4625,10 +4771,43 @@ static void UI_UpdateSaberCvars ( void )
 		}
 		else
 		{
-			Cvar_Set("g_NPCsabertwocolor", rgbColor);
+			Cvar_Set("ui_npc_sabertwocolor", rgbColor);
 		}
 	}
 
+	if (!Cvar_VariableString("ui_saber2"))
+	{
+		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+		playerState_t* ps;
+
+		ps = cl->gentity->client;
+		
+		ps->dualSabers = qfalse;
+	}
+
+}
+
+static void UI_RGBSaberCvars(void)
+{
+	saber_colors_t saberColour = TranslateSaberColor(Cvar_VariableString("ui_saber_color"));
+
+	if (saberColour >= SABER_RGB)
+	{
+
+		Cvar_SetValue("ui_rgb_saber_red", (saberColour & 0xff));
+		Cvar_SetValue("ui_rgb_saber_green", ((saberColour >> 8) & 0xff));
+		Cvar_SetValue("ui_rgb_saber_blue", ((saberColour >> 16) & 0xff));
+	}
+
+	saber_colors_t saber2Colour = TranslateSaberColor(Cvar_VariableString("ui_saber2_color"));
+
+	if (saber2Colour >= SABER_RGB)
+	{
+
+		Cvar_SetValue("ui_rgb_saber2_red", (saber2Colour & 0xff));
+		Cvar_SetValue("ui_rgb_saber2_green", ((saber2Colour >> 8) & 0xff));
+		Cvar_SetValue("ui_rgb_saber2_blue", ((saber2Colour >> 16) & 0xff));
+	}
 }
 
 #ifndef JK2_MODE
@@ -5707,6 +5886,72 @@ static void UI_ResetCharacterListBoxes( void )
 	}
 }
 
+static void UI_RecordCharWeapons(const char **args)
+{
+	// Let's clear the weapons first
+	weaponOne = 0;
+	weaponTwo = 0;
+	weaponThree = 0;
+	weaponFour = 0;
+
+
+	// Record 4 weapons (lightsaber is given in the menu if the character has one already, and every character gets melee regardless)
+	// This is a really ugly way of doing this...
+	const char* firstWeapon;
+	String_Parse(args, &firstWeapon);
+	weaponOne = atoi(firstWeapon);
+
+	const char*secondWeapon;
+	String_Parse(args, &secondWeapon);
+	weaponTwo = atoi(secondWeapon);
+
+	const char* thirdWeapon;
+	String_Parse(args, &thirdWeapon);
+	weaponThree = atoi(thirdWeapon);
+
+	const char* fourthWeapon;
+	String_Parse(args, &fourthWeapon);
+	weaponFour = atoi(fourthWeapon);
+
+}
+
+static void UI_ApplyCharWeapons()
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t* pState = cl->gentity->client;
+
+		// Every character gets melee, no matter what
+		pState->weapons[WP_MELEE] = 1;
+
+		// Again, super ugly, wish I could do it less horribly
+		if (weaponOne)
+			pState->weapons[weaponOne] = 1;
+		if (weaponTwo)
+			pState->weapons[weaponTwo] = 1;
+		if (weaponThree)
+			pState->weapons[weaponThree] = 1;
+		if (weaponFour)
+			pState->weapons[weaponFour] = 1;
+		
+	}
+
+	weaponOne = 0;
+	weaponTwo = 0;
+	weaponThree = 0;
+	weaponFour = 0;
+	//for(int i = 2; i < )
+	//weapons & (1 << FP_PUSH)
+}
+
 static void UI_ClearInventory ( void )
 {
 	// Get player state
@@ -6486,10 +6731,10 @@ static void UI_GetSaberCvars ( void )
 	}
 	else
 	{
-		Cvar_Set("ui_saber", Cvar_VariableString("g_NPCsaber"));
-		Cvar_Set("ui_saber2", Cvar_VariableString("g_NPCsabertwo"));
-		Cvar_Set("ui_saber_color", Cvar_VariableString("g_NPCsabercolor"));
-		Cvar_Set("ui_saber2_color", Cvar_VariableString("g_NPCsabertwocolor"));
+		Cvar_Set("ui_saber", Cvar_VariableString("ui_npc_saberone"));
+		Cvar_Set("ui_saber2", Cvar_VariableString("ui_npc_sabertwo"));
+		Cvar_Set("ui_saber_color", Cvar_VariableString("ui_npc_saberonecolor"));
+		Cvar_Set("ui_saber2_color", Cvar_VariableString("ui_npc_sabertwocolor"));
 	}
 
 	saber_colors_t saberColour = TranslateSaberColor(Cvar_VariableString( "ui_saber_color" ));
@@ -6609,6 +6854,32 @@ void UI_UpdateSaberType( void )
 	{
 		DC->setCVar( "ui_saber2", "" );
 	}
+}
+
+static void UI_HiltChange(int i)
+{
+	// Done to fix a cosmetic issue with the menu.
+	// If changing to dual from single, do nothing
+	// If changing to dual from staff, change to single_1
+	
+	if (!i)
+	{
+		if (!Q_stricmp(Cvar_VariableString("ui_saber_type"), "staff"))
+			Cvar_Set("ui_saber", "single_1");
+	}
+	else
+	{
+		menuDef_t* menu = Menu_GetFocused();
+
+		// Let's also check to make sure the 2nd hilt disappears if the user was browsing dual then ESC'd out
+		if (!Q_stricmp(Cvar_VariableString("ui_saber_type"), "single")
+			|| !Q_stricmp(Cvar_VariableString("ui_saber_type"), "staff"))
+		{
+			Menu_ShowItemByName(menu, "saber2", qfalse);
+			Menu_ShowItemByName(menu, "dualsaberedit", qfalse);
+		}
+	}
+
 }
 
 static void UI_UpdateSaberHilt( qboolean secondSaber )

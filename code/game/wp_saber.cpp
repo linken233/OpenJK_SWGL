@@ -239,11 +239,11 @@ int forcePowerNeeded[NUM_FORCE_POWERS] =
 	20,//FP_SEE,//duration - detect/see hidden enemies
 
 	20,//FP_STASIS,//Duration
-	30,//FP_BLAST,//Instant
+	40,//FP_BLAST,//Instant
 	1,//FP_GRASP,//hold/duration
 
 	// Dark Side
-	1,//FP_DESTRUCTION,
+	70,//FP_DESTRUCTION,
 	30,//FP_LIGHTNING_STRIKE,
 	20,//FP_FEAR,
 
@@ -6708,6 +6708,7 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 			// Only inquisitors should do this, not the player or anyone else
 			if (self != player && (!Q_stricmp(GRAND_INQ, self->NPC_type)
 				|| !Q_stricmp(SECOND_SIS, self->NPC_type)
+				|| !Q_stricmp(THIRD_SIS, self->NPC_type)
 				|| !Q_stricmp(FIFTH_BRO, self->NPC_type)
 				|| !Q_stricmp(SEVENTH_SIS, self->NPC_type)
 				|| !Q_stricmp(EIGHTH_BRO, self->NPC_type)))
@@ -6719,15 +6720,39 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 				// Inquisitor sabers should switch to staff when thrown
-				if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
+				else if (!Q_stricmp("7th_sister", self->client->ps.saber[0].name))
 				{
 					WP_SetSaber(self, 0, "7th_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 				// Inquisitor sabers should switch to staff when thrown
-				if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
+				else if (!Q_stricmp("5th_brother", self->client->ps.saber[0].name))
 				{
 					WP_SetSaber(self, 0, "5th_brother_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("2nd_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "2nd_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("3rd_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "3rd_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("4th_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "4th_sister_staff");
+					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
+				}
+				// Inquisitor sabers should switch to staff when thrown
+				else if (!Q_stricmp("9th_sister", self->client->ps.saber[0].name))
+				{
+					WP_SetSaber(self, 0, "9th_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 			}
@@ -15257,7 +15282,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 				int index = Q_irand( 1, 4 );
 				if ( self->s.number < MAX_CLIENTS )
 				{
-					G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", index, g_sex->string[0] ) );
+					if(!Q_stricmp("kyle", self->client->clientInfo.customBasicSoundDir))
+						G_SoundOnEnt(self, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", index));
+					else
+						G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", index, g_sex->string[0] ) );
 				}
 				else if ( self->NPC )
 				{
@@ -15269,7 +15297,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 							if ( self->NPC->stats.sex == SEX_MALE
 								|| self->NPC->stats.sex == SEX_NEUTRAL )
 							{
-								G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_m.mp3", index ) );
+								if (!Q_stricmp("kyle", self->soundSet))
+									G_SoundOnEnt(self, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", index));
+								else
+									G_SoundOnEnt( self, CHAN_VOICE, va( "sound/weapons/force/heal%d_m.mp3", index ) );
 							}
 							else//all other sexes use female sounds
 							{

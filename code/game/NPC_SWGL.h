@@ -33,6 +33,7 @@
 
 // Separatists
 #define DOOKU "Count_Dooku"
+#define GRIEVOUS_FOUR "General_Grievous_FourArms"
 
 
 
@@ -48,6 +49,7 @@
 #define KX_DROID "kx_droid"
 #define GRAND_INQ "Grand_Inquisitor"
 #define SECOND_SIS "Second_Sister"
+#define THIRD_SIS "Third_Sister"
 #define SEVENTH_SIS "Seventh_Sister"
 #define FIFTH_BRO "Fifth_Brother"
 #define EIGHTH_BRO "Eighth_Brother"

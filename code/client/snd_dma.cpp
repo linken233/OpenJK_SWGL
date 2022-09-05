@@ -3751,7 +3751,7 @@ static void S_MenuMusic_f(void)
 
 		// Using Q_irand(0, 21) always kept giving us 9.
 		// Idk why, so I guess we will use rand().
-		int music_pick = rand() % 22;
+		int music_pick = rand() % 28;
 
 		switch (music_pick)
 		{
@@ -3819,7 +3819,25 @@ static void S_MenuMusic_f(void)
 			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu20.mp3", qfalse);
 			break;
 		case 21:
-			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu21.mp3", qfalse);
+			S_StartBackgroundTrack("music/sp/menu21.mp3", "music/sp/menu21.mp3", qfalse);
+			break;
+		case 22:
+			S_StartBackgroundTrack("music/sp/menu22.mp3", "music/sp/menu22.mp3", qfalse);
+			break;
+		case 23:
+			S_StartBackgroundTrack("music/sp/menu23.mp3", "music/sp/menu23.mp3", qfalse);
+			break;
+		case 24:
+			S_StartBackgroundTrack("music/sp/menu24.mp3", "music/sp/menu24.mp3", qfalse);
+			break;
+		case 25:
+			S_StartBackgroundTrack("music/sp/menu25.mp3", "music/sp/menu25.mp3", qfalse);
+			break;
+		case 26:
+			S_StartBackgroundTrack("music/sp/menu26.mp3", "music/sp/menu26.mp3", qfalse);
+			break;
+		case 27:
+			S_StartBackgroundTrack("music/sp/menu27.mp3", "music/sp/menu27.mp3", qfalse);
 			break;
 		default:
 			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);

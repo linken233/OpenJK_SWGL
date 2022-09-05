@@ -270,6 +270,8 @@ cvar_t	*g_allowBunnyhopping;
 
 cvar_t	*g_allowAlignmentChange;
 
+cvar_t	*g_adoptcharstats;
+
 qboolean	stop_icarus = qfalse;
 
 extern char *G_GetLocationForEnt( gentity_t *ent );
@@ -726,8 +728,10 @@ void G_InitCvars( void ) {
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
 	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_ARCHIVE );//lets you pick up sabers that are dropped
 
-	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//lets you pick up sabers that are dropped
-	g_setSaberLocking = gi.cvar("g_setSaberLocking", "1", CVAR_INIT);//lets you pick up sabers that are dropped
+	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//Lets you enable or disable saber locking while ingame.
+	g_setSaberLocking = gi.cvar("g_setSaberLocking", "1", CVAR_INIT);//Lets you enable or disable saber locking while ingame. (Cvar used only in cutscenes so as not to override the player's own preference)
+
+	g_adoptcharstats = gi.cvar("g_adoptcharstats", "1", CVAR_ARCHIVE);// Lets the player adopt the health and armor of characters they select while ingame (or disable it). Disabled by default in missions.
 
 	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
 

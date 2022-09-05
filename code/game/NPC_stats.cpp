@@ -45,7 +45,12 @@ extern qboolean IsPlayingOperationKnightfall(void);
 
 extern qboolean G_StandardHumanoid(const char* GLAName);
 
+extern qboolean PlayingMission();
+
+extern qboolean saberFound;
+
 extern cvar_t *g_allowAlignmentChange;
+extern cvar_t* g_adoptcharstats;
 
 #define		MAX_MODELS_PER_LEVEL	60
 
@@ -2114,6 +2119,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			NPC->client->ps.forcePowerLevel[i] = 0;
 
 		NPC->client->ps.dualSabers = qfalse;
+		NPC->client->ps.saberStylesKnown = 0;
 	}
 
 	//Set defaults
@@ -3146,6 +3152,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 
+				// Special Mechanic
+				if (!Q_stricmp(token, "specialMechanic")) 
+				{
+					// To fill in later, for now just to stop the error message
+					continue;
+				}
+
 				// race
 		//		if ( !Q_stricmp( token, "race" ) )
 		//		{
@@ -3189,10 +3202,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					stats->health = n;
 				}
-				else if ( parsingPlayer )
+				else if ( parsingPlayer && !PlayingMission() && g_adoptcharstats->integer)
 				{
-					NPC->client->ps.stats[STAT_MAX_HEALTH] = NPC->health = n;
-					NPC->client->ps.stats[STAT_ARMOR] = NPC->health = n;
+					player->client->ps.stats[STAT_MAX_HEALTH] = n;
+
+					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);
+
+					player->client->ps.stats[STAT_ARMOR] = n;
 				}
 				continue;
 			}
@@ -3933,6 +3949,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			//saber name
 			if ( !Q_stricmp( token, "saber" ) || NPC->NPC_SaberOne)
 			{
+				saberFound = qtrue;
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;

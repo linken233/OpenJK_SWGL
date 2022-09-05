@@ -412,6 +412,7 @@ typedef struct itemDef_s {
 typedef struct {
 	Window window;
 	const char  *font;						// font
+	const char* savedPage;					// Last page visited
 	qboolean	fullScreen;					// covers entire screen
 	int			itemCount;					// number of items;
 	int			fontIndex;					//

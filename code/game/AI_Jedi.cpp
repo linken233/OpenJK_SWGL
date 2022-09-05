@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_navigator.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
+#include "../game/NPC_SWGL.h"
 
 //Externs
 extern qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy );
@@ -7732,13 +7733,13 @@ void NPC_BSJedi_Default( void )
 	}
 
 	if (TIMER_Done(NPC, "breathing")
-		&&(!Q_stricmp("Darth_Vader", NPC->NPC_type)
-		|| !Q_stricmp("Sith_Stalker", NPC->NPC_type)
-		|| !Q_stricmp("Cybernetic_Reconstruction", NPC->NPC_type)
-		|| !Q_stricmp("Lord_Starkiller", NPC->NPC_type)
-		|| !Q_stricmp("Lord_Starkiller_Tatooine", NPC->NPC_type)))
+		&&(!Q_stricmp(VADER, NPC->NPC_type)
+		|| !Q_stricmp(STALKER, NPC->NPC_type)
+		|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
+		|| !Q_stricmp(LORD_STK, NPC->NPC_type)
+		|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
 	{
-		if (!Q_stricmp("Darth_Vader", NPC->NPC_type))
+		if (!Q_stricmp(VADER, NPC->NPC_type))
 		{
 			if (NPC->health > (NPC->max_health * .33))
 			{
@@ -7767,7 +7768,7 @@ void NPC_BSJedi_Default( void )
 	}
 
 	if (TIMER_Done(NPC, "saber_switch") &&
-		(!Q_stricmp("Cal_Kestis", NPC->NPC_type)))
+		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)))
 	{
 		if (!Q_stricmp("cal_kestis_staff", NPC->client->ps.saber[0].name))
 		{
@@ -7780,11 +7781,12 @@ void NPC_BSJedi_Default( void )
 		TIMER_Set(NPC, "saber_switch", Q_irand(5000, 20000));
 	}
 
-	if (!Q_stricmp("Grand_Inquisitor", NPC->NPC_type)
-		|| !Q_stricmp("Second_Sister", NPC->NPC_type)
-		|| !Q_stricmp("Fifth_Brother", NPC->NPC_type)
-		|| !Q_stricmp("Seventh_Sister", NPC->NPC_type)
-		|| !Q_stricmp("Eighth_Brother", NPC->NPC_type))
+	if (!Q_stricmp(GRAND_INQ, NPC->NPC_type)
+		|| !Q_stricmp(SECOND_SIS, NPC->NPC_type)
+		|| !Q_stricmp(THIRD_SIS, NPC->NPC_type)
+		|| !Q_stricmp(FIFTH_BRO, NPC->NPC_type)
+		|| !Q_stricmp(SEVENTH_SIS, NPC->NPC_type)
+		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type))
 		{
 			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
 			{
@@ -7793,6 +7795,30 @@ void NPC_BSJedi_Default( void )
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("inquisitor_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
 				WP_SetSaber(NPC, 0, "inquisitor");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "2nd_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("2nd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "2nd_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("3rd_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "3rd_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("3rd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "3rd_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("4th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "4th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("4th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "4th_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("5th_brother", NPC->client->ps.saber[0].name))
 			{
@@ -7809,6 +7835,14 @@ void NPC_BSJedi_Default( void )
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("7th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
 				WP_SetSaber(NPC, 0, "7th_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("9th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "9th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("9th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "9th_sister");
 			}
 		}
 

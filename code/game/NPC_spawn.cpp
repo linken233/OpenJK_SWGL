@@ -52,6 +52,8 @@ extern void Howler_ClearTimers(gentity_t *self);
 
 extern void NPC_GalakMech_Init(gentity_t* ent);
 
+extern saber_colors_t TranslateSaberColor(const char* name);
+
 #define	NSF_DROP_TO_FLOOR	16
 
 gentity_t* traya = NULL;
@@ -375,6 +377,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	}
 	else if (!Q_stricmp(GRAND_INQ, ent->NPC_type)
 		|| !Q_stricmp(SECOND_SIS, ent->NPC_type)
+		|| !Q_stricmp(THIRD_SIS, ent->NPC_type)
 		|| !Q_stricmp(FIFTH_BRO, ent->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, ent->NPC_type)
 		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type))
@@ -1908,6 +1911,8 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 		if (!Q_stricmp(ent->NPC_type, "player"))
 		{// Or check NPC_type against player's NPC_type?
 			newent->NPC->aiFlags |= NPCAI_MATCHPLAYERWEAPON;
+			if (!newent->NPC_team)
+				newent->client->playerTeam = player->client->playerTeam;
 		}
 		else if (!Q_stricmp(ent->NPC_type, "test"))
 		{
@@ -1923,6 +1928,32 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 			}
 			newent->NPC->defaultBehavior = newent->NPC->behaviorState = BS_WAIT;
 			//		newent->svFlags |= SVF_NOPUSH;
+		}
+	}
+
+	// Grievous holds his lightsabers in a sort of pattern, so let's mimic it!
+	if (!Q_stricmp(GRIEVOUS_FOUR, newent->NPC_type)
+		&& !Q_stricmp("grievous_right", newent->client->ps.saber[0].name)
+		&& !Q_stricmp("grievous_left", newent->client->ps.saber[1].name))
+	{
+		// Right off the bat we'll set the default blue and green pattern
+		newent->client->ps.saber[0].blade[0].color = SABER_BLUE;
+		newent->client->ps.saber[0].blade[1].color = SABER_GREEN;
+		newent->client->ps.saber[1].blade[0].color = SABER_GREEN;
+		newent->client->ps.saber[1].blade[1].color = SABER_BLUE;
+
+		// If there's a primary color set, change the correct blades
+		if (newent->NPC_SaberOneColor)
+		{
+			newent->client->ps.saber[0].blade[0].color = TranslateSaberColor(newent->NPC_SaberOneColor);
+			newent->client->ps.saber[1].blade[1].color = TranslateSaberColor(newent->NPC_SaberOneColor);
+		}
+
+		// If there's a secondary color set, change the correct blades
+		if (newent->NPC_SaberTwoColor)
+		{
+			newent->client->ps.saber[0].blade[1].color = TranslateSaberColor(newent->NPC_SaberTwoColor);
+			newent->client->ps.saber[1].blade[0].color = TranslateSaberColor(newent->NPC_SaberTwoColor);
 		}
 	}
 	//=====================================================================
