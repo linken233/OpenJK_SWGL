@@ -68,6 +68,8 @@ vec3_t playerMaxs = {DEFAULT_MAXS_0, DEFAULT_MAXS_1, DEFAULT_MAXS_2};
 
 void SP_misc_teleporter_dest (gentity_t *ent);
 
+qboolean saberFound = qfalse;
+
 /*QUAK-ED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 32) KEEP_PREV DROPTOFLOOR x x x STUN_BATON NOWEAPON x
 potential spawning position for deathmatch games.
 Targets will be fired when someone spawns in on them.
@@ -2313,7 +2315,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 				//FIXME: remove saber, too?
 				Boba_Precache();	// player as boba?
 			}
-			if (ent == player)
+			if (ent == player && saberFound)
 			{
 				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
 				gi.cvar_set("g_saber_color", g_saber_color->string);
@@ -2328,6 +2330,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 					gi.cvar_set("g_saber2", "") ;
 					gi.cvar_set("g_saber2_color", "");
 				}
+				saberFound = qfalse;
 				G_ChangePlayerModel(player, "player");
 			}
 		}

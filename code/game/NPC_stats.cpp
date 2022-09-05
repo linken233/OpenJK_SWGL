@@ -46,6 +46,8 @@ extern qboolean G_StandardHumanoid(const char* GLAName);
 
 extern qboolean PlayingMission();
 
+extern qboolean saberFound;
+
 extern cvar_t *g_allowAlignmentChange;
 extern cvar_t* g_adoptcharstats;
 
@@ -2116,6 +2118,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			NPC->client->ps.forcePowerLevel[i] = 0;
 
 		NPC->client->ps.dualSabers = qfalse;
+		NPC->client->ps.saberStylesKnown = 0;
 	}
 
 	//Set defaults
@@ -3936,6 +3939,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			//saber name
 			if ( !Q_stricmp( token, "saber" ) || NPC->NPC_SaberOne)
 			{
+				saberFound = qtrue;
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
