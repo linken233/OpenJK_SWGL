@@ -6721,6 +6721,10 @@ static void	UI_HighLightThrowSelection ( void )
 
 static void UI_GetSaberCvars ( void )
 {
+	// Just in case that g_saber_type is null for whatever reason, set it to single
+	if (!Q_stricmp(Cvar_VariableString("g_saber_type"), ""))
+		Cvar_Set("g_saber_type", "single");
+
 	Cvar_Set("ui_saber_type", Cvar_VariableString("g_saber_type"));
 	if (!Cvar_VariableIntegerValue("ui_npc_saber"))
 	{		
