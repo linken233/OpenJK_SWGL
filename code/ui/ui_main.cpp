@@ -185,6 +185,14 @@ static void UI_UpdateNPCCvars(void);
 
 static void UI_HiltChange(int i);
 
+static void UI_RecordForcePowers(const char** args);
+
+static void UI_ApplyForcePowers(void);
+
+static void UI_RecordSaberStyles(const char** args);
+
+static void UI_ApplySaberStyles(void);
+
 // Movedata Sounds
 enum
 {
@@ -376,6 +384,11 @@ int weaponOne;
 int weaponTwo;
 int weaponThree;
 int weaponFour;
+int weaponFive;
+
+int saberStyles;
+
+static int forcePowerRecord[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 
 static void UI_RegisterCvars( void );
 void UI_Load(void);
@@ -1504,8 +1517,8 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "applycharacter") == 0)
 		{
-			ui.Cmd_ExecuteText(EXEC_APPEND, va("playermodel %s\n", npcCode));
-			ui.Cmd_ExecuteText(EXEC_APPEND, va("playermodel %s %s %s %s\n", Cvar_VariableString("ui_char_model"), Cvar_VariableString("ui_char_skin_head"), Cvar_VariableString("ui_char_skin_torso"), Cvar_VariableString("ui_char_skin_legs")));
+			ui.Cmd_ExecuteText(EXEC_NOW, va("playermodel %s\n", npcCode));
+			ui.Cmd_ExecuteText(EXEC_NOW, va("playermodel %s %s %s %s\n", Cvar_VariableString("ui_char_model"), Cvar_VariableString("ui_char_skin_head"), Cvar_VariableString("ui_char_skin_torso"), Cvar_VariableString("ui_char_skin_legs")));
 		}
 		else if (Q_stricmp(name, "anglesesc") == 0)
 		{
@@ -1576,9 +1589,25 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_RecordCharWeapons(args);
 		}
+		else if (Q_stricmp(name, "recordforcepowers") == 0)
+		{
+			UI_RecordForcePowers(args);
+		}
+		else if (Q_stricmp(name, "recordsaberstyles") == 0)
+		{
+			UI_RecordSaberStyles(args);
+		}
+		else if (Q_stricmp(name, "applysaberstyles") == 0)
+		{
+			UI_ApplySaberStyles();
+		}
 		else if (Q_stricmp(name, "applycharweapons") == 0)
 		{
 			UI_ApplyCharWeapons();
+		}
+		else if (Q_stricmp(name, "applyforcepowers") == 0)
+		{
+			UI_ApplyForcePowers();
 		}
 		else if (Q_stricmp(name, "stopgamesounds") == 0)
 		{
@@ -5894,7 +5923,6 @@ static void UI_RecordCharWeapons(const char **args)
 	weaponThree = 0;
 	weaponFour = 0;
 
-
 	// Record 4 weapons (lightsaber is given in the menu if the character has one already, and every character gets melee regardless)
 	// This is a really ugly way of doing this...
 	const char* firstWeapon;
@@ -5913,6 +5941,40 @@ static void UI_RecordCharWeapons(const char **args)
 	String_Parse(args, &fourthWeapon);
 	weaponFour = atoi(fourthWeapon);
 
+	const char* fifthWeapon;
+	String_Parse(args, &fifthWeapon);
+	weaponFive = atoi(fifthWeapon);
+
+}
+
+static void UI_RecordForcePowers(const char** args)
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t* pState = cl->gentity->client;
+
+		for (int i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
+		{
+			const char* power;
+			String_Parse(args, &power);
+			forcePowerRecord[i] = atoi(power);
+		}
+	}
+
+}
+
+static void UI_RecordSaberStyles(const char** args)
+{
+	const char* styles;
+	String_Parse(args, &styles);
+	saberStyles = atoi(styles);
 }
 
 static void UI_ApplyCharWeapons()
@@ -5941,6 +6003,11 @@ static void UI_ApplyCharWeapons()
 			pState->weapons[weaponThree] = 1;
 		if (weaponFour)
 			pState->weapons[weaponFour] = 1;
+		if (weaponFive)
+			pState->weapons[weaponFive] = 1;
+
+		// Reset the secondary saber, just in case
+		Cvar_Set("ui_saber2", "");
 		
 	}
 
@@ -5948,8 +6015,95 @@ static void UI_ApplyCharWeapons()
 	weaponTwo = 0;
 	weaponThree = 0;
 	weaponFour = 0;
+	weaponFive = 0;
 	//for(int i = 2; i < )
 	//weapons & (1 << FP_PUSH)
+}
+
+static void UI_ApplySaberStyles()
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t* pState = cl->gentity->client;
+
+		// Reset styles so nothing bleeds over
+		pState->saberStylesKnown = 0;
+
+		// Assign saber styles (and set the highest one as the player's new style)
+		if (saberStyles & 1)
+		{
+			pState->saberStylesKnown |= (1 << SS_FAST);
+			pState->saberAnimLevel = SS_FAST;
+		}
+		if (saberStyles & 2)
+		{
+			pState->saberStylesKnown |= (1 << SS_MEDIUM);
+			pState->saberAnimLevel = SS_MEDIUM;
+		}
+		if (saberStyles & 4)
+		{
+			pState->saberStylesKnown |= (1 << SS_STRONG);
+			pState->saberAnimLevel = SS_STRONG;
+		}
+		if (saberStyles & 8)
+		{
+			pState->saberStylesKnown |= (1 << SS_DESANN);
+			pState->saberAnimLevel = SS_DESANN;
+		}
+		if (saberStyles & 16)
+		{
+			pState->saberStylesKnown |= (1 << SS_TAVION);
+			pState->saberAnimLevel = SS_TAVION;
+		}
+		if (saberStyles & 32)
+		{
+			pState->saberStylesKnown |= (1 << SS_DUAL);
+			pState->saberAnimLevel = SS_DUAL;
+		}
+		if (saberStyles & 64)
+		{
+			pState->saberStylesKnown |= (1 << SS_STAFF);
+			pState->saberAnimLevel = SS_STAFF;
+		}
+	}
+}
+
+static void UI_ApplyForcePowers()
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t* pState = cl->gentity->client;
+		for (int i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
+		{
+			if (forcePowerRecord[i] > 0)
+			{
+				pState->forcePowersKnown |= (1 << i);
+				pState->forcePowerLevel[i] = forcePowerRecord[i];
+			}
+			else
+			{
+				pState->forcePowersKnown &= ~(1 << i);
+				pState->forcePowerLevel[i] = 0;
+			}
+		}
+	}
+
+
 }
 
 static void UI_ClearInventory ( void )
