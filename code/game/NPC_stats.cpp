@@ -3203,6 +3203,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else if ( parsingPlayer && !PlayingMission() && g_adoptcharstats->integer)
 				{
+					// Since some characters in base JKA have more than 1000 health, let's pull it back a bit.
+					if (n > 500)
+						n = 500;
+
 					player->client->ps.stats[STAT_MAX_HEALTH] = n;
 
 					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);
