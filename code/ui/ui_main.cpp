@@ -5958,8 +5958,6 @@ static void UI_RecordForcePowers(const char** args)
 	}
 	if (cl->gentity && cl->gentity->client)
 	{
-		playerState_t* pState = cl->gentity->client;
-
 		for (int i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
 		{
 			const char* power;
