@@ -1570,7 +1570,15 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}
+	if (!Q_stricmp("models/players/_humanoid_kotor/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
 	if (!Q_stricmp("models/players/_humanoid_lanakin/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_malak/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}

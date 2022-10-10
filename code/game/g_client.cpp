@@ -981,7 +981,15 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_kotor/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmpn("models/players/_humanoid_lanakin/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_malak/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
@@ -1089,7 +1097,15 @@ qboolean G_StandardHumanoid(const char* GLAName)
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmp("_humanoid_kotor", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmp("_humanoid_lanakin", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_malak", GLAName))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
