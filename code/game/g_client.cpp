@@ -2093,6 +2093,7 @@ void G_SetSabersFromCVars( gentity_t *ent )
 	if ( g_saber->string
 		&& g_saber->string[0]
 		&& Q_stricmp( "none", g_saber->string )
+		&& Q_stricmp("empty", g_saber->string)
 		&& Q_stricmp( "NULL", g_saber->string ) )
 	{//FIXME: how to specify second saber?
 		WP_SaberParseParms( g_saber->string, &ent->client->ps.saber[0] );
@@ -2143,6 +2144,7 @@ void G_SetSabersFromCVars( gentity_t *ent )
 	if ( g_saber2->string
 		&& g_saber2->string[0]
 		&& Q_stricmp( "none", g_saber2->string )
+		&& Q_stricmp("empty", g_saber2->string)
 		&& Q_stricmp( "NULL", g_saber2->string ) )
 	{
 		if ( !(ent->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )

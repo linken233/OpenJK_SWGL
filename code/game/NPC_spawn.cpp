@@ -5555,6 +5555,11 @@ static void NPC_Spawn_f(void)
 		}
 	}
 
+	if (!NPCspawner->NPC_targetname)
+	{
+		NPCspawner->NPC_targetname = G_NewString(va("%s%i", NPCspawner->NPC_type, Q_irand(0, 100)));
+		gi.Printf(va(S_COLOR_GREEN"Spawning NPC %s, assigning targetname %s\n", NPCspawner->NPC_type, NPCspawner->NPC_targetname));
+	}
 
 	NPCspawner->count = 1;
 
@@ -5797,6 +5802,86 @@ void NPC_Kill_f(void)
 	}
 }
 
+void NPC_Anim_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* name;
+	char* anim;
+	char* part;
+
+	name = gi.argv(2);
+	anim = gi.argv(3);
+	part = gi.argv(4);
+
+	int			animID = 0;
+
+	animID = GetIDForString(animTable, anim);
+
+	if (!*name || !name[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC anim '[NPC targetname]' '[Animation]' '[Body Area] - sets anims on NPC with certain targetname\n");
+		gi.Printf(S_COLOR_RED"or\n");
+		gi.Printf(S_COLOR_RED"NPC anim '[NPC targetname]' remove - Sets animation back to default with the NPC\n");
+		gi.Printf(S_COLOR_RED"or\n");
+		gi.Printf(S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n");
+		return;
+	}
+
+	if (animID <= 0)
+	{
+		if (Q_stricmp(anim, "remove"))
+		{
+			gi.Printf(S_COLOR_RED"Error, Invalid Animation:%s\n", anim);
+			return;
+		}
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse) 
+		{
+			continue;
+		}		
+		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
+		{
+			
+
+			if (!Q_stricmp(anim, "remove"))
+			{
+				gi.Printf(S_COLOR_GREEN"Resetting animation for NPC %s named %s\n", ent->NPC_type, ent->targetname);
+				PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, 1);
+				PM_SetLegsAnimTimer(ent, &ent->client->ps.legsAnimTimer, 1);
+			}
+			else
+			{
+				if (!Q_stricmp(part, "upper"))
+				{
+					gi.Printf(S_COLOR_GREEN"Setting NPC %s named %s upper body animation to %s\n", ent->NPC_type, ent->targetname, anim);
+					NPC_SetAnim(ent, SETANIM_TORSO, animID, SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
+					PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, -1);
+				}
+				else if (!Q_stricmp(part, "lower"))
+				{
+					gi.Printf(S_COLOR_GREEN"Setting NPC %s named %s lower body animation to %s\n", ent->NPC_type, ent->targetname, anim);
+					NPC_SetAnim(ent, SETANIM_LEGS, animID, SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
+					PM_SetLegsAnimTimer(ent, &ent->client->ps.legsAnimTimer, -1);
+				}
+				else
+				{
+					gi.Printf(S_COLOR_GREEN"Setting NPC %s named %s animation to %s\n", ent->NPC_type, ent->targetname, anim);
+					NPC_SetAnim(ent, SETANIM_TORSO | SETANIM_LEGS, animID, SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
+					PM_SetLegsAnimTimer(ent, &ent->client->ps.legsAnimTimer, -1);
+					PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, -1);
+				}
+
+			}
+		}
+	}
+}
+
 void NPC_PrintScore(gentity_t *ent)
 {
 	gi.Printf("%s: %d\n", ent->targetname, ent->client->ps.persistant[PERS_SCORE]);
@@ -5869,13 +5954,30 @@ void Svcmd_NPC_f(void)
 		{
 			gi.Printf(S_COLOR_GREEN"Use this command to assign a script to run when the NPC is spawned.\n");
 			gi.Printf(S_COLOR_YELLOW"Available spawnscripts can be seen with the 'dir spawnscripts' command.\n");
-			gi.Printf(S_COLOR_GREEN"To use a spawnscript with an NPC, type spawnscript followed by your preferred spawnscript, no need to add in any folders. Ex: Npc Spawn Reborn_New spawnscript meditate.");
+			gi.Printf(S_COLOR_GREEN"To use a spawnscript with an NPC, type spawnscript followed by your preferred spawnscript. Ex: Npc Spawn Reborn_New spawnscript spawnscripts/meditate.");
+		}
+		else if (Q_stricmp(customCmd, "fleescript") == 0)
+		{
+			gi.Printf(S_COLOR_GREEN"Use this command to assign a script to run when the NPC is close to death.\n");
+			gi.Printf(S_COLOR_YELLOW"Available fleescripts can be seen with the 'dir fleescripts' command.\n");
+			gi.Printf(S_COLOR_GREEN"To use a fleescript with an NPC, type fleescript followed by your preferred fleescript. Ex: Npc Spawn Reborn_New fleescript fleescript/surrender.");
+		}
+
+		else if (Q_stricmp(customCmd, "deathscript") == 0)
+		{
+			gi.Printf(S_COLOR_GREEN"Use this command to assign a script to run when the NPC is killed.\n");
+			gi.Printf(S_COLOR_YELLOW"Available deathscripts can be seen with the 'dir deathscripts' command.\n");
+			gi.Printf(S_COLOR_GREEN"To use a deathscript with an NPC, type deathscript followed by your preferred deathscript. Ex: Npc Spawn Reborn_New deathscript deathscripts/dismember_head.");
 		}
 
 	}
 	else if (Q_stricmp(cmd, "kill") == 0)
 	{
 		NPC_Kill_f();
+	}
+	else if (Q_stricmp(cmd, "anim") == 0)
+	{
+		NPC_Anim_f();
 	}
 	else if (Q_stricmp(cmd, "showbounds") == 0)
 	{//Toggle on and off

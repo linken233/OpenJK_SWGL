@@ -906,8 +906,8 @@ static void Svcmd_Spawn_f(void)
 	NPCspawner->NPC_type = g_NPCtype->string;
 	NPCspawner->NPC_skin = "default";
 
-	if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
-	{
+	//if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
+	//{
 		std::string newSkin;
 
 		newSkin.append(g_NPChead->string);
@@ -917,11 +917,11 @@ static void Svcmd_Spawn_f(void)
 		newSkin.append(g_NPClegs->string);
 
 		NPCspawner->NPC_skin = G_NewString(newSkin.c_str());
-	}
-	else
-	{
-		NPCspawner->NPC_skin = g_NPCskin->string;
-	}
+	//}
+	//else
+	//{
+	//	NPCspawner->NPC_skin = g_NPCskin->string;
+	//}
 
 	NPCspawner->NPC_team = g_NPCteam->string;
 
@@ -953,6 +953,12 @@ static void Svcmd_Spawn_f(void)
 	NPCspawner->delay = 0;
 
 	NPCspawner->wait = 500;	
+
+	if (!NPCspawner->NPC_targetname)
+	{
+		NPCspawner->NPC_targetname = G_NewString(va("%s%i", NPCspawner->NPC_type, Q_irand(0, 100)));
+		gi.Printf(va(S_COLOR_GREEN"Spawning NPC %s, assigning targetname %s\n", NPCspawner->NPC_type, NPCspawner->NPC_targetname));
+	}
 
 	NPC_PrecacheByClassName(NPCspawner->NPC_type);
 
