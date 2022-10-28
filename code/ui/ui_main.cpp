@@ -476,6 +476,10 @@ vmCvar_t	ui_fe_sith;
 vmCvar_t	ui_fe_trooper;
 vmCvar_t	ui_fe_bh;
 
+// Model angle slider
+
+vmCvar_t	ui_char_model_angle;
+
 static void UI_UpdateScreenshot( void )
 {
 	qboolean changed = qfalse;
@@ -586,6 +590,7 @@ static cvarTable_t cvarTable[] =
 	{ &ui_npc_fleescript,		"ui_npc_fleescript",	"fleescripts/surrender", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_deathscript,		"ui_npc_deathscript",	"deathscripts/losehead", NULL, CVAR_ARCHIVE},
 	{ &ui_saber_edit,			"ui_saber_edit",		"0", NULL},
+	{ &ui_char_model_angle, "ui_char_model_angle", "180", NULL, 0},
 
 
 };
@@ -2821,6 +2826,9 @@ void UI_FreeAllSpecies( void )
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
 	}
 	free(uiInfo.playerSpecies);
+
+	uiInfo.playerSpeciesCount = 0;
+	uiInfo.playerSpecies = NULL;
 }
 
 /*

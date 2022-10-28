@@ -48,6 +48,8 @@ extern vmCvar_t	ui_char_color_red;
 extern vmCvar_t	ui_char_color_green;
 extern vmCvar_t	ui_char_color_blue;
 
+extern vmCvar_t ui_char_model_angle;
+
 bool initialLoad = true;
 
 void *UI_Alloc( int size );
@@ -180,6 +182,7 @@ const char *types [] = {
 "ITEM_TYPE_BIND",
 "ITEM_TYPE_TEXTSCROLL",
 "ITEM_TYPE_SLIDER_INTEGER",
+"ITEM_TYPE_SLIDER_ROTATE",
 NULL
 };
 
@@ -4487,9 +4490,40 @@ qboolean ItemParse_cvar( itemDef_t *item)
 				editPtr->maxVal = -1;
 				editPtr->defVal = -1;
 				break;
+			case ITEM_TYPE_SLIDER_ROTATE:
+				editPtr = (editFieldDef_t*)item->typeData;
+				editPtr->range = 720;
+				editPtr->minVal = -1;
+				editPtr->maxVal = -1;
+				editPtr->defVal = -1;
+				break;
 		}
 	}
 	return qtrue;
+}
+
+/*
+ ===============
+ ItemParse_cvarRotateScale
+ ===============
+ */
+qboolean ItemParse_cvarRotateScale(itemDef_t* item)
+{
+	editFieldDef_t* editPtr;
+
+	Item_ValidateTypeData(item);
+	if (!item->typeData)
+	{
+		return qfalse;
+	}
+	editPtr = (editFieldDef_t*)item->typeData;
+	if (PC_ParseStringMem((const char**)&item->cvar) &&
+		!PC_ParseFloat(&editPtr->range))
+	{
+		return qtrue;
+	}
+
+	return qfalse;
 }
 
 /*
@@ -4880,7 +4914,7 @@ void Item_ValidateTypeData(itemDef_t *item)
 		item->typeData = UI_Alloc(sizeof(listBoxDef_t));
 		memset(item->typeData, 0, sizeof(listBoxDef_t));
 	} 
-	else if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_BIND || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER || item->type == ITEM_TYPE_TEXT)
+	else if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_BIND || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER || item->type == ITEM_TYPE_TEXT || item->type == ITEM_TYPE_SLIDER_ROTATE)
 	{
 		item->typeData = UI_Alloc(sizeof(editFieldDef_t));
 		memset(item->typeData, 0, sizeof(editFieldDef_t));
@@ -5019,6 +5053,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"columns",			ItemParse_columns,			},
 	{"cvar",			ItemParse_cvar,				},
 	{"cvarFloat",		ItemParse_cvarFloat,		},
+	{"cvarRotateScale", ItemParse_cvarRotateScale,  },
 	{"cvarFloatList",	ItemParse_cvarFloatList,	},
 	{"cvarSubString",	ItemParse_cvarsubstring		},
 	{"cvarStrList",		ItemParse_cvarStrList,		},
@@ -7754,6 +7789,10 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// use item storage to track
 	float curYaw = modelPtr->angle;
+	if (item->cvar)
+	{
+		curYaw = DC->getCVarValue(item->cvar);
+	}
 	if (modelPtr->rotationSpeed)
 	{
 		curYaw += (float)refdef.time/modelPtr->rotationSpeed;
@@ -8803,6 +8842,9 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 		case ITEM_TYPE_SLIDER:
 		case ITEM_TYPE_SLIDER_INTEGER:
 			Item_Slider_Paint(item);
+			break;
+		case ITEM_TYPE_SLIDER_ROTATE:
+			//Don't bother drawing anything at all for now!
 			break;
 		default:
 			break;
@@ -11203,6 +11245,55 @@ static void Scroll_Slider_ThumbFunc(void *p)
 	value += editDef->minVal;
 	DC->setCVar(si->item->cvar, va("%f", value));
 }
+
+/*
+ =================
+ Scroll_Rotate
+ =================
+ */
+static void Scroll_Rotate(void* p)
+{
+	//This maps a scroll to a rotation. That rotation is then added to the current cvar value.
+	//It reads off editDef->range to give the correct angle range for the item area.
+	float start, size, cursorpos, cursorpos_old;
+	int intValue;
+	float angleDiff;
+	scrollInfo_t* si = (scrollInfo_t*)p;
+	editFieldDef_t* editDef = (struct editFieldDef_s*)si->item->typeData;
+
+	qboolean useYAxis = (qboolean)(si->item->flags & ITF_ISANYSABER && !(si->item->flags & ITF_ISCHARACTER));
+
+	if (useYAxis)
+	{
+		start = si->item->window.rect.y;
+		size = si->item->window.rect.h;
+
+		cursorpos = DC->cursory;
+		cursorpos_old = si->yStart;
+	}
+	else
+	{
+		start = si->item->window.rect.x;
+		size = si->item->window.rect.w;
+
+		cursorpos = DC->cursorx;
+		cursorpos_old = si->xStart;
+	}
+
+	if (cursorpos < start)
+	{
+		cursorpos = start;
+	}
+	else if (cursorpos > start + size)
+	{
+		cursorpos = start + size;
+	}
+	//moving across the whole model area should allow for 720 degree rotation
+	angleDiff = (editDef->range) * (cursorpos - cursorpos_old) / size;
+	intValue = (int)(si->adjustValue + angleDiff) % 360;
+	DC->setCVar(si->item->cvar, va("%d", intValue));
+}
+
 /*
 =================
 Item_StartCapture
@@ -11296,6 +11387,21 @@ void Item_StartCapture(itemDef_t *item, int key)
 				scrollInfo.yStart = DC->cursory;
 				captureData = &scrollInfo;
 				captureFunc = &Scroll_Slider_Integer_ThumbFunc;
+				itemCapture = item;
+			}
+			break;
+		}
+		case ITEM_TYPE_SLIDER_ROTATE:
+		{
+			if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory))
+			{
+				scrollInfo.scrollKey = key;
+				scrollInfo.item = item;
+				scrollInfo.xStart = DC->cursorx;
+				scrollInfo.yStart = DC->cursory;
+				scrollInfo.adjustValue = (int)DC->getCVarValue(item->cvar);
+				captureData = &scrollInfo;
+				captureFunc = &Scroll_Rotate;
 				itemCapture = item;
 			}
 			break;
@@ -11642,6 +11748,33 @@ qboolean Item_Slider_Integer_HandleKey(itemDef_t *item, int key, qboolean down)
 
 /*
 =================
+Item_Slider_HandleKey_Rotate
+=================
+*/
+qboolean Item_Slider_HandleKey_Rotate(itemDef_t* item, int key, qboolean down) {
+
+	if (item->window.flags & WINDOW_HASFOCUS && item->cvar && Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory)) {
+		if (key == A_MWHEELUP || key == A_MWHEELDOWN) {
+			editFieldDef_t* editDef = (editFieldDef_t*)item->typeData;
+			if (editDef) {
+				int intValue;
+				float angleDiff;
+				float curAngle = DC->getCVarValue(item->cvar);
+				if (key == A_MWHEELDOWN)
+					angleDiff = -editDef->range / 18.0f; //seems a decent step?
+				else if (key == A_MWHEELUP)
+					angleDiff = editDef->range / 18.0f;
+				intValue = (int)(angleDiff + curAngle) % 360;
+				DC->setCVar(item->cvar, va("%d", intValue));
+				return qtrue;
+			}
+		}
+	}
+	return qfalse;
+}
+
+/*
+=================
 Item_HandleKey
 =================
 */
@@ -11710,6 +11843,9 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 			break;
 		case ITEM_TYPE_SLIDER_INTEGER:
 			return Item_Slider_Integer_HandleKey(item, key, down);
+			break;
+		case ITEM_TYPE_SLIDER_ROTATE:
+			return Item_Slider_HandleKey_Rotate(item, key, down);
 			break;
 //JLF MPMOVED
 		case ITEM_TYPE_TEXT:
@@ -12034,7 +12170,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	should just process the action and not support the accept functionality.
 */
 //JLFACCEPT
-				else if ( item->type == ITEM_TYPE_MULTI || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER )
+				else if ( item->type == ITEM_TYPE_MULTI || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER || item->type == ITEM_TYPE_SLIDER_ROTATE)
 				{
 
 					if (Item_HandleAccept(item))
