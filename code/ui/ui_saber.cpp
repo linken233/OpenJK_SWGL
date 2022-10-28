@@ -976,6 +976,19 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 		return;
 	}
 
+	// Grievous should display his sabers in the iconic pattern we all know and love
+	if (!Q_stricmp(saberName, "grievous_right"))
+	{
+		if (!Q_stricmp(tagName, "*blade2"))
+			bladeColor = TranslateSaberColor(Cvar_VariableString("ui_saber2_color"));
+	}
+	
+	else if (!Q_stricmp(saberName, "grievous_left"))
+	{
+		if (!Q_stricmp(tagName, "*blade2"))
+			bladeColor = TranslateSaberColor(Cvar_VariableString("ui_saber_color"));
+	}
+
 	if (ui_SFXSabers.integer)
 	{
 		UI_DoSFXSaber( bladeOrigin, axis[0], bladeLength, bladeRadius, bladeColor, whichSaber);
@@ -988,18 +1001,36 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
+extern menuDef_t* Menus_FindByName(const char* p);
 void UI_GetSaberForMenu( char *saber, int saberNum )
 {
 	char saberTypeString[MAX_QPATH]={0};
 	saberType_t saberType = SABER_NONE;
 
-	if ( saberNum == 0 )
+	menuDef_t* charMenu;
+	charMenu = Menus_FindByName("IngameSWGLChars");
+
+	if (charMenu)
 	{
-		DC->getCVarString( "g_saber", saber, MAX_QPATH );
+		if (saberNum == 0)
+		{
+			DC->getCVarString("ui_saber", saber, MAX_QPATH);
+		}
+		else
+		{
+			DC->getCVarString("ui_saber2", saber, MAX_QPATH);
+		}
 	}
 	else
 	{
-		DC->getCVarString( "g_saber2", saber, MAX_QPATH );
+		if (saberNum == 0)
+		{
+			DC->getCVarString("g_saber", saber, MAX_QPATH);
+		}
+		else
+		{
+			DC->getCVarString("g_saber2", saber, MAX_QPATH);
+		}
 	}
 	//read this from the sabers.cfg
 	UI_SaberTypeForSaber( saber, saberTypeString );
@@ -1036,7 +1067,7 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 
 }
 
-void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, float curYaw )
+void UI_SaberDrawBlades(itemDef_t* item, vec3_t origin, float curYaw)
 {
 	//NOTE: only allows one saber type in view at a time
 	char saber[MAX_QPATH];
@@ -1044,46 +1075,47 @@ void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, float curYaw )
 	int saberModel = 0;
 	int	numSabers = 1;
 
-	if ( (item->flags&ITF_ISCHARACTER)//hacked sabermoves sabers in character's hand
-		&& uiInfo.movesTitleIndex == 4 /*MD_DUAL_SABERS*/ )
+	if ((item->flags & ITF_ISCHARACTER)//hacked sabermoves sabers in character's hand
+		&& (uiInfo.movesTitleIndex == 4 /*MD_DUAL_SABERS*/
+			|| Q_stricmp(Cvar_VariableString("ui_saber2"), "empty")))
 	{
 		numSabers = 2;
 	}
 
-	for ( saberNum = 0; saberNum < numSabers; saberNum++ )
+	for (saberNum = 0; saberNum < numSabers; saberNum++)
 	{
-		if ( (item->flags&ITF_ISCHARACTER) )//hacked sabermoves sabers in character's hand
+		if ((item->flags & ITF_ISCHARACTER))//hacked sabermoves sabers in character's hand
 		{
-			UI_GetSaberForMenu( saber, saberNum );
+			UI_GetSaberForMenu(saber, saberNum);
 			saberModel = saberNum + 1;
 		}
-		else if ( (item->flags&ITF_ISSABER) )
+		else if ((item->flags & ITF_ISSABER))
 		{
-			DC->getCVarString( "ui_saber", saber, sizeof(saber) );
+			DC->getCVarString("ui_saber", saber, sizeof(saber));
 			saberModel = 0;
 		}
-		else if ( (item->flags&ITF_ISSABER2) )
+		else if ((item->flags & ITF_ISSABER2))
 		{
-			DC->getCVarString( "ui_saber2", saber, sizeof(saber) );
+			DC->getCVarString("ui_saber2", saber, sizeof(saber));
 			saberModel = 0;
 		}
 		else
 		{
 			return;
 		}
-		if ( saber[0] )
+		if (saber[0])
 		{
-			int numBlades = UI_SaberNumBladesForSaber( saber );
-			if ( numBlades )
+			int numBlades = UI_SaberNumBladesForSaber(saber);
+			if (numBlades)
 			{//okay, here we go, time to draw each blade...
-				char	saberTypeString[MAX_QPATH]={0};
-				UI_SaberTypeForSaber( saber, saberTypeString );
-				saberType_t saberType = TranslateSaberType( saberTypeString );
-				for ( int curBlade = 0; curBlade < numBlades; curBlade++ )
+				char	saberTypeString[MAX_QPATH] = { 0 };
+				UI_SaberTypeForSaber(saber, saberTypeString);
+				saberType_t saberType = TranslateSaberType(saberTypeString);
+				for (int curBlade = 0; curBlade < numBlades; curBlade++)
 				{
-					if ( UI_SaberShouldDrawBlade( saber, curBlade ) )
+					if (UI_SaberShouldDrawBlade(saber, curBlade))
 					{
-						UI_SaberDrawBlade( item, saber, saberModel, saberType, origin, curYaw, curBlade );
+						UI_SaberDrawBlade(item, saber, saberModel, saberType, origin, curYaw, curBlade);
 					}
 				}
 			}
@@ -1096,6 +1128,9 @@ void UI_SaberAttachToChar( itemDef_t *item )
 	int	numSabers = 1;
  	int	saberNum = 0;
 
+	menuDef_t* charMenu;
+	charMenu = Menus_FindByName("IngameSWGLChars");
+
 	if ( item->ghoul2.size() > 2 && item->ghoul2[2].mModelindex >=0 )
 	{//remove any extra models
 		DC->g2_RemoveGhoul2Model(item->ghoul2, 2);
@@ -1103,6 +1138,14 @@ void UI_SaberAttachToChar( itemDef_t *item )
 	if ( item->ghoul2.size() > 1 && item->ghoul2[1].mModelindex >=0)
 	{//remove any extra models
 		DC->g2_RemoveGhoul2Model(item->ghoul2, 1);
+	}
+
+	if (charMenu)
+	{
+		if (Q_stricmp(Cvar_VariableString("ui_saber2"), "empty")
+			&& Q_stricmp(Cvar_VariableString("ui_saber2"), "none")
+			&& Q_stricmp(Cvar_VariableString("ui_saber2"), ""))
+			numSabers = 2;
 	}
 
 	if ( uiInfo.movesTitleIndex == 4 /*MD_DUAL_SABERS*/ )

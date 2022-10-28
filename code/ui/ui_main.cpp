@@ -1369,6 +1369,43 @@ static qboolean UI_RunMenuScript ( const char **args )
 				}
 			}
 		}
+		else if (Q_stricmp(name, "char_weapon") == 0)
+		{
+		itemDef_t* item;
+		menuDef_t* menu;
+		modelDef_t* modelPtr;
+		char skin[128];
+
+		uiInfo.movesTitleIndex = 0;
+
+		uiInfo.movesBaseAnim = "BOTH_STAND1IDLE1";
+
+		menu = Menus_FindByName("IngameSWGLChars");
+
+		if (menu)
+		{
+			item = (itemDef_s*)Menu_FindItemByName((menuDef_t*)menu, "character");
+			if (item)
+			{
+
+				modelPtr = (modelDef_t*)item->typeData;
+				if (modelPtr)
+				{
+					ItemParse_model_g2anim_go(item, uiInfo.movesBaseAnim);
+					uiInfo.moveAnimTime = 2000;
+
+					Com_sprintf(skin, sizeof(skin), "models/players/%s/|%s|%s|%s",
+						Cvar_VariableString("ui_char_model"),
+						Cvar_VariableString("ui_char_skin_head"),
+						Cvar_VariableString("ui_char_skin_torso"),
+						Cvar_VariableString("ui_char_skin_legs")
+					);
+
+					UI_SaberAttachToChar(item);
+				}
+			}
+		}
+		}
 		else if (Q_stricmp(name, "glCustom") == 0)
 		{
 			Cvar_Set("ui_r_glCustom", "4");
