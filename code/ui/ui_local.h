@@ -124,7 +124,7 @@ typedef struct {
 	const char *modDescr;
 } modInfo_t;
 
-#define SKIN_LENGTH			16
+#define SKIN_LENGTH			32
 #define ACTION_BUFFER_SIZE	128
 
 typedef struct {

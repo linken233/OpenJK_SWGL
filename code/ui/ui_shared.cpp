@@ -40,6 +40,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "menudef.h"
 
 #include "qcommon/stringed_ingame.h"
+#include <string>
 
 void		UI_LoadMenus(const char *menuFile, qboolean reset);
 
@@ -2791,6 +2792,30 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		//	{
 		//		Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]);
 		//	}
+	}
+
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		std::string newSkin;
+
+		newSkin.append(Cvar_VariableString("ui_char_skin_head"));
+		newSkin.append("|");
+		newSkin.append(Cvar_VariableString("ui_char_skin_torso"));
+		newSkin.append("|");
+		newSkin.append(Cvar_VariableString("ui_char_skin_legs"));
+
+		name = newSkin.c_str();
+
+		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount;
+		for (i = 0; i < max; i++)
+		{
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[i].name))
+			{
+				return i;
+			}
+			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+		return -1;
 	}
 
 	else if (feederID == FEEDER_COLORCHOICES)
@@ -6695,8 +6720,8 @@ Item_ListBox_Paint
 
 void Item_ListBox_Paint(itemDef_t *item)
 {
-	float x, y, size;
-	int count, i, thumb;
+	float x, y, size, sizeWidth, i2, sizeHeight;
+	int count, i, thumb, startPos;
 	qhandle_t image;
 	qhandle_t optionalImage;
 	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
@@ -6796,6 +6821,321 @@ void Item_ListBox_Paint(itemDef_t *item)
 		else
 		{
 			//
+		}
+	}
+	else if (item->special == FEEDER_MODEL_SKINS)
+	{
+		float x, y, size, sizeWidth, i2, sizeHeight;
+		int count, i, thumb, startPos;
+		qhandle_t image;
+		qhandle_t optionalImage;
+		listBoxDef_t* listPtr = (listBoxDef_t*)item->typeData;
+
+		// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
+		// elements are enumerated from the DC and either text or image handles are acquired from the DC as well
+		// textscale is used to size the text, textalignx and textaligny are used to size image elements
+		// there is no clipping available so only the last completely visible item is painted
+		count = DC->feederCount(item->special);
+
+		if (listPtr->startPos > (count ? count - 1 : count))
+		{//probably changed feeders, so reset
+			listPtr->startPos = 0;
+		}
+
+		if (item->cursorPos > (count ? count - 1 : count))
+		{//probably changed feeders, so reset
+			item->cursorPos = 0;
+		}
+		//JLF new variable (code idented with if)
+		if (!listPtr->scrollhidden)
+		{
+
+			// draw scrollbar to right side of the window
+			x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE - 1;
+
+			if ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS)
+				x -= 2;
+
+			y = item->window.rect.y + 1;
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowUp);
+			y += SCROLLBAR_SIZE - 1;
+
+			listPtr->endPos = listPtr->startPos;
+			sizeHeight = item->window.rect.h - (SCROLLBAR_SIZE * 2);
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, sizeHeight + 1, DC->Assets.scrollBar);
+			y += sizeHeight - 1;
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowDown);
+			// thumb
+			thumb = Item_ListBox_ThumbDrawPosition(item);//Item_ListBox_ThumbPosition(item);
+			if (thumb > y - SCROLLBAR_SIZE - 1) {
+				thumb = y - SCROLLBAR_SIZE - 1;
+			}
+			DC->drawHandlePic(x, thumb, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarThumb);
+		}
+		//JLF end
+
+				// adjust size for item painting
+		sizeWidth = item->window.rect.w - 2;
+		sizeHeight = item->window.rect.h - 2;
+
+		if (listPtr->elementStyle == LISTBOX_IMAGE)
+		{
+			if ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS)
+			{
+				// Multiple rows and columns (since it's more than twice as wide as an element)
+				if (item->window.rect.w > (listPtr->elementWidth * 2))
+				{
+					startPos = listPtr->startPos;
+					x = item->window.rect.x + 1;
+					y = item->window.rect.y + 1;
+
+					int j = startPos;
+
+					// Next row
+					for (i2 = startPos; i2 < count; i2++)
+					{
+						x = item->window.rect.x + 1;
+						sizeWidth = item->window.rect.w - 2;
+
+						// print a row
+						for (i = startPos; i < count; i++)
+						{
+
+							// always draw at least one
+							// which may overdraw the box if it is too small for the element
+							image = DC->feederItemImage(item->special, i);
+							if (image)
+							{
+								if (item->window.flags & WINDOW_PLAYERCOLOR)
+								{
+									vec4_t	color;
+
+									color[0] = ui_char_color_red.integer / 255.0f;
+									color[1] = ui_char_color_green.integer / 255.0f;
+									color[2] = ui_char_color_blue.integer / 255.0f;
+									color[3] = 1.0f;
+									ui.R_SetColor(color);
+								}
+								DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+							}
+							else
+							{
+								continue;
+							}
+
+							if (i == item->cursorPos)
+							{
+								DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+							}
+
+							sizeWidth -= listPtr->elementWidth;
+							if (sizeWidth < listPtr->elementWidth)
+							{
+								listPtr->drawPadding = sizeWidth; //listPtr->elementWidth - size;
+								break;
+							}
+							x += listPtr->elementWidth;
+							listPtr->endPos++;
+						}
+
+						sizeHeight -= listPtr->elementHeight;
+						if (sizeHeight < listPtr->elementHeight)
+						{
+							listPtr->drawPadding = sizeHeight; //listPtr->elementWidth - size;
+							break;
+						}
+						// NOTE : Is endPos supposed to be valid or not? It was being used as a valid entry but I changed those
+						// few spots that were causing bugs
+						listPtr->endPos++;
+						startPos = listPtr->endPos;
+						y += listPtr->elementHeight;
+
+					}
+				}
+				else
+				{
+					// Multiple rows and columns (since it's more than twice as wide as an element)
+					if (item->window.rect.w > (listPtr->elementWidth * 2))
+					{
+						startPos = listPtr->startPos;
+						x = item->window.rect.x + 1;
+						y = item->window.rect.y + 1;
+
+						// Next row
+						for (i2 = startPos; i2 < count; i2++)
+						{
+							x = item->window.rect.x + 1;
+							sizeWidth = item->window.rect.w - 2;
+
+							// print a row
+							for (i = startPos; i < count; i++)
+							{
+
+								// always draw at least one
+								// which may overdraw the box if it is too small for the element
+								image = DC->feederItemImage(item->special, i);
+								if (image)
+								{
+									if (item->window.flags & WINDOW_PLAYERCOLOR)
+									{
+										vec4_t	color;
+
+										color[0] = ui_char_color_red.integer / 255.0f;
+										color[1] = ui_char_color_green.integer / 255.0f;
+										color[2] = ui_char_color_blue.integer / 255.0f;
+										color[3] = 1.0f;
+										ui.R_SetColor(color);
+									}
+									DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+								}
+
+								if (i == item->cursorPos)
+								{
+									DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+								}
+
+								sizeWidth -= listPtr->elementWidth;
+								if (sizeWidth < listPtr->elementWidth)
+								{
+									listPtr->drawPadding = sizeWidth; //listPtr->elementWidth - size;
+									break;
+								}
+								x += listPtr->elementWidth;
+								listPtr->endPos++;
+							}
+
+							sizeHeight -= listPtr->elementHeight;
+							if (sizeHeight < listPtr->elementHeight)
+							{
+								listPtr->drawPadding = sizeHeight; //listPtr->elementWidth - size;
+								break;
+							}
+							// NOTE : Is endPos supposed to be valid or not? It was being used as a valid entry but I changed those
+							// few spots that were causing bugs
+							listPtr->endPos++;
+							startPos = listPtr->endPos;
+							y += listPtr->elementHeight;
+						}
+					}
+					// single column
+					else
+					{
+						x = item->window.rect.x + 1;
+						y = item->window.rect.y + 1;
+						int j = listPtr->startPos;
+						for (i = listPtr->startPos; i < count; i++)
+						{
+
+							// always draw at least one
+							// which may overdraw the box if it is too small for the element
+							image = DC->feederItemImage(item->special, i);
+							if (image)
+							{
+								DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+							}
+
+							if (i == item->cursorPos)
+							{
+								DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+							}
+
+							listPtr->endPos++;
+							sizeHeight -= listPtr->elementHeight;
+							if (sizeHeight < listPtr->elementHeight)
+							{
+								listPtr->drawPadding = listPtr->elementHeight - sizeHeight;
+								break;
+							}
+							y += listPtr->elementHeight;
+							// fit++;
+						}
+					}
+				}
+			}
+
+			else
+			{
+				x = item->window.rect.x + 1;
+				y = item->window.rect.y + 1;
+				//JLF MPMOVED
+				y = item->window.rect.y + 1 - listPtr->elementHeight;
+				i = listPtr->startPos;
+
+				for (; i < count; i++)
+					//JLF END
+				{
+					const char* text;
+					// always draw at least one
+					// which may overdraw the box if it is too small for the element
+					if (listPtr->numColumns > 0) {
+						int j;//, subX = listPtr->elementHeight;
+
+						for (j = 0; j < listPtr->numColumns; j++)
+						{
+							char	temp[MAX_STRING_CHARS];
+							int imageStartX = listPtr->columnInfo[j].pos;
+							text = DC->feederItemText(item->special, i, j, &optionalImage);
+							if (text[0] == '@')
+							{
+								text = SE_GetString(&text[1]);
+							}
+
+
+							if (optionalImage >= 0) {
+								DC->drawHandlePic(x + 4 + listPtr->columnInfo[j].pos, y - 1 + listPtr->elementHeight / 2, listPtr->columnInfo[j].width, listPtr->columnInfo[j].width, optionalImage);
+							}
+							else if (text)
+							{
+								vec4_t* color;
+								menuDef_t* parent = (menuDef_t*)item->parent;
+
+								// Use focus color is it has focus.
+								if (i == item->cursorPos)
+								{
+									color = &parent->focusColor;
+								}
+								else
+								{
+									color = &item->window.foreColor;
+								}
+
+
+								int textyOffset;
+								textyOffset = 0;
+
+								DC->drawText(x + 4 + listPtr->columnInfo[j].pos, y + listPtr->elementHeight + textyOffset, item->textscale, *color, text, listPtr->columnInfo[j].maxChars, item->textStyle, item->font);
+							}
+						}
+					}
+					else
+					{
+						text = DC->feederItemText(item->special, i, 0, &optionalImage);
+						if (optionalImage >= 0)
+						{
+							//DC->drawHandlePic(x + 4 + listPtr->elementHeight, y, listPtr->columnInfo[j].width, listPtr->columnInfo[j].width, optionalImage);
+						}
+						else if (text)
+						{
+							DC->drawText(x + 4, y + listPtr->elementHeight, item->textscale, item->window.foreColor, text, 0, item->textStyle, item->font);
+						}
+					}
+
+					if (i == item->cursorPos)
+					{
+						DC->fillRect(x + 2, y + listPtr->elementHeight + 2, item->window.rect.w - SCROLLBAR_SIZE - 4, listPtr->elementHeight, item->window.outlineColor);
+					}
+
+					sizeHeight -= listPtr->elementHeight;
+					if (sizeHeight < listPtr->elementHeight)
+					{
+						listPtr->drawPadding = listPtr->elementHeight - sizeHeight;
+						break;
+					}
+					listPtr->endPos++;
+					y += listPtr->elementHeight;
+					// fit++;
+				}
+			}
 		}
 	}
 	else
@@ -9053,6 +9393,8 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 {
 	rectDef_t r;
 	int thumbstart;
+	listBoxDef_t* listPtr;
+	listPtr = (listBoxDef_t*)item->typeData;
 
 	if (item->window.flags & WINDOW_HORIZONTAL)
 	{
@@ -9088,6 +9430,72 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 		if (Rect_ContainsPoint(&r, x, y))
 		{
 			return WINDOW_LB_PGDN;
+		}
+	}
+	// Vertical Scroll
+	else if (item->special == FEEDER_MODEL_SKINS)
+	{
+		// Multiple rows and columns (since it's more than twice as wide as an element)
+		if ((item->window.rect.w > (listPtr->elementWidth * 2)) && (listPtr->elementStyle == LISTBOX_IMAGE))
+		{
+			r.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+			r.y = item->window.rect.y;
+			r.h = r.w = SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGUP;
+			}
+
+			r.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGDN;
+			}
+
+			thumbstart = Item_ListBox_ThumbPosition(item);
+			r.y = thumbstart;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_THUMB;
+			}
+
+		}
+		else
+		{
+			r.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+			r.y = item->window.rect.y;
+			r.h = r.w = SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_LEFTARROW;
+			}
+
+			r.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_RIGHTARROW;
+			}
+
+			thumbstart = Item_ListBox_ThumbPosition(item);
+			r.y = thumbstart;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_THUMB;
+			}
+
+			r.y = item->window.rect.y + SCROLLBAR_SIZE;
+			r.h = thumbstart - r.y;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGUP;
+			}
+
+			r.y = thumbstart + SCROLLBAR_SIZE;
+			r.h = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGDN;
+			}
 		}
 	}
 	else
@@ -9173,10 +9581,29 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
 		r.h = item->window.rect.h - listPtr->drawPadding;
 		if (Rect_ContainsPoint(&r, x, y))
 		{
-			listPtr->cursorPos =  (int)((y - 2 - r.y) / listPtr->elementHeight)  + listPtr->startPos;
-			if (listPtr->cursorPos > listPtr->endPos)
+			// Multiple rows and columns (since it's more than twice as wide as an element)
+			if ((item->window.rect.w > (listPtr->elementWidth * 2)) && (listPtr->elementStyle == LISTBOX_IMAGE))
 			{
-				listPtr->cursorPos = listPtr->endPos;
+				int row, column, rowLength;
+
+				row = (int)((y - 2 - r.y) / listPtr->elementHeight);
+				rowLength = (int)r.w / listPtr->elementWidth;
+				column = (int)((x - r.x) / listPtr->elementWidth);
+
+				listPtr->cursorPos = (row * rowLength) + column + listPtr->startPos;
+				if (listPtr->cursorPos >= listPtr->endPos)
+				{
+					listPtr->cursorPos = listPtr->endPos;
+				}
+			}
+			// single column
+			else
+			{
+				listPtr->cursorPos = (int)((y - 2 - r.y) / listPtr->elementHeight) + listPtr->startPos;
+				if (listPtr->cursorPos > listPtr->endPos)
+				{
+					listPtr->cursorPos = listPtr->endPos;
+				}
 			}
 		}
 	}
@@ -10420,7 +10847,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			//Raz: Added
 			if ( key == A_MWHEELUP )
 			{
-				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS) ? viewmax : 1;
 				if (listPtr->startPos < 0)
 				{
 					listPtr->startPos = 0;
@@ -10432,7 +10859,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			}
 			if ( key == A_MWHEELDOWN )
 			{
-				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS) ? viewmax : 1;
 				if (listPtr->startPos > max)
 				{
 					listPtr->startPos = max;
