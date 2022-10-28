@@ -69,7 +69,6 @@ extern cvar_t	*g_NPClegs;
 
 // NPC attributes
 extern cvar_t *g_NPCtype;
-extern cvar_t *g_NPCskin;
 extern cvar_t *g_NPCteam;
 extern cvar_t *g_NPCweapon;
 extern cvar_t *g_NPCsaber;
@@ -906,22 +905,15 @@ static void Svcmd_Spawn_f(void)
 	NPCspawner->NPC_type = g_NPCtype->string;
 	NPCspawner->NPC_skin = "default";
 
-	//if (Q_stricmp("model_default", g_NPChead->string) && Q_stricmp("model_default", g_NPCtorso->string) && Q_stricmp("model_default", g_NPClegs->string))
-	//{
-		std::string newSkin;
+	std::string newSkin;
 
-		newSkin.append(g_NPChead->string);
-		newSkin.append("|");
-		newSkin.append(g_NPCtorso->string);
-		newSkin.append("|");
-		newSkin.append(g_NPClegs->string);
+	newSkin.append(g_NPChead->string);
+	newSkin.append("|");
+	newSkin.append(g_NPCtorso->string);
+	newSkin.append("|");
+	newSkin.append(g_NPClegs->string);
 
-		NPCspawner->NPC_skin = G_NewString(newSkin.c_str());
-	//}
-	//else
-	//{
-	//	NPCspawner->NPC_skin = g_NPCskin->string;
-	//}
+	NPCspawner->NPC_skin = G_NewString(newSkin.c_str());
 
 	NPCspawner->NPC_team = g_NPCteam->string;
 
@@ -966,36 +958,42 @@ static void Svcmd_Spawn_f(void)
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_Jedi(NPCspawner);
 	}
 	else if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 0;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	else if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 1;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	else if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 2;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	else if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	else if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
 	{//special case, for testing
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 8;
+		NPCspawner->NPC_skin = NULL;
 		SP_NPC_SWGL_Jedi(NPCspawner);
 	}
 	else

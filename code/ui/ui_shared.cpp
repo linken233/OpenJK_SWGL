@@ -2707,22 +2707,6 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		return -1;
 	}
 
-	else if (feederID == FEEDER_NPC_SKIN_HEAD)
-	{
-		name = Cvar_VariableString("g_NPChead");
-		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
-		for (i = 0; i < max; i++)
-		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[i].name))
-			{
-				return i;
-			}
-
-			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
-		}
-		return -1;
-	}
-
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		name = Cvar_VariableString("ui_char_skin_torso");
@@ -2734,22 +2718,6 @@ int GetCurrentFeederIndex(itemDef_t * item)
 				return i;
 			}
 		//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
-		}
-		return -1;
-
-	}
-
-	else if (feederID == FEEDER_NPC_SKIN_TORSO)
-	{
-		name = Cvar_VariableString("g_NPCtorso");
-		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
-		for (i = 0; i < max; i++)
-		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[i].name))
-			{
-				return i;
-			}
-			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
 		}
 		return -1;
 
@@ -2776,26 +2744,6 @@ int GetCurrentFeederIndex(itemDef_t * item)
 	//	}
 	}
 
-	else if (feederID == FEEDER_NPC_SKIN_LEGS)
-	{
-		name = Cvar_VariableString("g_NPClegs");
-		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
-		for (i = 0; i < max; i++)
-		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[i].name))
-			{
-				return i;
-			}
-			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
-		}
-		return -1;
-
-
-		//	if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
-		//	{
-		//		Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]);
-		//	}
-	}
 
 	else if (feederID == FEEDER_MODEL_SKINS)
 	{
@@ -8258,6 +8206,29 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 	}
 
 	parent = (menuDef_t*)item->parent;
+
+	// Have to manually set the visibility and functionality for the random Jedi and Sith character and npc spawner entries.
+	if (!Q_stricmp("JediSith", item->window.name) && !Q_stricmp("IngameSWGLChars", parent->window.name))
+	{
+		if(Cvar_VariableIntegerValue("ui_npc_menu"))
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+			return qfalse;
+		}
+		else
+			item->window.flags &= ~WINDOW_INACTIVE;
+	}
+	
+	if (!Q_stricmp("RandomSpawner", item->window.name) && !Q_stricmp("IngameSWGLChars", parent->window.name))
+	{
+		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+			return qfalse;
+		}
+		else
+			item->window.flags &= ~WINDOW_INACTIVE;
+	}
 
 	if (item->window.flags & WINDOW_SCRIPTWAITING)
 	{

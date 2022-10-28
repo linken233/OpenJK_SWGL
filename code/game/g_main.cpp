@@ -235,7 +235,6 @@ cvar_t	*g_saberDarkSideSaberColor;
 
 // NPC attributes
 cvar_t *g_NPCtype;
-cvar_t *g_NPCskin;
 cvar_t *g_NPCteam;
 cvar_t *g_NPCweapon;
 cvar_t *g_NPCsaber;
@@ -767,7 +766,6 @@ void G_InitCvars( void ) {
 	g_saberDarkSideSaberColor = gi.cvar( "g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE );	//when you turn evil, it turns your saber red!
 
 	g_NPCtype = gi.cvar("g_NPCtype", "stormtrooper", CVAR_ARCHIVE | CVAR_NORESTART);
-	g_NPCskin = gi.cvar("g_NPCskin", "default", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCteam = gi.cvar("g_NPCteam", "enemy", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPChealth = gi.cvar("g_NPChealth", "100", CVAR_ARCHIVE | CVAR_NORESTART);
 	g_NPCspawnscript = gi.cvar("g_NPCspawnscript", "spawnscripts/no_follow", CVAR_ARCHIVE | CVAR_NORESTART);
