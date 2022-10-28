@@ -49,6 +49,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #include "../qcommon/stringed_ingame.h"
 #include "../qcommon/stv_version.h"
 #include "../qcommon/q_shared.h"
+#include <string>
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
@@ -867,6 +868,16 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].shader;
 		}
 	}
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
+		{
+			std::string skinString(uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name + 6, (strlen(uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name) - 6));
+
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, skinString.c_str()));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name;
+		}
+	}
 	else if (feederID == FEEDER_MODS)
 	{
 		if (index >= 0 && index < uiInfo.modCount)
@@ -895,6 +906,14 @@ qhandle_t UI_FeederItemImage(float feederID, int index)
 			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name));
 		}
 	}
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
+		{
+			std::string skinString(uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name + 6, (strlen(uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name) - 6));
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, skinString.c_str()));
+		}
+	}
 	
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO || feederID == FEEDER_NPC_SKIN_TORSO)
 	{
@@ -917,6 +936,14 @@ qhandle_t UI_FeederItemImage(float feederID, int index)
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount)
 		{
 			return ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[index].shader);
+		}
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS || feederID == FEEDER_NPC_SKIN_LEGS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[index].name));
 		}
 	}
 /*	else if (feederID == FEEDER_ALLMAPS || feederID == FEEDER_MAPS)
@@ -2142,7 +2169,10 @@ static int UI_FeederCount(float feederID)
 	{
 		return uiInfo.playerSpeciesCount;
 	}
-	
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount;
+	}
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD || feederID == FEEDER_NPC_SKIN_HEAD)
 	{
 		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
@@ -2304,7 +2334,15 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[index].name);
 		}
 	}
-
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
+		{
+			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+		}
+	}
 	else if (feederID == FEEDER_NPC_SKIN_HEAD)
 	{
 		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
@@ -2713,24 +2751,52 @@ static qboolean IsImageFile(const char* dirptr, const char* skinname, qboolean b
 	char fpath[MAX_QPATH];
 	int f;
 
-
-	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
-	ui.FS_FOpenFile(fpath, &f, FS_READ);
-	if (!f)
-	{ //not there, try png
-		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
-		ui.FS_FOpenFile(fpath, &f, FS_READ);
-	}
-	if (!f)
-	{ //not there, try tga
-		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
-		ui.FS_FOpenFile(fpath, &f, FS_READ);
-	}
-	if (f)
+	if (Q_stricmpn(skinname, "model_", 6) == 0)
 	{
-		ui.FS_FCloseFile(f);
-		if ( building ) ui.R_RegisterShaderNoMip(fpath);
-		return qtrue;
+		std::string skinString(skinname + 6, (strlen(skinname) - 6));
+
+		skinname = skinString.c_str();
+
+		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
+		ui.FS_FOpenFile(fpath, &f, FS_READ);
+		if (!f)
+		{ //not there, try png
+			Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
+			ui.FS_FOpenFile(fpath, &f, FS_READ);
+		}
+		if (!f)
+		{ //not there, try tga
+			Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
+			ui.FS_FOpenFile(fpath, &f, FS_READ);
+		}
+		if (f)
+		{
+			ui.FS_FCloseFile(f);
+			if (building) ui.R_RegisterShaderNoMip(fpath);
+			return qtrue;
+		}
+	}
+
+	else
+	{
+		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
+		ui.FS_FOpenFile(fpath, &f, FS_READ);
+		if (!f)
+		{ //not there, try png
+			Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
+			ui.FS_FOpenFile(fpath, &f, FS_READ);
+		}
+		if (!f)
+		{ //not there, try tga
+			Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
+			ui.FS_FOpenFile(fpath, &f, FS_READ);
+		}
+		if (f)
+		{
+			ui.FS_FCloseFile(f);
+			if (building) ui.R_RegisterShaderNoMip(fpath);
+			return qtrue;
+		}
 	}
 
 	return qfalse;
@@ -2762,21 +2828,21 @@ void UI_FreeAllSpecies( void )
 PlayerModel_BuildList
 =================
 */
-static void UI_BuildPlayerModel_List( qboolean inGameLoad )
+static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 {
 	static const size_t DIR_LIST_SIZE = 16384;
 
 	int		numdirs;
 	size_t	dirListSize = DIR_LIST_SIZE;
 	char	stackDirList[8192];
-	char	*dirlist;
-	char*	dirptr;
+	char* dirlist;
+	char* dirptr;
 	int		dirlen;
 	int		i;
 	const int building = Cvar_VariableIntegerValue("com_buildscript");
 
-	dirlist = (char *)malloc(DIR_LIST_SIZE);
-	if ( !dirlist )
+	dirlist = (char*)malloc(DIR_LIST_SIZE);
+	if (!dirlist)
 	{
 		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
 			"directory list. Using stack allocated buffer of %u bytes instead.",
@@ -2789,14 +2855,14 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
 	uiInfo.playerSpeciesMax = 8;
-	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
+	uiInfo.playerSpecies = (playerSpeciesInfo_t*)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize );
-	dirptr  = dirlist;
-	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize);
+	dirptr = dirlist;
+	for (i = 0; i < numdirs; i++, dirptr += dirlen + 1)
 	{
-		char*	fileptr;
+		char* fileptr;
 		int		filelen;
 		int f = 0;
 		char fpath[MAX_QPATH];
@@ -2805,15 +2871,15 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 		if (dirlen)
 		{
-			if (dirptr[dirlen-1]=='/')
-				dirptr[dirlen-1]='\0';
+			if (dirptr[dirlen - 1] == '/')
+				dirptr[dirlen - 1] = '\0';
 		}
 		else
 		{
 			continue;
 		}
 
-		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
+		if (!strcmp(dirptr, ".") || !strcmp(dirptr, ".."))
 			continue;
 
 		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
@@ -2822,7 +2888,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		if (f)
 		{
 			char filelist[2048];
-			playerSpeciesInfo_t *species = NULL;
+			playerSpeciesInfo_t* species = NULL;
 
 			std::vector<char> buffer(filelen + 1);
 			ui.FS_Read(&buffer[0], filelen, f);
@@ -2834,15 +2900,15 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			if (uiInfo.playerSpeciesCount >= uiInfo.playerSpeciesMax)
 			{
 				uiInfo.playerSpeciesMax *= 2;
-				uiInfo.playerSpecies = (playerSpeciesInfo_t *)realloc(uiInfo.playerSpecies, uiInfo.playerSpeciesMax*sizeof(playerSpeciesInfo_t));
+				uiInfo.playerSpecies = (playerSpeciesInfo_t*)realloc(uiInfo.playerSpecies, uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 			}
 			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
 			memset(species, 0, sizeof(playerSpeciesInfo_t));
-			Q_strncpyz( species->Name, dirptr, MAX_QPATH );
+			Q_strncpyz(species->Name, dirptr, MAX_QPATH);
 
-			if (!UI_ParseColorData(buffer.data(),*species))
+			if (!UI_ParseColorData(buffer.data(), *species))
 			{
-				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
+				ui.Printf("UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath);
 			}
 
 			species->SkinHeadMax = 8;
@@ -2850,23 +2916,25 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			species->SkinLegMax = 8;
 			species->SkinMax = 8;
 
-			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
-			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
-			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
-			species->Skin = (skinName_t *)malloc(species->SkinMax * sizeof(skinName_t));
+
+			species->SkinHead = (skinName_t*)malloc(species->SkinHeadMax * sizeof(skinName_t));
+			species->SkinTorso = (skinName_t*)malloc(species->SkinTorsoMax * sizeof(skinName_t));
+			species->SkinLeg = (skinName_t*)malloc(species->SkinLegMax * sizeof(skinName_t));
+			species->Skin = (skinName_t*)malloc(species->SkinMax * sizeof(skinName_t));
+
 
 			int		j;
 			char	skinname[64];
 			int		numfiles;
-			int		iSkinParts=0;
+			int		iSkinParts = 0;
 
-			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
-			fileptr  = filelist;
-			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
+			numfiles = ui.FS_GetFileList(va("models/players/%s", dirptr), ".skin", filelist, sizeof(filelist));
+			fileptr = filelist;
+			for (j = 0; j < numfiles; j++, fileptr += filelen + 1)
 			{
-				if ( building )
+				if (building)
 				{
-					ui.FS_FOpenFile(va("models/players/%s/%s",dirptr,fileptr), &f, FS_READ);
+					ui.FS_FOpenFile(va("models/players/%s/%s", dirptr, fileptr), &f, FS_READ);
 					if (f) ui.FS_FCloseFile(f);
 					ui.FS_FOpenFile(va("models/players/%s/sounds.cfg", dirptr), &f, FS_READ);
 					if (f) ui.FS_FCloseFile(f);
@@ -2875,43 +2943,57 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				}
 
 				filelen = strlen(fileptr);
-				COM_StripExtension(fileptr,skinname, sizeof(skinname));
+				COM_StripExtension(fileptr, skinname, sizeof(skinname));
 
 				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
 				{ //if it exists
-					if (Q_stricmpn(skinname,"head_",5) == 0)
+					if (Q_stricmpn(skinname, "head_", 5) == 0)
 					{
 						if (species->SkinHeadCount >= species->SkinHeadMax)
 						{
 							species->SkinHeadMax *= 2;
-							species->SkinHead = (skinName_t *)realloc(species->SkinHead, species->SkinHeadMax*sizeof(skinName_t));
+							species->SkinHead = (skinName_t*)realloc(species->SkinHead, species->SkinHeadMax * sizeof(skinName_t));
 						}
 						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH);
-						iSkinParts |= 1<<0;
-					} else
-					if (Q_stricmpn(skinname,"torso_",6) == 0)
-					{
-						if (species->SkinTorsoCount >= species->SkinTorsoMax)
+						iSkinParts |= 1 << 0;
+					}
+					else
+						if (Q_stricmpn(skinname, "torso_", 6) == 0)
 						{
-							species->SkinTorsoMax *= 2;
-							species->SkinTorso = (skinName_t *)realloc(species->SkinTorso, species->SkinTorsoMax*sizeof(skinName_t));
+							if (species->SkinTorsoCount >= species->SkinTorsoMax)
+							{
+								species->SkinTorsoMax *= 2;
+								species->SkinTorso = (skinName_t*)realloc(species->SkinTorso, species->SkinTorsoMax * sizeof(skinName_t));
+							}
+							Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
+							iSkinParts |= 1 << 1;
 						}
-						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
-						iSkinParts |= 1<<1;
-					} else
-					if (Q_stricmpn(skinname,"lower_",6) == 0)
+						else
+							if (Q_stricmpn(skinname, "lower_", 6) == 0)
+							{
+								if (species->SkinLegCount >= species->SkinLegMax)
+								{
+									species->SkinLegMax *= 2;
+									species->SkinLeg = (skinName_t*)realloc(species->SkinLeg, species->SkinLegMax * sizeof(skinName_t));
+								}
+								Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
+								iSkinParts |= 1 << 2;
+							}
+					if (Q_stricmpn(skinname, "model_", 6) == 0)
 					{
-						if (species->SkinLegCount >= species->SkinLegMax)
+						if (species->SkinCount >= species->SkinMax)
 						{
-							species->SkinLegMax *= 2;
-							species->SkinLeg = (skinName_t *)realloc(species->SkinLeg, species->SkinLegMax*sizeof(skinName_t));
+							species->SkinMax *= 2;
+							species->Skin = (skinName_t*)realloc(species->Skin, species->SkinMax * sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
-						iSkinParts |= 1<<2;
+						Q_strncpyz(species->Skin[species->SkinCount++].name, skinname, SKIN_LENGTH);
+
+						if (Q_stricmpn(skinname, "model_default", 13) == 0)
+							iSkinParts |= 1 << 3;
 					}
 				}
 			}
-			if (iSkinParts != 7)
+			if (iSkinParts < 7)
 			{	//didn't get a skin for each, then skip this model.
 				UI_FreeSpecies(species);
 				continue;
@@ -2920,21 +3002,101 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			if (!inGameLoad && ui_PrecacheModels.integer)
 			{
 				CGhoul2Info_v ghoul2;
-				Com_sprintf( fpath, sizeof( fpath ), "models/players/%s/model.glm", dirptr );
+				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
 				int g2Model = DC->g2_InitGhoul2Model(ghoul2, fpath, 0, 0, 0, 0, 0);
 				if (g2Model >= 0)
 				{
-					DC->g2_RemoveGhoul2Model( ghoul2, 0 );
+					DC->g2_RemoveGhoul2Model(ghoul2, 0);
+				}
+			}
+
+			ui.FS_FCloseFile(f);
+		}
+		else
+		{
+			char filelist[2048];
+			playerSpeciesInfo_t* species = NULL;
+
+			//record this species
+			if (uiInfo.playerSpeciesCount >= uiInfo.playerSpeciesMax)
+			{
+				uiInfo.playerSpeciesMax *= 2;
+				uiInfo.playerSpecies = (playerSpeciesInfo_t*)realloc(uiInfo.playerSpecies, uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
+			}
+			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
+			memset(species, 0, sizeof(playerSpeciesInfo_t));
+			Q_strncpyz(species->Name, dirptr, MAX_QPATH);
+
+			species->SkinMax = 8;
+
+			species->Skin = (skinName_t*)malloc(species->SkinMax * sizeof(skinName_t));
+
+			int		j;
+			char	skinname[64];
+			int		numfiles;
+			int		iSkinParts = 0;
+
+			numfiles = ui.FS_GetFileList(va("models/players/%s", dirptr), ".skin", filelist, sizeof(filelist));
+			fileptr = filelist;
+			for (j = 0; j < numfiles; j++, fileptr += filelen + 1)
+			{
+				if (building)
+				{
+					ui.FS_FOpenFile(va("models/players/%s/%s", dirptr, fileptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+					ui.FS_FOpenFile(va("models/players/%s/sounds.cfg", dirptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+					ui.FS_FOpenFile(va("models/players/%s/animevents.cfg", dirptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+				}
+
+				filelen = strlen(fileptr);
+				COM_StripExtension(fileptr, skinname, sizeof(skinname));
+
+				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
+				{ //if it exists
+					if (Q_stricmpn(skinname, "model_", 6) == 0)
+					{
+						if (species->SkinCount >= species->SkinMax)
+						{
+							species->SkinMax *= 2;
+							species->Skin = (skinName_t*)realloc(species->Skin, species->SkinMax * sizeof(skinName_t));
+						}
+						Q_strncpyz(species->Skin[species->SkinCount++].name, skinname, SKIN_LENGTH);
+
+						if (Q_stricmpn(skinname, "model_default", 13) == 0)
+							iSkinParts |= 1 << 3;
+					}
+				}
+			}
+			if (iSkinParts < 7)
+			{	//didn't get a skin for each, then skip this model.
+				UI_FreeSpecies(species);
+				continue;
+			}
+			uiInfo.playerSpeciesCount++;
+			if (!inGameLoad && ui_PrecacheModels.integer)
+			{
+				CGhoul2Info_v ghoul2;
+				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
+				int g2Model = DC->g2_InitGhoul2Model(ghoul2, fpath, 0, 0, 0, 0, 0);
+				if (g2Model >= 0)
+				{
+					DC->g2_RemoveGhoul2Model(ghoul2, 0);
 				}
 			}
 		}
+
 	}
 
-	if ( dirlist != stackDirList )
+
+
+	if (dirlist != stackDirList)
 	{
 		free(dirlist);
 	}
 }
+
 
 /*
 ================
@@ -6996,6 +7158,7 @@ static void UI_UpdateCharacter( qboolean changedModel )
 		UI_FeederSelection(FEEDER_NPC_SKIN_HEAD, 0, item);	//fixme, this is not really the right item!!
 		UI_FeederSelection(FEEDER_NPC_SKIN_TORSO, 0, item);
 		UI_FeederSelection(FEEDER_NPC_SKIN_LEGS, 0, item);
+		UI_FeederSelection(FEEDER_MODEL_SKINS, 0, item);
 		UI_FeederSelection(FEEDER_COLORCHOICES, 0, item);
 	}
 	UI_UpdateCharacterSkin();
