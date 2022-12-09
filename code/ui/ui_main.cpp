@@ -439,6 +439,8 @@ vmCvar_t	ui_saber;
 vmCvar_t	ui_saber2;
 vmCvar_t	ui_saber_color;
 vmCvar_t	ui_saber2_color;
+vmCvar_t	ui_lightning_color;
+vmCvar_t	ui_edit_saber;
 vmCvar_t	ui_char_color_red;
 vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
@@ -446,7 +448,6 @@ vmCvar_t	ui_PrecacheModels;
 vmCvar_t	ui_screenshotType;
 vmCvar_t	ui_npc_faction;
 vmCvar_t	ui_npc_custom;
-vmCvar_t	ui_npc_saber;
 
 vmCvar_t	ui_npc_type;
 vmCvar_t	ui_npc_skin;
@@ -460,10 +461,10 @@ vmCvar_t	ui_npc_saberonecolor;
 vmCvar_t	ui_npc_sabertwo;
 vmCvar_t	ui_npc_sabertwocolor;
 vmCvar_t	ui_npc_weapon;
-vmCvar_t	ui_npc_lightningcolor;
 vmCvar_t	ui_npc_spawnscript;
 vmCvar_t	ui_npc_fleescript;
 vmCvar_t	ui_npc_deathscript;
+vmCvar_t	ui_npc_menu;
 
 
 vmCvar_t	ui_saber_edit;
@@ -566,7 +567,6 @@ static cvarTable_t cvarTable[] =
 	{ &ui_SFXSabers,	"cg_SFXSabers",	"1", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", NULL, CVAR_ARCHIVE },
-	{ &ui_npc_saber,	"ui_npc_saber",	"0", NULL },
 	{ &ui_knightfall,			"ui_knightfall",		"0", NULL, CVAR_ARCHIVE},
 	{ &ui_fe_jedi,				"ui_fe_jedi",		"0", NULL, CVAR_ARCHIVE},
 	{ &ui_fe_sith,				"ui_fe_sith",		"0", NULL, CVAR_ARCHIVE},
@@ -584,12 +584,13 @@ static cvarTable_t cvarTable[] =
 	{ &ui_npc_sabertwo,			"ui_npc_sabertwo",	"single_1", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_sabertwocolor,	"ui_npc_sabertwocolor",	"red", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_weapon,			"ui_npc_weapon",	"WP_BLASTER", NULL, CVAR_ARCHIVE},
-	{ &ui_npc_lightningcolor,	"ui_npc_lightningcolor",	"blue", NULL, CVAR_ARCHIVE},
+	{ &ui_lightning_color,		"ui_lightning_color",	"blue", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_spawnscript,		"ui_npc_spawnscript",	"spawnscripts/no_follow", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_fleescript,		"ui_npc_fleescript",	"fleescripts/surrender", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_deathscript,		"ui_npc_deathscript",	"deathscripts/losehead", NULL, CVAR_ARCHIVE},
 	{ &ui_saber_edit,			"ui_saber_edit",		"0", NULL},
 	{ &ui_char_model_angle, "ui_char_model_angle", "180", NULL, 0},
+	{ &ui_npc_menu, "ui_npc_menu", "0", NULL, 0},
 
 
 };
@@ -4844,7 +4845,8 @@ static void UI_UpdateCharacterCvars ( void )
 	Cvar_Set ( "g_char_skin_legs", Cvar_VariableString ( "ui_char_skin_legs" ) );
 	Cvar_Set ( "g_char_color_red", Cvar_VariableString ( "ui_char_color_red" ) );
 	Cvar_Set ( "g_char_color_green", Cvar_VariableString ( "ui_char_color_green" ) );
-	Cvar_Set ( "g_char_color_blue", Cvar_VariableString ( "ui_char_color_blue" ) );
+	Cvar_Set("g_char_color_blue", Cvar_VariableString("ui_char_color_blue"));
+	Cvar_Set("g_forceLightningColor", Cvar_VariableString("ui_lightning_color"));
 }
 
 static void UI_UpdateNPCCvars()
@@ -4859,7 +4861,7 @@ static void UI_UpdateNPCCvars()
 	Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_saber_color"));
 	Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_saber2"));
 	Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_saber2_color"));
-	Cvar_Set("g_NPCLightningColor", Cvar_VariableString("ui_npc_lightningcolor"));
+	Cvar_Set("g_NPCLightningColor", Cvar_VariableString("ui_lightning_color"));
 	Cvar_Set("g_NPCspawnscript", Cvar_VariableString("ui_npc_spawnscript"));
 	Cvar_Set("g_NPCfleescript", Cvar_VariableString("ui_npc_fleescript"));
 	Cvar_Set("g_NPCdeathscript", Cvar_VariableString("ui_npc_deathscript"));
@@ -4902,20 +4904,13 @@ extern saber_colors_t TranslateSaberColor( const char *name );
 
 static void UI_UpdateSaberCvars ( void )
 {
-	if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+	if (!Cvar_VariableIntegerValue("ui_saber_edit"))
 	{
 		Cvar_Set("g_saber_type", Cvar_VariableString("ui_saber_type"));
 		Cvar_Set("g_saber", Cvar_VariableString("ui_saber"));
 		Cvar_Set("g_saber2", Cvar_VariableString("ui_saber2"));
 		Cvar_Set("g_saber_color", Cvar_VariableString("ui_saber_color"));
 		Cvar_Set("g_saber2_color", Cvar_VariableString("ui_saber2_color"));
-	}
-	else
-	{
-		Cvar_Set("ui_npc_saberone", Cvar_VariableString("ui_saber"));
-		Cvar_Set("ui_npc_sabertwo", Cvar_VariableString("ui_saber2"));
-		Cvar_Set("ui_npc_saberonecolor", Cvar_VariableString("ui_saber_color"));
-		Cvar_Set("ui_npc_sabertwocolor", Cvar_VariableString("ui_saber2_color"));
 	}
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber_color")) >= SABER_RGB)
@@ -6150,6 +6145,11 @@ static void UI_ApplyCharWeapons()
 		if (weaponFive)
 			pState->weapons[weaponFive] = 1;
 
+		if (pState->weapons[WP_SABER] != 1 && Q_stricmp(Cvar_VariableString("ui_saber"), "") && Q_stricmp(Cvar_VariableString("ui_saber"), "empty") && Q_stricmp(Cvar_VariableString("ui_saber"), "none"))
+		{
+			pState->weapons[WP_SABER] = 1;
+		}
+
 		// Reset the secondary saber, just in case
 		Cvar_Set("ui_saber2", "");
 		
@@ -6170,6 +6170,10 @@ static void UI_ApplySaberStyles()
 	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
 	if (!cl)	// No client, get out
+	{
+		return;
+	}
+	if (saberStyles <= 0)
 	{
 		return;
 	}
@@ -7024,19 +7028,12 @@ static void UI_GetSaberCvars ( void )
 		Cvar_Set("g_saber_type", "single");
 
 	Cvar_Set("ui_saber_type", Cvar_VariableString("g_saber_type"));
-	if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+	if (!Cvar_VariableIntegerValue("ui_saber_edit"))
 	{		
 		Cvar_Set("ui_saber", Cvar_VariableString("g_saber"));
 		Cvar_Set("ui_saber2", Cvar_VariableString("g_saber2"));
 		Cvar_Set("ui_saber_color", Cvar_VariableString("g_saber_color"));
 		Cvar_Set("ui_saber2_color", Cvar_VariableString("g_saber2_color"));
-	}
-	else
-	{
-		Cvar_Set("ui_saber", Cvar_VariableString("ui_npc_saberone"));
-		Cvar_Set("ui_saber2", Cvar_VariableString("ui_npc_sabertwo"));
-		Cvar_Set("ui_saber_color", Cvar_VariableString("ui_npc_saberonecolor"));
-		Cvar_Set("ui_saber2_color", Cvar_VariableString("ui_npc_sabertwocolor"));
 	}
 
 	saber_colors_t saberColour = TranslateSaberColor(Cvar_VariableString( "ui_saber_color" ));
@@ -7214,6 +7211,18 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 	if(!item)
 	{
 		Com_Error( ERR_FATAL, "UI_UpdateSaberHilt: Could not find item (%s) in menu (%s)", itemName, menu->window.name);
+	}
+
+	if (secondSaber)
+	{
+		if (!Q_stricmp(Cvar_VariableString("ui_saber2"), "") || !Q_stricmp(Cvar_VariableString("ui_saber2"), "empty"))
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+		else
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
 	}
 	DC->getCVarString( saberCvarName, model, sizeof(model) );
 	//read this from the sabers.cfg
