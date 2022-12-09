@@ -54,6 +54,8 @@ extern void NPC_GalakMech_Init(gentity_t* ent);
 
 extern saber_colors_t TranslateSaberColor(const char* name);
 
+extern stringID_table_t WPTable[];
+
 #define	NSF_DROP_TO_FLOOR	16
 
 gentity_t* traya = NULL;
@@ -5824,8 +5826,6 @@ void NPC_Anim_f(void)
 		gi.Printf(S_COLOR_RED"NPC anim '[NPC targetname]' '[Animation]' '[Body Area] - sets anims on NPC with certain targetname\n");
 		gi.Printf(S_COLOR_RED"or\n");
 		gi.Printf(S_COLOR_RED"NPC anim '[NPC targetname]' remove - Sets animation back to default with the NPC\n");
-		gi.Printf(S_COLOR_RED"or\n");
-		gi.Printf(S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n");
 		return;
 	}
 
@@ -5846,10 +5846,9 @@ void NPC_Anim_f(void)
 			continue;
 		}		
 		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
-		{
-			
+		{		
 
-			if (!Q_stricmp(anim, "remove"))
+			if (!Q_stricmp(anim, "remove") || !Q_stricmp(anim, "none"))
 			{
 				gi.Printf(S_COLOR_GREEN"Resetting animation for NPC %s named %s\n", ent->NPC_type, ent->targetname);
 				PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, 1);
@@ -5873,11 +5872,289 @@ void NPC_Anim_f(void)
 				{
 					gi.Printf(S_COLOR_GREEN"Setting NPC %s named %s animation to %s\n", ent->NPC_type, ent->targetname, anim);
 					NPC_SetAnim(ent, SETANIM_TORSO | SETANIM_LEGS, animID, SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
-					PM_SetLegsAnimTimer(ent, &ent->client->ps.legsAnimTimer, -1);
-					PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, -1);
+					animation_t* animations = level.knownAnimFileSets[0].animations;
+
+					if (animations[animID].loopFrames >= 0)
+					{
+						PM_SetLegsAnimTimer(ent, &ent->client->ps.legsAnimTimer, -1);
+						PM_SetTorsoAnimTimer(ent, &ent->client->ps.torsoAnimTimer, -1);
+					}
 				}
 
 			}
+			break;
+		}
+	}
+}
+
+void NPC_Enemy_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* name;
+	char* enemy;	
+
+	name = gi.argv(2);
+	enemy = gi.argv(3);
+
+	if (!*name || !name[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC enemy '[NPC targetname]' '[NPC enemy targetname]'  - sets enemy of NPC with certain targetname\n");
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
+		{
+			if (!Q_stricmp(enemy, "none"))
+			{
+				if (ent->enemy)
+				{
+					ent->enemy->enemy = NULL;
+				}
+
+				if (ent->enemy && ent->enemy->client 
+					&& ent->enemy->client->playerTeam == ent->client->savedPlayerTeam)
+				{
+					ent->client->playerTeam = ent->client->savedPlayerTeam;
+					ent->client->enemyTeam = ent->client->savedEnemyTeam;
+				}
+
+				ent->enemy = NULL;
+				
+			}
+			else
+			{
+				ent->enemy = G_Find(NULL, FOFS(targetname), (char*)enemy);
+				if (ent->enemy->client->playerTeam == ent->client->playerTeam)
+				{
+					ent->client->savedPlayerTeam = ent->client->playerTeam;
+					ent->client->savedEnemyTeam = ent->client->enemyTeam;
+
+					switch (ent->enemy->client->playerTeam)
+					{
+						case TEAM_PLAYER:
+							ent->client->playerTeam = TEAM_ENEMY;
+							ent->client->enemyTeam = TEAM_PLAYER;
+							break;
+						case TEAM_ENEMY:
+							ent->client->playerTeam = TEAM_PLAYER;
+							ent->client->enemyTeam = TEAM_ENEMY;
+							break;
+						case TEAM_NEUTRAL:
+							ent->client->playerTeam = TEAM_FREE;
+							ent->client->enemyTeam = TEAM_FREE;
+							break;
+						default:
+							ent->client->playerTeam = TEAM_SOLO;
+							ent->client->enemyTeam = TEAM_SOLO;
+							break;
+					}
+				}
+			}			
+		}
+	}
+}
+
+void NPC_Team_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* name;
+	char* teamInput;
+
+	name = gi.argv(2);
+	teamInput = gi.argv(3);
+
+	team_t	team;
+
+	team = (team_t)GetIDForString(TeamTable, teamInput);
+	if (team == (team_t)-1)
+	{
+		gi.Printf(S_COLOR_RED "'NPC Team' unrecognized team name %s!\n", teamInput);
+		gi.Printf(S_COLOR_RED "Valid team names are:\n");
+		for (int n = TEAM_FREE; n < TEAM_NUM_TEAMS; n++)
+		{
+			gi.Printf(S_COLOR_RED "%s\n", GetStringForID(TeamTable, n));
+		}
+		return;
+	}
+
+	if (!*name || !name[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC team '[NPC targetname]' '[NPC team]'  - sets enemy of NPC with certain targetname\n");
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
+		{
+			ent->client->playerTeam = team;
+			if (ent->enemy &&
+				ent->client->playerTeam == ent->enemy->client->playerTeam)
+				ent->enemy = NULL;
+
+			switch (ent->client->playerTeam)
+			{
+			case TEAM_PLAYER:
+				ent->client->enemyTeam = TEAM_ENEMY;
+				break;
+			case TEAM_ENEMY:
+				ent->client->enemyTeam = TEAM_PLAYER;
+				break;
+			case TEAM_NEUTRAL:
+				ent->client->enemyTeam = TEAM_FREE;
+				break;
+			case TEAM_FREE:
+				ent->client->enemyTeam = TEAM_FREE;
+				break;
+			default:
+				ent->client->enemyTeam = TEAM_SOLO;
+				break;
+			}
+
+
+		}
+	}
+}
+
+extern void G_SetWeapon(gentity_t* self, int wp);
+void NPC_Weapon_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* name;
+	char* wp;
+
+	name = gi.argv(2);
+	wp = gi.argv(3);
+
+	weapon_t weapon;
+
+	if (!*name || !name[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC weapon '[NPC targetname]' '[weapon code]'  - sets weapon of NPC with certain targetname\n");
+		return;
+	}
+
+	weapon = (weapon_t)GetIDForString(WPTable, wp);
+	if (weapon == (weapon_t)-1)
+	{
+		gi.Printf(S_COLOR_RED "'NPC Weapon' unrecognized weapon code %s!\n", wp);
+		gi.Printf(S_COLOR_RED "Valid weapon names are:\n");
+		for (int n = WP_NONE; n < WP_NUM_WEAPONS; n++)
+		{
+			gi.Printf(S_COLOR_RED "%s\n", GetStringForID(WPTable, n));
+		}
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
+		{
+			G_SetWeapon(ent, weapon);
+		}
+	}
+}
+
+extern void WP_SetSaber(gentity_t* ent, int saberNum, const char* saberName);
+extern void WP_SaberSetColor(gentity_t* ent, int saberNum, int bladeNum, char* colorName);
+extern void WP_RemoveSaber(gentity_t* ent, int saberNum);
+void NPC_Saber_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* name;
+	char* saberOne;
+	char* saberOneColor;
+	char* saberTwo;
+	char* saberTwoColor;
+
+	name = gi.argv(2);
+	saberOne = gi.argv(3);
+	saberOneColor = gi.argv(4);
+	saberTwo = gi.argv(5);
+	saberTwoColor = gi.argv(6);
+
+	if (!*name || !name[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC saber '[NPC targetname]' '[saber 1 code]' '[saber 1 color]' '[saber 2 code]' '[saber 2 color]' - sets saber of NPC with certain targetname\n");
+		return;
+	}
+
+	if (!*saberOne || !saberOne[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC saber '[NPC targetname]' '[saber 1 code]' '[saber 1 color]' '[saber 2 code]' '[saber 2 color]' - sets saber of NPC with certain targetname\n");
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		if ((ent->targetname && Q_stricmp(name, ent->targetname) == 0))
+		{
+			ent->s.weapon = WP_SABER;
+
+			WP_SetSaber(ent, 0, saberOne);
+
+			if (*saberOneColor && saberOneColor[0])
+			{
+				for (int i = 0; i < 9; i++)
+					WP_SaberSetColor(ent, 0, i, saberOneColor);				
+			}
+
+			if (*saberTwo && saberTwo[0])
+			{
+				WP_SetSaber(ent, 1, saberTwo);
+			}
+			else
+			{
+				WP_RemoveSaber(ent, 1);
+			}
+
+			if (*saberTwoColor && saberTwoColor[0])
+			{
+				if (!Q_stricmp("grievous_right", saberOne) && !Q_stricmp("grievous_left", saberTwo))
+				{
+					WP_SaberSetColor(ent, 0, 0, saberOneColor);
+					WP_SaberSetColor(ent, 0, 1, saberTwoColor);
+					WP_SaberSetColor(ent, 1, 1, saberOneColor);
+					WP_SaberSetColor(ent, 1, 0, saberTwoColor);
+				}
+				else
+				{
+					for (int i = 0; i < 9; i++)
+						WP_SaberSetColor(ent, 1, i, saberTwoColor);
+				}
+			}
+
 		}
 	}
 }
@@ -5975,9 +6252,25 @@ void Svcmd_NPC_f(void)
 	{
 		NPC_Kill_f();
 	}
-	else if (Q_stricmp(cmd, "anim") == 0)
+	else if (Q_stricmp(cmd, "anim") == 0 || Q_stricmp(cmd, "animation") == 0)
 	{
 		NPC_Anim_f();
+	}
+	else if (Q_stricmp(cmd, "enemy") == 0)
+	{
+		NPC_Enemy_f();
+	}
+	else if (Q_stricmp(cmd, "weapon") == 0)
+	{
+		NPC_Weapon_f();
+	}
+	else if (Q_stricmp(cmd, "saber") == 0)
+	{
+		NPC_Saber_f();
+	}
+	else if (Q_stricmp(cmd, "team") == 0)
+	{
+		NPC_Team_f();
 	}
 	else if (Q_stricmp(cmd, "showbounds") == 0)
 	{//Toggle on and off
