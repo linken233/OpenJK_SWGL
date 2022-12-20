@@ -191,7 +191,11 @@ static void UI_ApplyForcePowers(void);
 
 static void UI_RecordSaberStyles(const char** args);
 
+static void UI_CharacterSelect(const char** args);
+
 static void UI_ApplySaberStyles(void);
+
+static void UI_ShowMissionInfo(void);
 
 // Movedata Sounds
 enum
@@ -245,6 +249,27 @@ typedef struct
 	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
+
+
+#define MAX_MISSION_TOPIC 16
+#define MAX_MISSION 32
+
+typedef struct
+{
+	const char *title;
+	const char *value;
+} missionTopicData_t;
+
+typedef struct
+{
+	char *title;
+	char* missionNum;
+	char* picCode;
+	char* mapCode;
+	char* descCode;
+	qboolean characterSelect = qfalse;
+	
+} missionData_t;
 
 static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
 {
@@ -369,6 +394,132 @@ static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
 }
 };
 
+static missionTopicData_t missionTopicData[1][MAX_MISSION_TOPIC] =
+{
+{
+	{ "@SWGLMISSIONS_MISSIONS_EPI",					"0"},
+	{ "@SWGLMISSIONS_MISSIONS_EPII",					"1"},
+	{ "@SWGLMISSIONS_MISSIONS_EPIII",					"2"},
+	{ "@SWGLMISSIONS_MISSIONS_EPIV",					"3"},
+	{ "@SWGLMISSIONS_MISSIONS_EPV",						"4"},
+	{ "@SWGLMISSIONS_MISSIONS_EPVI",					"5"},
+	{ "@SWGLMISSIONS_MISSIONS_EPVII",					"6"},
+	{ "@SWGLMISSIONS_MISSIONS_EPVIII",					"7"},
+	{ "@SWGLMISSIONS_MISSIONS_EPIX",					"8"},
+	{ "@SWGLMISSIONS_MISSIONS_THECLONEWARS",					"9"},
+	{ "@SWGLMISSIONS_MISSIONS_KOTOR",					"10"},
+	{ "@SWGLMISSIONS_MISSIONS_JKJO",					"11"},
+	{ "@SWGLMISSIONS_MISSIONS_JKJA",					"12"},
+	{ NULL,	NULL},
+	{ NULL,	NULL},
+	{ NULL,	NULL},
+}
+};
+
+static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
+{
+	// Phantom Menace
+{
+	{ "@SWGLMISSIONS_EPI_DOTF",			"0",		"Ep1_DotF", NULL, "@SWGLMISSIONS_EP1_DOTF_DESC", qtrue},
+},
+// Attack of the Clones
+{
+},
+// Revenge of the Sith
+{
+	{ "@SWGLMISSIONS_EPIII_TODP",		"0",			"Ep3_ToDP", "ep3_todp_ani", "@SWGLMISSIONS_EP3_TODP_DESC",},
+	{ "@SWGLMISSIONS_EPIII_FOTR",		"1",			"Ep3_FotR", NULL, "@SWGLMISSIONS_EP3_FOTR_DESC", qtrue},
+	{ "@SWGLMISSIONS_EPIII_OK",			"2",		"Ep3_OK", NULL, "@SWGLMISSIONS_EP3_OK_DESC", qtrue},
+},
+// A New Hope
+{
+},
+// The Empire Strikes Back
+{
+},
+// Return of the Jedi
+{
+	{ "@SWGLMISSIONS_EPVI_FVS",			"0",		"Ep6_FVS", NULL, "@SWGLMISSIONS_EP6_FVS_DESC", qtrue},
+},
+// The Force Awakens
+{
+},
+// The Last Jedi
+{
+	{ "@SWGLMISSIONS_EPVIII_TLJ",		"0",			"Ep8_TLJ", "ep8_tlj_kylo", "@SWGLMISSIONS_EP8_TLJ_DESC" },
+},
+// The Rise of Skywalker
+{
+},
+// The Clone Wars
+{
+	{ "@SWGLMISSIONS_TCW_YHBAR",		"0",			"TCW_YHBAR", "tcw_yhbar_sidious_1", "@SWGLMISSIONS_TCW_YHBAR_DESC"},
+},
+// The Old Republic
+{
+	{ "@SWGLMISSIONS_TOR_RVM",			"0",		"KotOR_SF", "kotor_sf_revan", "@SWGLMISSIONS_KOTOR_SF_DESC"},
+	{ "@SWGLMISSIONS_TOR_TTC",			"1",		"KotOR_TTC", "kotor_ttc_meetra", "@SWGLMISSIONS_KOTOR_TTC_DESC"},
+	{ "@SWGLMISSIONS_TOR_TFE",			"2",		"SWTOR_FE", NULL, "@SWGLMISSIONS_SWTOR_TFE_DESC", qtrue},
+},
+// Jedi Outcast
+{
+	{ "@SWGLMISSIONS_KEJIM_POST",		"0",			"levelshots/kejim_post", "kejim_post", "@SWGLMISSIONS_KEJIM_POST_DESC"},
+	{ "@SWGLMISSIONS_KEJIM_BASE",		"1",			"levelshots/kejim_base", "kejim_base", "@SWGLMISSIONS_KEJIM_BASE_DESC"},
+	{ "@SWGLMISSIONS_ARTUS_MINE",		"2",			"levelshots/artus_mine", "artus_mine", "@SWGLMISSIONS_ARTUS_MINE_DESC"},
+	{ "@SWGLMISSIONS_ARTUS_DETENTION",	"3",				"levelshots/artus_detention", "artus_detention", "@SWGLMISSIONS_ARTUS_DETENTION_DESC"},
+	{ "@SWGLMISSIONS_ARTUS_TOPSIDE",	"4",				"levelshots/artus_topside", "artus_topside", "@SWGLMISSIONS_ARTUS_TOPSIDE_DESC"},
+	{ "@SWGLMISSIONS_VALLEY",		"5",			"levelshots/valley", "valley", "@SWGLMISSIONS_VALLEY_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_TEMPLE",	"6",				"levelshots/yavin_temple", "yavin_temple", "@SWGLMISSIONS_YAVIN_TEMPLE_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_TRIAL",		"7",			"levelshots/yavin_trial", "yavin_trial", "@SWGLMISSIONS_YAVIN_TRIAL_DESC"},
+	{ "@SWGLMISSIONS_NS_STREETS",	"8",				"levelshots/ns_streets", "ns_streets", "@SWGLMISSIONS_NS_STREETS_DESC"},
+	{ "@SWGLMISSIONS_NS_HIDEOUT",	"9",				"levelshots/ns_hideout", "ns_hideout", "@SWGLMISSIONS_NS_HIDEOUT_DESC"},
+	{ "@SWGLMISSIONS_NS_STARPAD",		"10",			"levelshots/ns_starpad", "ns_starpad", "@SWGLMISSIONS_NS_STARPAD_DESC"},
+	{ "@SWGLMISSIONS_BESPIN_UNDERCITY",	"11",				"levelshots/bespin_undercity", "bespin_undercity", "@SWGLMISSIONS_BESPIN_UNDERCITY_DESC"},
+	{ "@SWGLMISSIONS_BESPIN_STREETS",		"12",			"levelshots/bespin_streets", "bespin_streets", "@SWGLMISSIONS_BESPIN_STREETS_DESC"},
+	{ "@SWGLMISSIONS_BESPIN_PLATFORM",		"13",			"levelshots/bespin_platform", "bespin_platform", "@SWGLMISSIONS_BESPIN_PLATFORM_DESC"},
+	{ "@SWGLMISSIONS_CAIRN_BAY",		"14",			"levelshots/cairn_bay", "cairn_bay", "@SWGLMISSIONS_CAIRN_BAY_DESC"},
+	{ "@SWGLMISSIONS_CAIRN_ASSEMBLY",		"15",			"levelshots/cairn_assembly", "cairn_assembly", "@SWGLMISSIONS_CAIRN_ASSEMBLY_DESC"},
+	{ "@SWGLMISSIONS_CAIRN_REACTOR",	"16",				"levelshots/cairn_reactor", "cairn_reactor", "@SWGLMISSIONS_CAIRN_REACTOR_DESC"},
+	{ "@SWGLMISSIONS_CAIRN_DOCK1",		"17",			"levelshots/cairn_dock1", "cairn_dock1", "@SWGLMISSIONS_CAIRN_DOCK1_DESC"},
+	{ "@SWGLMISSIONS_DOOM_COMM",		"18",			"levelshots/doom_comm", "doom_comm", "@SWGLMISSIONS_DOOM_COMM_DESC"},
+	{ "@SWGLMISSIONS_DOOM_DETENTION",	"19",				"levelshots/doom_detention", "doom_detention", "@SWGLMISSIONS_DOOM_DETENTION_DESC"},
+	{ "@SWGLMISSIONS_DOOM_SHIELDS",		"20",			"levelshots/doom_shields", "doom_shields", "@SWGLMISSIONS_DOOM_SHIELDS_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_SWAMP",		"21",			"levelshots/yavin_swamp", "yavin_swamp", "@SWGLMISSIONS_YAVIN_SWAMP_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_CANYON",			"22",		"levelshots/yavin_canyon", "yavin_canyon", "@SWGLMISSIONS_YAVIN_CANYON_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_COURTYARD",	"23",				"levelshots/yavin_courtyard", "yavin_courtyard", "@SWGLMISSIONS_YAVIN_COURTYARD_DESC"},
+	{ "@SWGLMISSIONS_YAVIN_FINAL",		"24",			"levelshots/yavin_final", "yavin_final", "@SWGLMISSIONS_YAVIN_FINAL_DESC"},
+	{ "@SWGLMISSIONS_JODEMO",			"25",		"levelshots/jodemo", "jodemo", "@SWGLMISSIONS_JODEMO_DESC"},
+},
+// Jedi Academy
+{
+	{ "@SWGLMISSIONS_T1_YAVIN1_TITLE",		"0",			"levelshots/yavin1b", "yavin1b", "@SWGLMISSIONS_T1_YAVIN1_DESC"},
+	{ "@SWGLMISSIONS_T1_YAVIN2_TITLE",		"1",			"levelshots/yavin2", "yavin2", "@SWGLMISSIONS_T1_YAVIN2_DESC"},
+	{ "@SWGLMISSIONS_T1_SOUR_TITLE",		"2",			"levelshots/t1_sour", "t1_sour", "@SWGLMISSIONS_T1_SOUR_DESC"},
+	{ "@SWGLMISSIONS_T1_SURPRISE_TITLE",	"3",				"levelshots/t1_surprise", "t1_surprise", "@SWGLMISSIONS_T1_SURPRISE_DESC"},
+	{ "@SWGLMISSIONS_T1_RAIL_TITLE",		"4",			"levelshots/t1_rail", "t1_rail", "@SWGLMISSIONS_T1_RAIL_DESC"},
+	{ "@SWGLMISSIONS_T1_DANGER_TITLE",		"5",			"levelshots/t1_danger", "t1_danger", "@SWGLMISSIONS_T1_DANGER_DESC"},
+	{ "@SWGLMISSIONS_T1_FATAL_TITLE",		"6",			"levelshots/t1_fatal", "t1_fatal", "@SWGLMISSIONS_T1_FATAL_DESC"},
+	{ "@SWGLMISSIONS_T1_HOTH2_TITLE",		"7",			"levelshots/hoth2", "hoth2", "@SWGLMISSIONS_T1_HOTH2_DESC"},
+	{ "@SWGLMISSIONS_T1_HOTH3_TITLE",		"8",			"levelshots/hoth3", "hoth3", "@SWGLMISSIONS_T1_HOTH3_DESC"},
+	{ "@SWGLMISSIONS_T2_RANCOR_TITLE",		"9",			"levelshots/t2_rancor", "t2_rancor", "@SWGLMISSIONS_T2_RANCOR_DESC"},
+	{ "@SWGLMISSIONS_T2_TRIP_TITLE",		"10",			"levelshots/t2_trip", "t2_trip", "@SWGLMISSIONS_T2_TRIP_DESC"},
+	{ "@SWGLMISSIONS_T2_WEDGE_TITLE",		"11",			"levelshots/t2_wedge", "t2_wedge", "@SWGLMISSIONS_T2_WEDGE_DESC"},
+	{ "@SWGLMISSIONS_T2_ROGUE_TITLE",		"12",			"levelshots/t2_rogue", "t2_rogue", "@SWGLMISSIONS_T2_ROGUE_DESC"},
+	{ "@SWGLMISSIONS_T2_DPRED_TITLE",		"13",			"levelshots/t2_dpred", "t2_dpred", "@SWGLMISSIONS_T2_DPRED_DESC"},
+	{ "@SWGLMISSIONS_T2_VJUN1_TITLE",		"14",			"levelshots/vjun1", "vjun1", "@SWGLMISSIONS_T2_VJUN1_DESC"},
+	{ "@SWGLMISSIONS_T2_VJUN2_TITLE",		"15",			"levelshots/vjun2", "vjun2", "@SWGLMISSIONS_T2_VJUN2_DESC"},
+	{ "@SWGLMISSIONS_T2_VJUN3_TITLE",		"16",			"levelshots/vjun3", "vjun3", "@SWGLMISSIONS_T2_VJUN3_DESC"},
+	{ "@SWGLMISSIONS_T3_RIFT_TITLE",		"17",			"levelshots/t3_rift", "t3_rift", "@SWGLMISSIONS_T3_RIFT_DESC"},
+	{ "@SWGLMISSIONS_T3_STAMPEDE_TITLE",	"18",				"levelshots/t3_stamp", "t3_stamp", "@SWGLMISSIONS_T3_STAMPEDE_DESC"},
+	{ "@SWGLMISSIONS_T3_HEVIL_TITLE",		"19",			"levelshots/t3_hevil", "t3_hevil", "@SWGLMISSIONS_T3_HEVIL_DESC"},
+	{ "@SWGLMISSIONS_T3_BYSS_TITLE",		"20",			"levelshots/t3_byss", "t3_byss", "@SWGLMISSIONS_T3_BYSS_DESC"},
+	{ "@SWGLMISSIONS_T3_BOUNTY_TITLE",		"21",			"levelshots/t3_bounty", "t3_bounty", "@SWGLMISSIONS_T3_BOUNTY_DESC"},
+	{ "@SWGLMISSIONS_T3_TASPIR1_TITLE",		"22",		"levelshots/taspir1", "taspir1", "@SWGLMISSIONS_T3_TASPIR1_DESC"},
+	{ "@SWGLMISSIONS_T3_TASPIR2_TITLE",		"23",		"levelshots/taspir2", "taspir2", "@SWGLMISSIONS_T3_TASPIR2_DESC"},
+	{ "@SWGLMISSIONS_T3_KOR1_TITLE",		"24",			"levelshots/kor1", "kor1", "@SWGLMISSIONS_T3_KOR1_DESC"},
+	{ "@SWGLMISSIONS_T3_KOR2_TITLE",		"25",			"levelshots/kor2", "kor2", "@SWGLMISSIONS_T3_KOR2_DESC"},
+},
+};
 
 static int gamecodetoui[] = {4,2,3,0,5,1,6};
 
@@ -465,16 +616,13 @@ vmCvar_t	ui_npc_spawnscript;
 vmCvar_t	ui_npc_fleescript;
 vmCvar_t	ui_npc_deathscript;
 vmCvar_t	ui_npc_menu;
+vmCvar_t	ui_mission_topic;
+vmCvar_t	ui_mission;
+vmCvar_t	ui_mission_code;
+vmCvar_t	ui_mission_mapcode;
 
 
 vmCvar_t	ui_saber_edit;
-
-// Mission cvars (add more as more missions get mechanics)
-vmCvar_t	ui_knightfall;
-vmCvar_t	ui_fe_jedi;
-vmCvar_t	ui_fe_sith;
-vmCvar_t	ui_fe_trooper;
-vmCvar_t	ui_fe_bh;
 
 // Model angle slider
 
@@ -567,11 +715,6 @@ static cvarTable_t cvarTable[] =
 	{ &ui_SFXSabers,	"cg_SFXSabers",	"1", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersGlowSize,	"cg_SFXSabersGlowSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", NULL, CVAR_ARCHIVE },
-	{ &ui_knightfall,			"ui_knightfall",		"0", NULL, CVAR_ARCHIVE},
-	{ &ui_fe_jedi,				"ui_fe_jedi",		"0", NULL, CVAR_ARCHIVE},
-	{ &ui_fe_sith,				"ui_fe_sith",		"0", NULL, CVAR_ARCHIVE},
-	{ &ui_fe_trooper,			"ui_fe_trooper",		"0", NULL, CVAR_ARCHIVE},
-	{ &ui_fe_bh,				"ui_fe_bh",		"0", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_type,				"ui_npc_type",	"stormtrooper", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_skin,				"ui_npc_skin",	"default", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_head,				"ui_npc_head",	"model_default", NULL, CVAR_ARCHIVE},
@@ -591,6 +734,10 @@ static cvarTable_t cvarTable[] =
 	{ &ui_saber_edit,			"ui_saber_edit",		"0", NULL},
 	{ &ui_char_model_angle, "ui_char_model_angle", "180", NULL, 0},
 	{ &ui_npc_menu, "ui_npc_menu", "0", NULL, 0},
+	{ &ui_mission_topic, "ui_mission_topic", "0", NULL, CVAR_ARCHIVE},
+	{ &ui_mission, "ui_mission", "0", NULL, CVAR_ARCHIVE},
+	{ &ui_mission_code, "ui_mission_code", "", NULL, CVAR_ARCHIVE},
+	{ &ui_mission_mapcode, "ui_mission_mapcode", "", NULL, CVAR_ARCHIVE},
 
 
 };
@@ -817,6 +964,14 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 	else if (feederID == FEEDER_MOVES)
 	{
 		return datapadMoveData[uiInfo.movesTitleIndex][index].title;
+	}
+	else if (feederID == FEEDER_MISSION_TOPIC)
+	{
+		return missionTopicData[0][index].title;
+	}
+	else if (feederID == FEEDER_MISSION)
+	{
+		return missionData[Cvar_VariableIntegerValue("ui_mission_topic")][index].title;
 	}
 	else if (feederID == FEEDER_MOVES_TITLES)
 	{
@@ -1452,63 +1607,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_GetCharacterCvars();
 		}
-		else if (Q_stricmp(name, "missionMechanic") == 0)
-		{
-			const char* code;
-			String_Parse(args, &code);
-
-			missionCode = code;
-			
-			if ((!Q_stricmp("ep3_ok_anakin_r1", code) || !Q_stricmp("ep3_ok_anakin_1", code)) && !Cvar_VariableIntegerValue("ui_knightfall"))
-			{
-				Menus_OpenByName("missionMechanicMenu");
-				ui.Cvar_Set("ui_knightfall", "1");
-
-				menuDef_t* menu = Menu_GetFocused();
-				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_KNIGHTFALL_INFO");
-			}
-			else if (!Q_stricmp("swtor_fe_sith", code) && !Cvar_VariableIntegerValue("ui_fe_sith"))
-			{
-				Menus_OpenByName("missionMechanicMenu");
-				ui.Cvar_Set("ui_fe_sith", "1");
-
-				menuDef_t* menu = Menu_GetFocused();
-				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_SITH_INFO");
-			}
-			else if (!Q_stricmp("swtor_fe_jedi", code) && !Cvar_VariableIntegerValue("ui_fe_jedi"))
-			{
-				Menus_OpenByName("missionMechanicMenu");
-				ui.Cvar_Set("ui_fe_jedi", "1");
-
-				menuDef_t* menu = Menu_GetFocused();
-				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_JEDI_INFO");
-			}
-			else if (!Q_stricmp("swtor_fe_hunter", code) && !Cvar_VariableIntegerValue("ui_fe_bh"))
-			{
-				Menus_OpenByName("missionMechanicMenu");
-				ui.Cvar_Set("ui_fe_bh", "1");
-
-				menuDef_t* menu = Menu_GetFocused();
-				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_BH_INFO");
-			}
-			else if (!Q_stricmp("swtor_fe_trooper", code) && !Cvar_VariableIntegerValue("ui_fe_trooper"))
-			{
-				Menus_OpenByName("missionMechanicMenu");
-				ui.Cvar_Set("ui_fe_trooper", "1");
-
-				menuDef_t* menu = Menu_GetFocused();
-				Menu_SetItemText(menu, "missionMechanic_text", "@SWGLMISSIONS_FE_TROOPER_INFO");
-			}
-			else
-			{
-				ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", missionCode));
-			}
-
-		}
-		else if (Q_stricmp(name, "goToMission") == 0)
-		{
-			ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", missionCode));
-		}
 		else if (Q_stricmp(name, "savePage") == 0)
 		{
 			const char* page;
@@ -1665,6 +1763,43 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "applyforcepowers") == 0)
 		{
 			UI_ApplyForcePowers();
+		}
+		else if (Q_stricmp(name, "characterSelect") == 0)
+		{
+			UI_CharacterSelect(args);
+		}
+		else if (Q_stricmp(name, "showMissions") == 0)
+		{
+			menuDef_t* menu = Menu_GetFocused();
+			if (!missionData[Cvar_VariableIntegerValue("ui_mission_topic")][0].title)
+			{
+				Menu_ShowItemByName(menu, "emptyBox", qtrue);
+				Menu_ShowItemByName(menu, "missionList", qtrue);
+			}
+			else if (!Q_stricmp(missionTopicData[0][Cvar_VariableIntegerValue("ui_mission_topic")].title, "Jedi Outcast")
+				&& Cvar_VariableIntegerValue("g_validJKO") < 1)
+			{
+				Menu_ShowItemByName(menu, "noJKO", qtrue);
+				Menu_ShowItemByName(menu, "missionList", qfalse);
+			}
+			else
+			{
+				Menu_ShowItemByName(menu, "emptyBox", qfalse);
+				Menu_ShowItemByName(menu, "missionList", qtrue);
+			}
+
+			menu = NULL;
+		}
+		else if (Q_stricmp(name, "showMissionInfo") == 0)
+		{
+			UI_ShowMissionInfo();
+		}
+		else if (Q_stricmp(name, "StartMission") == 0)
+		{
+			Menus_CloseAll();
+
+			ui.Cmd_ExecuteText(EXEC_APPEND, va("devmap %s\n", Cvar_VariableString("ui_mission_mapcode")));
+
 		}
 		else if (Q_stricmp(name, "stopgamesounds") == 0)
 		{
@@ -2183,6 +2318,34 @@ static int UI_FeederCount(float feederID)
 
 		return count;
 	}
+	else if (feederID == FEEDER_MISSION_TOPIC)
+	{
+		int count = 0, i;
+
+		for (i = 0; i < MAX_MISSION_TOPIC; i++)
+		{
+			if (missionTopicData[0][i].title)
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+	else if (feederID == FEEDER_MISSION)
+	{
+		int count = 0, i;
+		
+		for (i = 0; i < MAX_MISSION; i++)
+		{
+			if (missionData[Cvar_VariableIntegerValue("ui_mission_topic")][i].title)
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
 	else if (feederID == FEEDER_MOVES_TITLES)
 	{
 		return (MD_MOVE_TITLE_MAX);
@@ -2339,6 +2502,41 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 					ItemParse_model_g2anim_go( item, uiInfo.movesBaseAnim );
 					uiInfo.moveAnimTime = DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
 				}
+			}
+		}
+	}
+	else if (feederID == FEEDER_MISSION_TOPIC)
+	{
+		if (index >= 0)
+		{
+			ui.Cvar_Set("ui_mission_topic", missionTopicData[0][index].value);
+		}
+	}
+	else if (feederID == FEEDER_MISSION)
+	{
+		if (index >= 0)
+		{
+			ui.Cvar_Set("ui_mission", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][index].missionNum);
+			ui.Cvar_Set("ui_mission_code", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][index].picCode);
+			ui.Cvar_Set("ui_mission_mapcode", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][index].mapCode);
+
+			if (Q_stricmp(Cvar_VariableString("ui_mission_mapcode"), "") && Q_stricmp(Cvar_VariableString("ui_mission_mapcode"), NULL))
+			{
+				menuDef_t* menu;
+				menu = Menu_GetFocused();
+				Menu_ShowItemByName(menu, "StartButton", qtrue);
+				Menu_ShowItemByName(menu, "MissionInfo", qtrue);
+				Menu_ShowItemByName(menu, "StartButtonOFF", qfalse);
+				menu = NULL;
+			}
+			else
+			{
+				menuDef_t* menu;
+				menu = Menu_GetFocused();
+				Menu_ShowItemByName(menu, "StartButton", qfalse);
+				Menu_ShowItemByName(menu, "MissionInfo", qfalse);
+				Menu_ShowItemByName(menu, "StartButtonOFF", qtrue);
+				menu = NULL;
 			}
 		}
 	}
@@ -4622,7 +4820,7 @@ void UI_SpawnerMenu(void)
 
 	Menus_CloseByName("mainhud");
 
-	Menus_ActivateByName("ingameswglnpcspawner");
+	Menus_ActivateByName("ingameswglchars");
 
 	ui.Key_SetCatcher(KEYCATCH_UI);
 
@@ -6116,6 +6314,32 @@ static void UI_RecordSaberStyles(const char** args)
 	saberStyles = atoi(styles);
 }
 
+static void UI_CharacterSelect(const char** args)
+{
+	const char* level;
+	String_Parse(args, &level);
+
+	ui.Cvar_Set("ui_mission_mapcode", level);
+
+	if (Q_stricmp(Cvar_VariableString("ui_mission_mapcode"), "") && Q_stricmp(Cvar_VariableString("ui_mission_mapcode"), NULL))
+	{
+		menuDef_t* menu;
+		menu = Menu_GetFocused();
+		Menu_ShowItemByName(menu, "StartButton", qtrue);
+		Menu_ShowItemByName(menu, "StartButtonOFF", qfalse);
+		menu = NULL;
+	}
+	else
+	{
+		menuDef_t* menu;
+		menu = Menu_GetFocused();
+		Menu_ShowItemByName(menu, "StartButton", qfalse);
+		Menu_ShowItemByName(menu, "StartButtonOFF", qtrue);
+		menu = NULL;
+	}
+
+}
+
 static void UI_ApplyCharWeapons()
 {
 	// Get player state
@@ -6251,6 +6475,38 @@ static void UI_ApplyForcePowers()
 		}
 	}
 
+
+}
+
+extern void Menu_SetItemBackground(const menuDef_t* menu, const char* itemName, const char* background);
+static void UI_ShowMissionInfo()
+{
+
+	menuDef_t* menu = Menu_GetFocused();
+	//Menu_ShowItemByName(menu, "CharacterSelection", qfalse);
+	if (missionData[Cvar_VariableIntegerValue("ui_mission_topic")][Cvar_VariableIntegerValue("ui_mission")].picCode 
+	&& Q_stricmp(Cvar_VariableString("ui_mission_code"), "") && Q_stricmp(Cvar_VariableString("ui_mission_code"), NULL))
+	{
+		Menu_ShowItemByName(menu, "missionInfo", qtrue);
+	
+		if (!strncmp(missionData[Cvar_VariableIntegerValue("ui_mission_topic")][Cvar_VariableIntegerValue("ui_mission")].picCode, "levelshots/", 11))
+			Menu_SetItemBackground(menu, "MissionPic", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][Cvar_VariableIntegerValue("ui_mission")].picCode);
+		else
+			Menu_SetItemBackground(menu, "MissionPic", va("gfx/menus/missions/%s/background", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][Cvar_VariableIntegerValue("ui_mission")].picCode));
+
+		Menu_SetItemText(menu, "MissionDesc", missionData[Cvar_VariableIntegerValue("ui_mission_topic")][Cvar_VariableIntegerValue("ui_mission")].descCode);
+		Menu_ShowItemByName(menu, "MissionDesc", qtrue);
+
+	}
+	else
+	{
+		Menu_ShowItemByName(menu, "missionInfo", qfalse);
+		Menu_ShowItemByName(menu, "MissionDesc", qfalse);
+		
+
+	}
+
+	menu = NULL;
 
 }
 

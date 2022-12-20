@@ -105,7 +105,7 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		return;
 	}
 
-	if (Q_stricmp(menuname, "ingameswglnpcspawner") == 0)
+	if (Q_stricmp(menuname, "ingameswglchars") == 0)
 	{
 		ui.Cvar_Set("cl_paused", "1");
 		UI_SpawnerMenu();

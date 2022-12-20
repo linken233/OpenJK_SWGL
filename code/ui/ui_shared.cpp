@@ -1786,7 +1786,7 @@ void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *te
 	itemDef_t	*item;
 	int			j, count;
 
-	if (!menu)	// No menu???
+	if (!menu || !text)	// No menu???
 	{
 		return;
 	}
@@ -6700,7 +6700,7 @@ void Item_TextScroll_Paint(itemDef_t *item)
 Item_ListBox_Paint
 =================
 */
-
+extern qboolean TopicHasMission(int index);
 void Item_ListBox_Paint(itemDef_t *item)
 {
 	float x, y, size, sizeWidth, i2, sizeHeight;
@@ -7240,6 +7240,11 @@ void Item_ListBox_Paint(itemDef_t *item)
 					}
 					else if (text)
 					{
+						if (text[0] == '@')
+						{
+							text = SE_GetString(&text[1]);
+						}
+
 						DC->drawText(x + 4, y + listPtr->elementHeight, item->textscale, item->window.foreColor, text, 0, item->textStyle, item->font);
 					}
 

@@ -100,6 +100,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FEEDER_MOVES_TITLES					0x16			// move titles for the data pad moves screen
 #define FEEDER_LANGUAGES					0x17			// the list of languages
 #define FEEDER_MODEL_SKINS					0x18			// Skin files in species folder
+#define FEEDER_MISSION_TOPIC				0x19			// Mission Topic
+#define FEEDER_MISSION						0x1a			// Mission List
 
 
 #define UI_VERSION				200
