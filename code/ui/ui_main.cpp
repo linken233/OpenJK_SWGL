@@ -2564,11 +2564,17 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 	}
 	else if (feederID == FEEDER_MODEL_SKINS)
 	{
-		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
+		menuDef_t* menu;
+		menu = Menu_GetFocused();
+
+		if (Q_stricmp("characterMenu", menu->window.name))
 		{
-			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
-			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
-			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
+			{
+				Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+				Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+				Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			}
 		}
 	}
 
@@ -3280,7 +3286,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
-			if (!inGameLoad && ui_PrecacheModels.integer)
+			/*if (!inGameLoad && ui_PrecacheModels.integer)
 			{
 				CGhoul2Info_v ghoul2;
 				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
@@ -3289,7 +3295,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				{
 					DC->g2_RemoveGhoul2Model(ghoul2, 0);
 				}
-			}
+			}*/
 		}
 
 	}
