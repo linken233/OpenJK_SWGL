@@ -2292,7 +2292,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 	}
 	else
 	{
-		ent->flags = 0;
+		ent->flags &= ~FL_SHIELDED;
 	}
 
 	//attempt to free the string (currently can't since it's always "player" )
