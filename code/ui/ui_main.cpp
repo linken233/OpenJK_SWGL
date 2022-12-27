@@ -5061,10 +5061,6 @@ static void UI_UpdateNPCCvars()
 	Cvar_Set("g_NPClegs", Cvar_VariableString("ui_char_skin_legs"));
 	Cvar_Set("g_NPCteam", Cvar_VariableString("ui_npc_team"));
 	Cvar_Set("g_NPCweapon", Cvar_VariableString("ui_npc_weapon"));
-	Cvar_Set("g_NPCsaber", Cvar_VariableString("ui_saber"));
-	Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_saber_color"));
-	Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_saber2"));
-	Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_saber2_color"));
 	Cvar_Set("g_NPCLightningColor", Cvar_VariableString("ui_lightning_color"));
 	Cvar_Set("g_NPCspawnscript", Cvar_VariableString("ui_npc_spawnscript"));
 	Cvar_Set("g_NPCfleescript", Cvar_VariableString("ui_npc_fleescript"));
@@ -5108,7 +5104,7 @@ extern saber_colors_t TranslateSaberColor( const char *name );
 
 static void UI_UpdateSaberCvars ( void )
 {
-	if (!Cvar_VariableIntegerValue("ui_saber_edit"))
+	if (!Cvar_VariableIntegerValue("ui_npc_menu"))
 	{
 		Cvar_Set("g_saber_type", Cvar_VariableString("ui_saber_type"));
 		Cvar_Set("g_saber", Cvar_VariableString("ui_saber"));
@@ -5116,6 +5112,14 @@ static void UI_UpdateSaberCvars ( void )
 		Cvar_Set("g_saber_color", Cvar_VariableString("ui_saber_color"));
 		Cvar_Set("g_saber2_color", Cvar_VariableString("ui_saber2_color"));
 	}
+	else if (Cvar_VariableIntegerValue("ui_npc_menu"))
+	{
+		Cvar_Set("g_NPCSaber", Cvar_VariableString("ui_saber"));
+		Cvar_Set("g_NPCSaberTwo", Cvar_VariableString("ui_saber2"));
+		Cvar_Set("g_NPCSaberColor", Cvar_VariableString("ui_saber_color"));
+		Cvar_Set("g_NPCSaberTwoColor", Cvar_VariableString("ui_saber2_color"));
+	}
+
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber_color")) >= SABER_RGB)
 	{
@@ -5123,13 +5127,13 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_blue")));
-		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
 		{
 			Cvar_Set("g_saber_color", rgbColor);
 		}
 		else
 		{
-			Cvar_Set("ui_npc_saberonecolor", rgbColor);
+			Cvar_Set("g_NPCSaberColor", rgbColor);
 		}
 	}
 
@@ -5139,13 +5143,13 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber2_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_blue")));
-		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
+		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
 		{
 			Cvar_Set( "g_saber2_color", rgbColor );
 		}
 		else
 		{
-			Cvar_Set("ui_npc_sabertwocolor", rgbColor);
+			Cvar_Set("g_NPCSaberTwoColor", rgbColor);
 		}
 	}
 
