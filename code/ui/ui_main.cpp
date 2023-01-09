@@ -602,9 +602,6 @@ vmCvar_t	ui_npc_custom;
 
 vmCvar_t	ui_npc_type;
 vmCvar_t	ui_npc_skin;
-vmCvar_t	ui_npc_head;
-vmCvar_t	ui_npc_torso;
-vmCvar_t	ui_npc_legs;
 vmCvar_t	ui_npc_team;
 vmCvar_t	ui_npc_health;
 vmCvar_t	ui_npc_saberone;
@@ -717,9 +714,6 @@ static cvarTable_t cvarTable[] =
 	{ &ui_SFXSabersCoreSize,	"cg_SFXSabersCoreSize",	"1.0", NULL, CVAR_ARCHIVE },
 	{ &ui_npc_type,				"ui_npc_type",	"stormtrooper", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_skin,				"ui_npc_skin",	"default", NULL, CVAR_ARCHIVE},
-	{ &ui_npc_head,				"ui_npc_head",	"model_default", NULL, CVAR_ARCHIVE},
-	{ &ui_npc_torso,			"ui_npc_torso",	"model_default", NULL, CVAR_ARCHIVE},
-	{ &ui_npc_legs,				"ui_npc_legs",	"model_default", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_team,				"ui_npc_team",	"enemy", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_health,			"ui_npc_health",	"100", NULL, CVAR_ARCHIVE},
 	{ &ui_npc_saberone,			"ui_npc_saberone",	"single_1", NULL, CVAR_ARCHIVE},
