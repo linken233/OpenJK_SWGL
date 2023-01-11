@@ -420,7 +420,14 @@ qhandle_t RE_RegisterSkin( const char *name) {
 
 		if (hSkin && strcmp(skinhead, skinlower) && strcmp(skintorso, skinlower))
 		{
-			hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
+			// Very ugly way of doing this, need to stop the game from registering the last listed "model_" skin in the menu as the lower skin can get cut off.
+			// If using a model_ skin, we'll register the head (which shouldn't be cut off). Otherwise, keep the original behavior for the custom skins.
+			char* skin;
+			skin = strrchr(skinlower, '/');
+			if(!strncmp(skin, "/model_", 7))
+				hSkin = RE_RegisterIndividualSkin(skinhead, hSkin);
+			else
+				hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
 		}
 	}
 	else
