@@ -270,7 +270,6 @@ typedef struct missionData
 	qboolean characterSelect;
 
 	missionData() = default;
-
 	missionData(char *title, char* missionNum, char* picCode, char* mapCode, char* descCode, qboolean characterSelect = qfalse)
 				: title{title}, missionNum{missionNum}, picCode{picCode}, mapCode{mapCode}, descCode{descCode}, characterSelect{characterSelect}
 	{
@@ -425,7 +424,7 @@ static missionTopicData_t missionTopicData[1][MAX_MISSION_TOPIC] =
 
 static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
 {
-	// Phantom Menace
+// Phantom Menace
 {
 	{ "@SWGLMISSIONS_EPI_DOTF",			"0",		"Ep1_DotF", NULL, "@SWGLMISSIONS_EP1_DOTF_DESC", qtrue},
 	{},
@@ -462,6 +461,38 @@ static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
 },
 // Attack of the Clones
 {
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{},
+	{}
 },
 // Revenge of the Sith
 {
