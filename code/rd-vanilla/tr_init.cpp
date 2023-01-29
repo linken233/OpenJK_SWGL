@@ -422,10 +422,13 @@ static void GLimp_InitExtensions( void )
 {
 	if ( !r_allowExtensions->integer )
 	{
-		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
+		// Force extensions to turn on
+		ri.Cvar_Set("r_allowExtensions", "1");
+
+		/*Com_Printf("*** IGNORING OPENGL EXTENSIONS ***\n");
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
-		return;
+		return;*/
 	}
 
 	Com_Printf ("Initializing OpenGL extensions\n" );

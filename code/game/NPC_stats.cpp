@@ -2030,30 +2030,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	
 	qboolean forcedRGBSaberColours[MAX_SABERS][MAX_BLADES] = {{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse},
 																{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse}};
-	try
-	{
-		if (!NPC->NPC_skin)
-		{
-			strcpy(customSkin, "default");
-			if (NPC == player)
-			{
-				gi.cvar_set("g_char_skin_head", "model_default");
-				gi.cvar_set("g_char_skin_torso", "model_default");
-				gi.cvar_set("g_char_skin_legs", "model_default");
-			}
-		}
-		else
-		{
-			strcpy(customSkin, NPC->NPC_skin);
-		}
-	}
-	catch (...)
-	{
-		strcpy(customSkin, "default");
-	}
-
-
-
+	strcpy(customSkin, "default");
 
 	if ( !NPCName || !NPCName[0])
 	{
@@ -2699,6 +2676,12 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				continue;
 			}
 
+			if (NPC->NPC_skin)
+			{
+				Q_strncpyz(customSkin, NPC->NPC_skin, sizeof(customSkin));
+			}
+			
+
 			// surfOn
 			if ( !Q_stricmp( token, "surfOn" ) )
 			{
@@ -3204,6 +3187,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else if ( parsingPlayer && !PlayingMission() && g_adoptcharstats->integer)
 				{
+					// Since some characters in base JKA have more than 1000 health, let's pull it back a bit.
+					if (n > 500)
+						n = 500;
+
 					player->client->ps.stats[STAT_MAX_HEALTH] = n;
 
 					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);

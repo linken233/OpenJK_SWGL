@@ -9499,8 +9499,8 @@ static void UI_BuildQ3Model_List( void )
 {
 	int		numdirs;
 	int		numfiles;
-	char	dirlist[2048];
-	char	filelist[2048];
+	char	dirlist[16384];
+	char	filelist[16384];
 	char	skinname[64];
 	char*	dirptr;
 	char*	fileptr;
@@ -9513,7 +9513,7 @@ static void UI_BuildQ3Model_List( void )
 	uiInfo.q3HeadCount = 0;
 
 	// iterate directory of all player models
-	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, 16384 );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs && uiInfo.q3HeadCount < MAX_Q3PLAYERMODELS; i++,dirptr+=dirlen+1)
 	{
@@ -9525,7 +9525,7 @@ static void UI_BuildQ3Model_List( void )
 			continue;
 
 
-		numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), "skin", filelist, 2048 );
+		numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), "skin", filelist, 16384);
 		fileptr  = filelist;
 		for (j=0; j<numfiles && uiInfo.q3HeadCount < MAX_Q3PLAYERMODELS;j++,fileptr+=filelen+1)
 		{

@@ -36,6 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define ITEM_TYPE_BIND				13		// multiple list setting, enumerated
 #define ITEM_TYPE_TEXTSCROLL		14		// scrolling text
 #define ITEM_TYPE_SLIDER_INTEGER	15
+#define ITEM_TYPE_SLIDER_ROTATE     16
 
 
 #define ITEM_ALIGN_LEFT 0                 // left alignment
@@ -98,9 +99,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FEEDER_MOVES						0x15			// moves for the data pad moves screen
 #define FEEDER_MOVES_TITLES					0x16			// move titles for the data pad moves screen
 #define FEEDER_LANGUAGES					0x17			// the list of languages
-#define FEEDER_NPC_SKIN_HEAD				0x18			// head*.skin files in species folder
-#define FEEDER_NPC_SKIN_TORSO				0x19			// torso*.skin files in species folder
-#define FEEDER_NPC_SKIN_LEGS				0x1a			// lower*.skin files in species folder
+#define FEEDER_MODEL_SKINS					0x18			// Skin files in species folder
+#define FEEDER_MISSION_TOPIC				0x19			// Mission Topic
+#define FEEDER_MISSION						0x1a			// Mission List
 
 
 #define UI_VERSION				200

@@ -6784,7 +6784,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		//		attackerTeam = TEAM_PLAYER;
 		//	}
 
-			if ( targTeam != attackerTeam
+			if ( (targTeam != attackerTeam || targTeam == TEAM_SOLO)
 				|| (targ->s.number < MAX_CLIENTS && targTeam == TEAM_FREE)//evil player hit
 				|| (attacker && attacker->s.number < MAX_CLIENTS && attackerTeam == TEAM_FREE) )//evil player attacked
 			{//on opposite team

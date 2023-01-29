@@ -981,7 +981,15 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_kotor/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmpn("models/players/_humanoid_lanakin/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_malak/", GLAName, 24))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
@@ -1089,7 +1097,15 @@ qboolean G_StandardHumanoid(const char* GLAName)
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmp("_humanoid_kotor", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if (!Q_stricmp("_humanoid_lanakin", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_malak", GLAName))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
@@ -2077,6 +2093,7 @@ void G_SetSabersFromCVars( gentity_t *ent )
 	if ( g_saber->string
 		&& g_saber->string[0]
 		&& Q_stricmp( "none", g_saber->string )
+		&& Q_stricmp("empty", g_saber->string)
 		&& Q_stricmp( "NULL", g_saber->string ) )
 	{//FIXME: how to specify second saber?
 		WP_SaberParseParms( g_saber->string, &ent->client->ps.saber[0] );
@@ -2127,6 +2144,7 @@ void G_SetSabersFromCVars( gentity_t *ent )
 	if ( g_saber2->string
 		&& g_saber2->string[0]
 		&& Q_stricmp( "none", g_saber2->string )
+		&& Q_stricmp("empty", g_saber2->string)
 		&& Q_stricmp( "NULL", g_saber2->string ) )
 	{
 		if ( !(ent->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
@@ -2274,7 +2292,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 	}
 	else
 	{
-		ent->flags = 0;
+		ent->flags &= ~FL_SHIELDED;
 	}
 
 	//attempt to free the string (currently can't since it's always "player" )
