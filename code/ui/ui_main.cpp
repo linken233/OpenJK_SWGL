@@ -262,16 +262,18 @@ typedef struct
 
 typedef struct missionData
 {
-	char *title;
-	char* missionNum;
-	char* picCode;
-	char* mapCode;
-	char* descCode;
+	const char *title;
+	const char *missionNum;
+	const char *picCode;
+	const char *mapCode;
+	const char *descCode;
 	qboolean characterSelect;
 
 	missionData() = default;
-	missionData(char *title, char* missionNum, char* picCode, char* mapCode, char* descCode, qboolean characterSelect = qfalse)
-				: title{title}, missionNum{missionNum}, picCode{picCode}, mapCode{mapCode}, descCode{descCode}, characterSelect{characterSelect}
+	missionData(const char *title, const char *missionNum, const char *picCode,
+				const char *mapCode, const char *descCode, qboolean characterSelect = qfalse):
+				title{title}, missionNum{missionNum}, picCode{picCode},
+				mapCode{mapCode}, descCode{descCode}, characterSelect{characterSelect}
 	{
 
 	}
