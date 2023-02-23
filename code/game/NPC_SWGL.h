@@ -19,6 +19,7 @@
 // Galactic Republic
 #define BULTAR_SWAN "Bultar_Swan"
 #define CIN_DRALLIG "Cin_Drallig"
+#define KELLERAN_BEQ "Kelleran_Beq"
 #define KOFFI_ARANA	"Koffi_Arana"
 #define EP3_VADER "ep3_vader"
 #define PABLO_JILL "Pablo-Jill"
