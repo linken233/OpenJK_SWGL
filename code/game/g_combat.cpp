@@ -5800,6 +5800,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		if (attacker
 			&& attacker->client
 			&& traya->enemy
+			&& traya->enemy->client
 			&& (attacker != targ->enemy)
 			&& ((attacker->client->playerTeam == traya->enemy->client->playerTeam && traya->enemy->client->playerTeam != TEAM_SOLO)))
 		{
