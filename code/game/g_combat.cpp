@@ -5567,6 +5567,7 @@ extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern void G_StartRoll( gentity_t *ent, int anim );
 extern void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
 
 /*
 ============
@@ -5947,6 +5948,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	// Calculate damage for False Emperor (since there are rules)
 	damage = FalseEmperorDamage(damage, attacker, targ, mod);
+
+	// Calculate damage for Knightfall
+	damage = KnightfallDamage(damage, attacker, targ, mod);
 
 
 	if (targ
@@ -7050,6 +7054,29 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			}
 		}
 	}
+}
+
+extern qboolean IsPlayingOperationKnightfall();
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
+{
+	// If we're not playing Knightfall, just skip everything
+	if (IsPlayingOperationKnightfall())
+	{
+		if ((attacker && attacker->client)
+			&& (targ && targ->client))
+		{
+		
+		// Trying to stop friendly fire between the player and the clones
+		if (attacker->client->playerTeam == targ->client->playerTeam)
+			damage = 0;
+		// 2x damage from clones to Jedi (so they're actually helpful)
+		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI)
+			damage *= 2.0f;
+		}
+
+	}
+
+	return damage;
 }
 
 extern qboolean FalseEmperorMission();
