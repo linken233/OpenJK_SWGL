@@ -279,6 +279,7 @@ typedef enum //# MissionFailed_e
 	MISSIONFAILED_ROSH,			//#
 	MISSIONFAILED_WEDGE,		//#
 	MISSIONFAILED_TURNED,		//# Turned on your friends.
+	MISSIONFAILED_QUEEN,		//# Queen Amidala died
 
 	//# #eol
 	MAX_MISSIONFAILED,
