@@ -1984,10 +1984,38 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 		if (strchr(customSkin, '|'))
 		{//three part skin
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/|%s", modelName, customSkin );
+			if (ent == player)
+			{
+				
+				char name[MAX_QPATH];
+				strcpy(name, customSkin);
+				char* p = strchr(name, '|');
+				*p = 0;
+				p++;
+
+				gi.cvar_set("g_char_skin_head", name);
+
+				//advance to second
+				char* p2 = strchr(p, '|');
+				if (!p2)
+				{
+					return;
+				}
+				*p2 = 0;
+				p2++;
+				gi.cvar_set("g_char_skin_torso", p);
+				gi.cvar_set("g_char_skin_legs", p2);
+			}
 		}
 		else
 		{
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/model_%s.skin", modelName, customSkin );
+			if (ent == player)
+			{
+				gi.cvar_set("g_char_skin_head", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_torso", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_legs", va("model_%s", customSkin));
+			}
 		}
 	}
 	int skin = gi.RE_RegisterSkin( skinName );
