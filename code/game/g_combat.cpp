@@ -7058,6 +7058,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 }
 
 extern qboolean IsPlayingOperationKnightfall();
+extern qboolean IsKnightfallBoss(gentity_t* ent);
 int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
 {
 	// If we're not playing Knightfall, just skip everything
@@ -7071,7 +7072,7 @@ int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
 		if (attacker->client->playerTeam == targ->client->playerTeam)
 			damage = 0;
 		// 2x damage from clones to Jedi (so they're actually helpful)
-		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI)
+		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
 			damage *= 2.0f;
 		}
 

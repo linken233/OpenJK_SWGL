@@ -11114,7 +11114,8 @@ qboolean IsKnightfallBoss(gentity_t *ent)
 			|| !Q_stricmp(KELLERAN_BEQ, ent->NPC_type)
 			|| !Q_stricmp(SORA_BULQ, ent->NPC_type)
 			|| !Q_stricmp(TERA_SINUBE, ent->NPC_type)
-			|| !Q_stricmp(PABLO_JILL, ent->NPC_type))
+			|| !Q_stricmp(PABLO_JILL, ent->NPC_type)
+			|| !Q_stricmp(XYRUS, ent->NPC_type))
 			return qtrue;
 	
 	}

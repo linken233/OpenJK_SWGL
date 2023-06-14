@@ -7178,18 +7178,38 @@ qboolean Rosh_BeingHealed( gentity_t *self )
 
 qboolean Rosh_TwinPresent( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		// We only want Shakkra to be healed by Sarek or Loomis, not the reborns
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	return qtrue;
+	return qfalse;
 }
 
 qboolean Rosh_TwinNearBy( gentity_t *self )
@@ -7515,6 +7535,11 @@ qboolean Jedi_InSpecialMove( void )
 			if ( !NPC->client->leader )
 			{//find Rosh
 				NPC->client->leader = G_Find( NULL, FOFS(NPC_type), "rosh_dark" );
+				if (!NPC->client->leader)
+				{
+					// Find Shakkra Kien instead
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), SHAKKRA_KIEN);
+				}
 			}
 			//NPC->client->ps.eFlags &= ~EF_POWERING_ROSH;
 			if ( NPC->client->leader )
