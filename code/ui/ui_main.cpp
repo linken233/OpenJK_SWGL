@@ -1029,6 +1029,14 @@ vmCvar_t	ui_SFXSabers;
 vmCvar_t	ui_SFXSabersGlowSize;
 vmCvar_t	ui_SFXSabersCoreSize;
 
+vmCvar_t r_ratioFix;
+static void UI_Set2DRatio(void) {
+	if (r_ratioFix.integer)
+		uiInfo.uiDC.widthRatioCoef = (float)(SCREEN_WIDTH * uiInfo.uiDC.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * uiInfo.uiDC.glconfig.vidWidth);
+	else
+		uiInfo.uiDC.widthRatioCoef = 1.0f;
+}
+
 static cvarTable_t cvarTable[] =
 {
 	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", NULL, CVAR_ARCHIVE },
@@ -1091,6 +1099,7 @@ static cvarTable_t cvarTable[] =
 	{ &ui_mission, "ui_mission", "0", NULL, CVAR_ARCHIVE},
 	{ &ui_mission_code, "ui_mission_code", "", NULL, CVAR_ARCHIVE},
 	{ &ui_mission_mapcode, "ui_mission_mapcode", "", NULL, CVAR_ARCHIVE},
+	{ &r_ratioFix, "r_ratioFix", "", UI_Set2DRatio, 0},
 
 
 };
@@ -1267,8 +1276,8 @@ void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, i
 							color,	// paletteRGBA_c c
 							iStyleOR | iFontIndex,	// const int iFontHandle
 							!iMaxPixelWidth?-1:iMaxPixelWidth,	// iMaxPixelWidth (-1 = none)
-							scale	// const float scale = 1.0f
-							);
+							scale,	// const float scale = 1.0f
+							uiInfo.uiDC.widthRatioCoef);
 }
 
 
@@ -1294,7 +1303,7 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	strncpy(sTemp,text,iCopyCount);
 			sTemp[iCopyCount] = '\0';
 
-	int iNextXpos  = ui.R_Font_StrLenPixels(sTemp, iFontIndex, scale );
+	int iNextXpos = ui.R_Font_StrLenPixels(sTemp, iFontIndex, scale, uiInfo.uiDC.widthRatioCoef);
 
 	Text_Paint(x+iNextXpos, y, scale, color, va("%c",cursor), iMaxPixelWidth, style|ITEM_TEXTSTYLE_BLINK, iFontIndex);
 }
@@ -3694,12 +3703,14 @@ void _UI_Init( qboolean inGameLoad )
 
 	uiInfo.inGameLoad = inGameLoad;
 
-	UI_RegisterCvars();
 
 	UI_InitMemory();
 
 	// cache redundant calulations
 	trap_GetGlconfig( &uiInfo.uiDC.glconfig );
+
+
+	UI_RegisterCvars();
 
 	// for 640x480 virtualized screen
 	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
@@ -4920,8 +4931,8 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 									color,	// paletteRGBA_c c
 									iFontIndex,	// const int iFontHandle
 									w,//-1,		// iMaxPixelWidth (-1 = none)
-									scale	// const float scale = 1.0f
-									);
+									scale,	// const float scale = 1.0f
+									uiInfo.uiDC.widthRatioCoef);
 			break;
 		case UI_PREVIEWCINEMATIC:
 			// FIXME BOB - make this work?
@@ -4982,7 +4993,7 @@ int Text_Width(const char *text, float scale, int iFontIndex)
 	{
 		iFontIndex = uiInfo.uiDC.Assets.qhMediumFont;
 	}
-	return ui.R_Font_StrLenPixels(text, iFontIndex, scale);
+	return ui.R_Font_StrLenPixels(text, iFontIndex, scale, uiInfo.uiDC.widthRatioCoef);
 }
 
 /*
