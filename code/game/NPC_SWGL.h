@@ -112,6 +112,9 @@
 // Infinities
 #define ANAKIN_INFINITIES "anakin_apprentice"
 #define SHAKKRA_KIEN "Shakkra_Kien"
+#define LOOMIS "Loomis"
+#define SAREK "Sarek"
+#define XYRUS "Xyrus_Sedaya"
 #define STALKER "Sith_Stalker"
 #define CYBER_RECON "Cybernetic_Reconstruction"
 #define LORD_STK "Lord_Starkiller"

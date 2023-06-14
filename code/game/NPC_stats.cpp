@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 #include "../cgame/cg_local.h"
 #if !defined(RUFL_HSTRING_INC)
 	#include "../Rufl/hstring.h"
@@ -1639,6 +1640,10 @@ void NPC_PrecacheByClassName( const char* type )
 	else if ( !Q_stricmpn( "jawa", type, 4 ) )
 	{
 		NPC_Jawa_Precache();
+	}
+	else if (!Q_stricmp(SHAKKRA_KIEN, type))
+	{
+		NPC_Rosh_Dark_Precache();
 	}
 }
 

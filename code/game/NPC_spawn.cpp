@@ -370,8 +370,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		|| !Q_stricmp(CYBER_RECON, ent->NPC_type)
 		|| !Q_stricmp(LORD_STK, ent->NPC_type)
 		|| !Q_stricmp(LORD_STK_TAT, ent->NPC_type))
-	{
-		NPC_Vader_ClearTimers(ent); // For breathing
+		{
+			NPC_Vader_ClearTimers(ent); // For breathing
 	}
 	else if (!Q_stricmp(CAL_KESTIS, ent->NPC_type))
 	{
@@ -383,8 +383,8 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		|| !Q_stricmp(FIFTH_BRO, ent->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, ent->NPC_type)
 		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type))
-	{
-		NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
+		{
+			NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}
 	else if (!Q_stricmp(SION, ent->NPC_type) || !Q_stricmp(SION_TFU, ent->NPC_type))
 	{
@@ -444,13 +444,16 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	}
 
 	if (Q_stricmp("DKothos", ent->NPC_type) == 0
-		|| Q_stricmp("VKothos", ent->NPC_type) == 0)
+		|| Q_stricmp("VKothos", ent->NPC_type) == 0
+		|| Q_stricmp(SAREK, ent->NPC_type) == 0
+		|| Q_stricmp(LOOMIS, ent->NPC_type) == 0)
 	{
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;
 		ent->NPC->aiFlags |= NPCAI_HEAL_ROSH;
 		ent->count = 100;
 	}
-	else if (Q_stricmp("rosh_dark", ent->NPC_type) == 0)
+	else if (Q_stricmp("rosh_dark", ent->NPC_type) == 0
+		|| Q_stricmp(SHAKKRA_KIEN, ent->NPC_type) == 0)
 	{
 		ent->NPC->aiFlags |= NPCAI_ROSH;
 		ent->client->dismembered = qfalse;
@@ -1926,6 +1929,11 @@ gentity_t *NPC_Spawn_Do(gentity_t *ent, qboolean fullSpawnNow)
 			newent->NPC->defaultBehavior = newent->NPC->behaviorState = BS_WAIT;
 			//		newent->svFlags |= SVF_NOPUSH;
 		}
+	}
+	if (!ent->NPC_targetname && !Q_stricmp("noclass", ent->classname))
+	{
+		ent->NPC_targetname = G_NewString(va("%s%i", ent->NPC_type, Q_irand(0, 1000)));
+		gi.Printf(va(S_COLOR_GREEN"Spawning NPC %s, assigning targetname %s\n", ent->NPC_type, ent->NPC_targetname));
 	}
 
 	// Grievous holds his lightsabers in a sort of pattern, so let's mimic it!
@@ -5557,12 +5565,6 @@ static void NPC_Spawn_f(void)
 		}
 	}
 
-	if (!NPCspawner->NPC_targetname)
-	{
-		NPCspawner->NPC_targetname = G_NewString(va("%s%i", NPCspawner->NPC_type, Q_irand(0, 100)));
-		gi.Printf(va(S_COLOR_GREEN"Spawning NPC %s, assigning targetname %s\n", NPCspawner->NPC_type, NPCspawner->NPC_targetname));
-	}
-
 	NPCspawner->count = 1;
 
 	NPCspawner->delay = 0;
@@ -5973,6 +5975,7 @@ void NPC_Team_f(void)
 	name = gi.argv(2);
 	teamInput = gi.argv(3);
 
+
 	team_t	team;
 
 	team = (team_t)GetIDForString(TeamTable, teamInput);
@@ -6159,6 +6162,91 @@ void NPC_Saber_f(void)
 	}
 }
 
+void NPC_Sound_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* targetname;
+	char* sound;
+	char* channelInput;
+
+	targetname = gi.argv(2);
+	sound = gi.argv(3);
+	channelInput = gi.argv(4);
+
+	if (!*targetname || !sound[0])
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC team '[NPC targetname]' '[sound]' '[channel]'  - plays a sound off the selected NPC\n");
+		gi.Printf(S_COLOR_RED"Valid channels are: Global, Body, Weapon, and Voice (Default)\n");
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		// Not only does the targetname need to match but the entity needs to be an NPC or the player
+		if ((ent->targetname && Q_stricmp(targetname, ent->targetname) == 0) && (ent->NPC || ent == player))
+		{
+			// Offering a few channel options, but the voice will play local to the character by default. May or may not change depending on feedback.
+			if(!Q_stricmp("global", channelInput))
+				G_SoundOnEnt( ent, CHAN_VOICE_GLOBAL, sound );
+			else if (!Q_stricmp("body", channelInput))
+				G_SoundOnEnt(ent, CHAN_BODY, sound);
+			else if (!Q_stricmp("weapon", channelInput))
+				G_SoundOnEnt(ent, CHAN_WEAPON, sound);
+			else
+				G_SoundOnEnt(ent, CHAN_VOICE, sound);
+
+		}
+	}
+}
+
+void NPC_Remove_f(void)
+{
+	int			n;
+	gentity_t* ent;
+	char* targetname;
+
+	targetname = gi.argv(2);
+
+	if (!*targetname)
+	{
+		gi.Printf(S_COLOR_RED"Error, Expected:\n");
+		gi.Printf(S_COLOR_RED"NPC remove '[NPC targetname]' - removes the NPC from the game\n");
+		return;
+	}
+
+	for (n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
+	{
+		ent = &g_entities[n];
+		if (!ent->inuse)
+		{
+			continue;
+		}
+		// Entity needs to be an NPC, NOT THE PLAYER!
+		if ((ent->targetname && Q_stricmp(targetname, ent->targetname) == 0) && (ent->NPC && ent != player))
+		{
+			G_UseTargets2(ent, ent, ent->target3);
+			ent->s.eFlags |= EF_NODRAW;
+			ent->svFlags &= ~SVF_NPC;
+			ent->s.eType = ET_INVISIBLE;
+			ent->contents = 0;
+			ent->health = 0;
+			ent->targetname = NULL;
+
+			//Disappear in half a second
+			ent->e_ThinkFunc = thinkF_G_FreeEntity;
+			ent->nextthink = level.time + FRAMETIME;
+			
+		}
+	}
+}
+
 void NPC_PrintScore(gentity_t *ent)
 {
 	gi.Printf("%s: %d\n", ent->targetname, ent->client->ps.persistant[PERS_SCORE]);
@@ -6271,6 +6359,14 @@ void Svcmd_NPC_f(void)
 	else if (Q_stricmp(cmd, "team") == 0)
 	{
 		NPC_Team_f();
+	}
+	else if ((Q_stricmp(cmd, "sound") == 0) || (Q_stricmp(cmd, "speak") == 0))
+	{
+		NPC_Sound_f();
+	}
+	else if (Q_stricmp(cmd, "remove") == 0)
+	{
+		NPC_Remove_f();
 	}
 	else if (Q_stricmp(cmd, "showbounds") == 0)
 	{//Toggle on and off
