@@ -166,6 +166,12 @@ void NPC_Rosh_Dark_Precache( void )
 	G_EffectIndex( "force/kothos_beam.efx" );
 }
 
+void NPC_Shakkra_Precache(void)
+{
+	G_EffectIndex("force/guards_recharge.efx");
+	G_EffectIndex("force/guards_beam.efx");
+}
+
 void Jedi_ClearTimers( gentity_t *ent )
 {
 	TIMER_Set( ent, "roamTime", 0 );
@@ -7250,6 +7256,7 @@ qboolean Kothos_HealRosh( void )
 		{
 			//NPC_FaceEntity( NPC->client->leader, qtrue );
 			NPC_SetAnim( NPC, SETANIM_TORSO, BOTH_FORCE_2HANDEDLIGHTNING_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			WP_DeactivateSaber(NPC);
 			NPC->client->ps.torsoAnimTimer = 1000;
 
 			//FIXME: unique effect and sound
@@ -7266,10 +7273,18 @@ qboolean Kothos_HealRosh( void )
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, fxOrg );
 				VectorSubtract( NPC->client->leader->currentOrigin, fxOrg, fxDir );
 				VectorNormalize( fxDir );
-				G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
+
+				if(!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), fxOrg, fxDir);
+				else
+					G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
 			}
 			//BEG HACK LINE
-			gentity_t *tent = G_TempEntity( NPC->currentOrigin, EV_KOTHOS_BEAM );
+			gentity_t* tent;
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+				tent = G_TempEntity(NPC->currentOrigin, EV_GUARDS_BEAM);
+			else
+				tent = G_TempEntity(NPC->currentOrigin, EV_KOTHOS_BEAM);
 			tent->svFlags |= SVF_BROADCAST;
 			tent->s.otherEntityNum = NPC->s.number;
 			tent->s.otherEntityNum2 = NPC->client->leader->s.number;
@@ -7283,7 +7298,12 @@ qboolean Kothos_HealRosh( void )
 				{//let him get up now
 					NPC_SetAnim( NPC->client->leader, SETANIM_BOTH, BOTH_FORCEHEAL_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 					//FIXME: temp effect
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse );
+
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+
 					//make him invincible while we recharge him
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + NPC->client->leader->client->ps.torsoAnimTimer;
 					NPC->client->leader->NPC->ignorePain = qfalse;
@@ -7291,7 +7311,11 @@ qboolean Kothos_HealRosh( void )
 				}
 				else
 				{
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse );
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 				}
 			}
@@ -7305,7 +7329,11 @@ qboolean Kothos_HealRosh( void )
 			//now protect me, too
 			if ( g_spskill->integer )
 			{//not on easy
-				G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+				if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+				else
+					G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+
 				NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 			}
 			return qtrue;
@@ -7327,7 +7355,8 @@ void Kothos_PowerRosh( void )
 			NPC->client->ps.torsoAnimTimer = 500;
 			//FIXME: unique effect and sound
 			//NPC->client->ps.eFlags |= EF_POWERING_ROSH;
-			G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+			//G_PlayEffect(G_EffectIndex("force/kothos_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+			G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 			if ( NPC->client->leader->client )
 			{//hmm, give him some force?
 				NPC->client->leader->client->ps.forcePower++;
@@ -7532,12 +7561,17 @@ qboolean Jedi_InSpecialMove( void )
 	{
 		if ( (NPCInfo->aiFlags&NPCAI_HEAL_ROSH) )
 		{
+			// Kothos Twins and Sarek and Loomis have different leaders, they don't care about the other
 			if ( !NPC->client->leader )
-			{//find Rosh
-				NPC->client->leader = G_Find( NULL, FOFS(NPC_type), "rosh_dark" );
-				if (!NPC->client->leader)
+			{
+				if (!Q_stricmp("dkothos", NPC->NPC_type) || !Q_stricmp("vkothos", NPC->NPC_type))
+				{	
+					//find Rosh
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), "rosh_dark");
+				}
+				else if (!NPC->client->leader && (!Q_stricmp(SAREK, NPC->NPC_type) || !Q_stricmp(LOOMIS, NPC->NPC_type)))
 				{
-					// Find Shakkra Kien instead
+					// Find Shakkra Kien
 					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), SHAKKRA_KIEN);
 				}
 			}
@@ -7587,6 +7621,7 @@ qboolean Jedi_InSpecialMove( void )
 				}
 				else if ( NPC->enemy && DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin ) < Twins_DangerDist() )
 				{
+					NPC->client->ps.SaberActivate();
 					if ( NPC->enemy && Kothos_Retreat() )
 					{
 						NPC_FaceEnemy( qtrue );

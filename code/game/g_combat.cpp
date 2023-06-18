@@ -7075,6 +7075,10 @@ int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
 		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
 			damage *= 2.0f;
 		}
+		else if (IsKnightfallBoss(attacker) && targ != player)
+		{
+			damage *= 3.0f;
+		}
 
 	}
 
