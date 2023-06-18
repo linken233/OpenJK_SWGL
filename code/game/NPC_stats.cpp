@@ -1491,11 +1491,12 @@ extern void RT_Precache( void );
 extern void SandCreature_Precache( void );
 extern void NPC_TavionScepter_Precache( void );
 extern void NPC_TavionSithSword_Precache( void );
-extern void NPC_Rosh_Dark_Precache( void );
+extern void NPC_Rosh_Dark_Precache(void);
 extern void NPC_Tusken_Precache( void );
 extern void NPC_Saboteur_Precache( void );
 extern void NPC_CultistDestroyer_Precache( void );
 extern void NPC_GalakMech_Precache(void);
+extern void NPC_Shakkra_Precache(void);
 void NPC_Jawa_Precache( void )
 {
 	for ( int i = 1; i < 7; i++ )
@@ -1643,7 +1644,7 @@ void NPC_PrecacheByClassName( const char* type )
 	}
 	else if (!Q_stricmp(SHAKKRA_KIEN, type))
 	{
-		NPC_Rosh_Dark_Precache();
+		NPC_Shakkra_Precache();
 	}
 }
 

@@ -101,20 +101,35 @@ FX_KothosBeam
 */
 void FX_KothosBeam( vec3_t start, vec3_t end )
 {
-	FX_AddLine( -1, start, end, 0.1f, 10.0f, 0.0f,
-							1.0f, 0.0f, 0.0f,
-							WHITE, WHITE, 0.0f,
-							175, cgi_R_RegisterShader( "gfx/misc/dr1" ),
-							0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
+	FX_AddLine(-1, start, end, 0.1f, 10.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		175, cgi_R_RegisterShader("gfx/misc/dr1"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
 
 	vec3_t	YELLER={0.8f,0.7f,0.0f};
 
 	// add some beef
-	FX_AddLine( -1, start, end, 0.1f, 7.0f, 0.0f,
-						1.0f, 0.0f, 0.0f,
-						YELLER, YELLER, 0.0f,
-						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ),
-						0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
+	FX_AddLine(-1, start, end, 0.1f, 7.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		YELLER, YELLER, 0.0f,
+		150, cgi_R_RegisterShader("gfx/misc/whiteline2"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+}
+
+void FX_GuardsBeam(vec3_t start, vec3_t end)
+{
+	FX_AddLine(-1, start, end, 0.1f, 10.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		175, cgi_R_RegisterShader("gfx/misc/dr2"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
+
+	FX_AddLine(-1, start, end, 0.1f, 7.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		WHITE, WHITE, 0.0f,
+		150, cgi_R_RegisterShader("gfx/misc/whiteline2"),
+		0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR);
 }
 
 void FX_LightningStrike(vec3_t start, vec3_t end)

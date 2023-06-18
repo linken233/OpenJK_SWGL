@@ -31,7 +31,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/anims.h"
 
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
-extern void FX_KothosBeam( vec3_t start, vec3_t end );
+extern void FX_KothosBeam(vec3_t start, vec3_t end);
+extern void FX_GuardsBeam(vec3_t start, vec3_t end);
 
 //==========================================================================
 
@@ -634,6 +635,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		else
 		{
 			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin );
+		}
+		break;
+	case EV_GUARDS_BEAM:
+		DEBUGNAME("EV_GUARDS_BEAM");
+		if (Q_irand(0, 1))
+		{
+			FX_GuardsBeam(cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handRPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin);
+		}
+		else
+		{
+			FX_GuardsBeam(cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin);
 		}
 		break;
 	//=================================================================
