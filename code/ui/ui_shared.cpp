@@ -12085,7 +12085,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 			Menu_SetPrevCursorItem(menu);
 			break;
 
-
+		case A_PAD0_START:
 		case A_ESCAPE:
 			if (!g_waitingForKey && menu->onESC)
 			{
