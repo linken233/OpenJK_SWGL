@@ -7912,7 +7912,7 @@ void NPC_BSJedi_Default( void )
 			{
 				WP_SetSaber(NPC, 0, "inquisitor");
 			}
-			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name) || NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inq_starkiller", NPC->client->ps.saber[0].name))
+			else if ((NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name)) || (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inq_starkiller", NPC->client->ps.saber[0].name)))
 			{
 				WP_SetSaber(NPC, 0, "2nd_sister_staff");
 			}

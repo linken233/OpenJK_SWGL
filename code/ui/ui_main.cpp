@@ -260,15 +260,20 @@ typedef struct
 	const char *value;
 } missionTopicData_t;
 
-typedef struct
+typedef struct missionData
 {
-	char *title;
-	char* missionNum;
-	char* picCode;
-	char* mapCode;
-	char* descCode;
-	qboolean characterSelect = qfalse;
-	
+	const char *title;
+	const char *missionNum;
+	const char *picCode;
+	const char *mapCode;
+	const char *descCode;
+	qboolean characterSelect;
+
+	missionData() = default;
+	missionData(const char *title, const char *missionNum, const char *picCode,
+				const char *mapCode, const char *descCode, qboolean characterSelect = qfalse):
+				title{title}, missionNum{missionNum}, picCode{picCode},
+				mapCode{mapCode}, descCode{descCode}, characterSelect{characterSelect} {}
 } missionData_t;
 
 static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
