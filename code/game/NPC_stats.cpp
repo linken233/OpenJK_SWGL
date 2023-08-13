@@ -1590,7 +1590,7 @@ void NPC_PrecacheByClassName( const char* type )
 	{
 		NPC_GalakMech_Precache();
 	}
-	else if (!Q_stricmp("darth_vader", type))
+	else if (!Q_stricmp(VADER, type) || !Q_stricmp(VADER_INFINITIES, type))
 	{
 		NPC_Vader_Precache();
 	}

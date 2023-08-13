@@ -352,7 +352,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 	{
 		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 	}
-	else if (!Q_stricmp(VADER, ent->NPC_type))
+	else if (!Q_stricmp(VADER, ent->NPC_type) || !Q_stricmp(VADER_INFINITIES, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_NO_ACROBATICS | SCF_WALKING);
 		NPC_Vader_ClearTimers(ent);
@@ -382,7 +382,9 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		|| !Q_stricmp(THIRD_SIS, ent->NPC_type)
 		|| !Q_stricmp(FIFTH_BRO, ent->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, ent->NPC_type)
-		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type))
+		|| !Q_stricmp(EIGHTH_BRO, ent->NPC_type)
+		|| !Q_stricmp(NINTH_SIS, ent->NPC_type)
+		|| !Q_stricmp(INQ_STK, ent->NPC_type))
 		{
 			NPC_Inquisitor_ClearTimers(ent); // For them switching their sabers
 	}
@@ -480,7 +482,10 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 		!Q_stricmp(SNOKE, ent->NPC_type) ||
 		!Q_stricmp(VITIATE, ent->NPC_type) ||
 		!Q_stricmp(EMPEROR_PALPATINE, ent->NPC_type) ||
-		!Q_stricmp(SEE_PALPATINE, ent->NPC_type))
+		!Q_stricmp(SEE_PALPATINE, ent->NPC_type) ||
+		!Q_stricmp(TENEBRAE, ent->NPC_type) ||
+		!Q_stricmp(BRONTES, ent->NPC_type) ||
+		!Q_stricmp(ABELOTH, ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= (SCF_DONT_FIRE | SCF_NO_FORCE);
 		ent->flags |= FL_SHIELDED;
@@ -2458,6 +2463,20 @@ void SP_NPC_Kyle(gentity_t *self)
 	SP_NPC_spawner(self);
 }
 
+/*QUAKED NPC_Drallig(1 0 0) (-16 -16 -24) (16 16 40) x x x x CEILING CINEMATIC NOTSOLID STARTINSOLID SHY
+CEILING - Sticks to the ceiling until he sees an enemy or takes pain
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Drallig(gentity_t* self)
+{
+	self->NPC_type = "Cin_Drallig";
+
+	SP_NPC_spawner(self);
+}
+
 /*QUAKED NPC_Lando(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
@@ -3509,8 +3528,11 @@ void SP_NPC_Human_Merc(gentity_t *self)
 					self->NPC_type = IG86;
 					break;
 				case 2:
-					self->NPC_type = GAMORREAN;
-					break;
+					if (~self->spawnflags & 16)
+					{
+						self->NPC_type = GAMORREAN;
+						break;
+					}
 				default:
 					self->NPC_type = "human_merc_rep";
 					break;
@@ -3610,7 +3632,7 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stofficeralt";
 					break;
 				case 1:
-					self->NPC_type = PURGE_TROOPER;
+					self->NPC_type = PURGE_UPRISING;
 					break;
 				case 2:
 					self->NPC_type = DEATH_TROOPER;
@@ -3637,10 +3659,11 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stcommander";
 					break;
 				case 1:
-					self->NPC_type = PURGE_TROOPER;
+					self->NPC_type = PURGE_UPRISING;
 					break;
+					
 				case 2:
-					self->NPC_type = PURGE_BATONS;
+					self->NPC_type = SUPERCOMMANDO;
 					break;
 				case 3:
 					self->NPC_type = PURGE_COMMANDER;
@@ -3668,11 +3691,12 @@ void SP_NPC_Stormtrooper(gentity_t *self)
 					self->NPC_type = "stofficer";
 					break;
 				case 1:
-					self->NPC_type = PURGE_TROOPER;
+					self->NPC_type = PURGE_UPRISING;
 					break;
 				case 2:
-					self->NPC_type = PURGE_BATONS;
+					self->NPC_type = SUPERCOMMANDO;
 					break;
+					
 				case 3:
 					self->NPC_type = PURGE_COMMANDER;
 					break;
@@ -3745,15 +3769,16 @@ void SP_NPC_Snowtrooper(gentity_t *self)
 	}
 	else
 	{
-		int npc_pick = Q_irand(0, 1);
+		int npc_pick = Q_irand(0, 2);
 
 		switch (npc_pick)
 		{
 		case 0:
+		case 1:
 			self->NPC_type = "snowtrooper";
 			break;
-		case 1:
-			self->NPC_type = "cultist_saber_all";
+		case 2:
+			self->NPC_type = SUPERCOMMANDO;
 			break;
 		default:
 			self->NPC_type = "snowtrooper";
@@ -4010,8 +4035,11 @@ void SP_NPC_Rodian(gentity_t *self)
 					break;
 
 				case 1:
-					self->NPC_type = GAMORREAN;
-					break;
+					if (~self->spawnflags & 16)
+					{
+						self->NPC_type = GAMORREAN;
+						break;
+					}
 
 				case 2:
 					self->NPC_type = IG86;
@@ -4128,8 +4156,11 @@ void SP_NPC_Noghri(gentity_t *self)
 				self->NPC_type = "noghri";
 				break;
 			case 1:
-				self->NPC_type = NOGHRI_BERSERKER;
-				break;
+				if (~self->spawnflags & 16)
+				{
+					self->NPC_type = NOGHRI_BERSERKER;
+					break;
+				}
 			default:
 				self->NPC_type = "noghri";
 				break;
@@ -4198,8 +4229,11 @@ void SP_NPC_Imperial(gentity_t *self)
 					self->NPC_type = "impofficer";
 					break;
 				case 1:
-					self->NPC_type = "reborn";
-					break;
+					if (self->spawnflags & 16)
+					{
+						self->NPC_type = "reborn";
+						break;
+					}
 				case 2:
 					self->NPC_type = DEATH_TROOPER;
 					break;
@@ -4225,11 +4259,17 @@ void SP_NPC_Imperial(gentity_t *self)
 					self->NPC_type = "impcommander";
 					break;
 				case 1:
-					self->NPC_type = "rebornacrobat";
-					break;
+					if (~self->spawnflags & 16)
+					{
+						self->NPC_type = "rebornacrobat";
+						break;
+					}
 				case 2:
-					self->NPC_type = "rebornforceuser";
-					break;
+					if (~self->spawnflags & 16)
+					{
+						self->NPC_type = "rebornforceuser";
+						break;
+					}
 				default:
 					self->NPC_type = "impcommander";
 					break;
@@ -4251,8 +4291,11 @@ void SP_NPC_Imperial(gentity_t *self)
 					self->NPC_type = "imperial";
 					break;
 				case 1:
-					self->NPC_type = "reborn";
-					break;
+					if (~self->spawnflags & 16)
+					{
+						self->NPC_type = "reborn";
+						break;
+					}
 				default:
 					self->NPC_type = "imperial";
 					break;
@@ -4588,10 +4631,10 @@ void SP_NPC_Cultist_Saber(gentity_t *self)
 					self->NPC_type = "cultist_saber_all_throw";
 					break;
 				case 1:
-					self->NPC_type = "rebornboss";
+					self->NPC_type = REBORN_ELITE;
 					break;
 				case 2:
-					self->NPC_type = PURGE_TROOPER;
+					self->NPC_type = PURGE_BATONS;
 					break;
 				default:
 					self->NPC_type = "cultist_saber_all_throw";
@@ -4687,7 +4730,7 @@ void SP_NPC_Cultist_Saber_Powers(gentity_t *self)
 				self->NPC_type = "rebornboss";
 				break;
 			case 2:
-				self->NPC_type = PURGE_TROOPER;
+				self->NPC_type = REBORN_ELITE;
 				break;
 			default:
 				self->NPC_type = "cultist_saber_all_throw2";
