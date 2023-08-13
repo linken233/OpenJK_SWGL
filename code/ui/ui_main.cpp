@@ -260,23 +260,15 @@ typedef struct
 	const char *value;
 } missionTopicData_t;
 
-typedef struct missionData
+typedef struct
 {
-	const char *title;
-	const char *missionNum;
-	const char *picCode;
-	const char *mapCode;
-	const char *descCode;
-	qboolean characterSelect;
-
-	missionData() = default;
-	missionData(const char *title, const char *missionNum, const char *picCode,
-				const char *mapCode, const char *descCode, qboolean characterSelect = qfalse):
-				title{title}, missionNum{missionNum}, picCode{picCode},
-				mapCode{mapCode}, descCode{descCode}, characterSelect{characterSelect}
-	{
-
-	}
+	char *title;
+	char* missionNum;
+	char* picCode;
+	char* mapCode;
+	char* descCode;
+	qboolean characterSelect = qfalse;
+	
 } missionData_t;
 
 static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] =
@@ -406,18 +398,18 @@ static missionTopicData_t missionTopicData[1][MAX_MISSION_TOPIC] =
 {
 {
 	{ "@SWGLMISSIONS_MISSIONS_EPI",					"0"},
-	{ "@SWGLMISSIONS_MISSIONS_EPII",					"1"},
-	{ "@SWGLMISSIONS_MISSIONS_EPIII",					"2"},
-	{ "@SWGLMISSIONS_MISSIONS_EPIV",					"3"},
-	{ "@SWGLMISSIONS_MISSIONS_EPV",						"4"},
-	{ "@SWGLMISSIONS_MISSIONS_EPVI",					"5"},
-	{ "@SWGLMISSIONS_MISSIONS_EPVII",					"6"},
-	{ "@SWGLMISSIONS_MISSIONS_EPVIII",					"7"},
-	{ "@SWGLMISSIONS_MISSIONS_EPIX",					"8"},
-	{ "@SWGLMISSIONS_MISSIONS_THECLONEWARS",					"9"},
-	{ "@SWGLMISSIONS_MISSIONS_KOTOR",					"10"},
-	{ "@SWGLMISSIONS_MISSIONS_JKJO",					"11"},
-	{ "@SWGLMISSIONS_MISSIONS_JKJA",					"12"},
+	//{ "@SWGLMISSIONS_MISSIONS_EPII",					"1"},
+	{ "@SWGLMISSIONS_MISSIONS_EPIII",					"1"},
+	//{ "@SWGLMISSIONS_MISSIONS_EPIV",					"3"},
+	//{ "@SWGLMISSIONS_MISSIONS_EPV",						"4"},
+	{ "@SWGLMISSIONS_MISSIONS_EPVI",					"2"},
+	//{ "@SWGLMISSIONS_MISSIONS_EPVII",					"6"},
+	{ "@SWGLMISSIONS_MISSIONS_EPVIII",					"3"},
+	//{ "@SWGLMISSIONS_MISSIONS_EPIX",					"8"},
+	{ "@SWGLMISSIONS_MISSIONS_THECLONEWARS",					"4"},
+	{ "@SWGLMISSIONS_MISSIONS_KOTOR",					"5"},
+	{ "@SWGLMISSIONS_MISSIONS_JKJO",					"6"},
+	{ "@SWGLMISSIONS_MISSIONS_JKJA",					"7"},
 	{ NULL,	NULL},
 	{ NULL,	NULL},
 	{ NULL,	NULL},
@@ -426,387 +418,219 @@ static missionTopicData_t missionTopicData[1][MAX_MISSION_TOPIC] =
 
 static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
 {
-// Phantom Menace
+	// Phantom Menace
 {
 	{ "@SWGLMISSIONS_EPI_DOTF",			"0",		"Ep1_DotF", NULL, "@SWGLMISSIONS_EP1_DOTF_DESC", qtrue},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // Attack of the Clones
-{
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
-},
 // Revenge of the Sith
 {
 	{ "@SWGLMISSIONS_EPIII_TODP",		"0",			"Ep3_ToDP", "ep3_todp_ani", "@SWGLMISSIONS_EP3_TODP_DESC",},
 	{ "@SWGLMISSIONS_EPIII_FOTR",		"1",			"Ep3_FotR", NULL, "@SWGLMISSIONS_EP3_FOTR_DESC", qtrue},
 	{ "@SWGLMISSIONS_EPIII_OK",			"2",		"Ep3_OK", NULL, "@SWGLMISSIONS_EP3_OK_DESC", qtrue},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // A New Hope
-{
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
-},
 // The Empire Strikes Back
-{
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
-},
 // Return of the Jedi
 {
 	{ "@SWGLMISSIONS_EPVI_FVS",			"0",		"Ep6_FVS", NULL, "@SWGLMISSIONS_EP6_FVS_DESC", qtrue},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // The Force Awakens
-{
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
-},
 // The Last Jedi
 {
 	{ "@SWGLMISSIONS_EPVIII_TLJ",		"0",			"Ep8_TLJ", "ep8_tlj_kylo", "@SWGLMISSIONS_EP8_TLJ_DESC" },
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
-},
-// The Rise of Skywalker
-{
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // The Clone Wars
 {
 	{ "@SWGLMISSIONS_TCW_YHBAR",		"0",			"TCW_YHBAR", "tcw_yhbar_sidious_1", "@SWGLMISSIONS_TCW_YHBAR_DESC"},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // The Old Republic
 {
 	{ "@SWGLMISSIONS_TOR_RVM",			"0",		"KotOR_SF", "kotor_sf_revan", "@SWGLMISSIONS_KOTOR_SF_DESC"},
 	{ "@SWGLMISSIONS_TOR_TTC",			"1",		"KotOR_TTC", "kotor_ttc_meetra", "@SWGLMISSIONS_KOTOR_TTC_DESC"},
 	{ "@SWGLMISSIONS_TOR_TFE",			"2",		"SWTOR_FE", NULL, "@SWGLMISSIONS_SWTOR_TFE_DESC", qtrue},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // Jedi Outcast
 {
@@ -836,12 +660,12 @@ static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
 	{ "@SWGLMISSIONS_YAVIN_COURTYARD",	"23",				"levelshots/yavin_courtyard", "yavin_courtyard", "@SWGLMISSIONS_YAVIN_COURTYARD_DESC"},
 	{ "@SWGLMISSIONS_YAVIN_FINAL",		"24",			"levelshots/yavin_final", "yavin_final", "@SWGLMISSIONS_YAVIN_FINAL_DESC"},
 	{ "@SWGLMISSIONS_JODEMO",			"25",		"levelshots/jodemo", "jodemo", "@SWGLMISSIONS_JODEMO_DESC"},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 // Jedi Academy
 {
@@ -871,12 +695,10 @@ static missionData_t missionData[MAX_MISSION_TOPIC][MAX_MISSION] =
 	{ "@SWGLMISSIONS_T3_TASPIR2_TITLE",		"23",		"levelshots/taspir2", "taspir2", "@SWGLMISSIONS_T3_TASPIR2_DESC"},
 	{ "@SWGLMISSIONS_T3_KOR1_TITLE",		"24",			"levelshots/kor1", "kor1", "@SWGLMISSIONS_T3_KOR1_DESC"},
 	{ "@SWGLMISSIONS_T3_KOR2_TITLE",		"25",			"levelshots/kor2", "kor2", "@SWGLMISSIONS_T3_KOR2_DESC"},
-	{},
-	{},
-	{},
-	{},
-	{},
-	{}
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
+	{ NULL,			NULL,		NULL, NULL, NULL, qfalse},
 },
 };
 
@@ -2926,17 +2748,11 @@ static void UI_FeederSelection(float feederID, int index, itemDef_t *item)
 	}
 	else if (feederID == FEEDER_MODEL_SKINS)
 	{
-		menuDef_t* menu;
-		menu = Menu_GetFocused();
-
-		if (Q_stricmp("characterMenu", menu->window.name))
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
 		{
-			if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount)
-			{
-				Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
-				Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
-				Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
-			}
+			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
+			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[index].name);
 		}
 	}
 
@@ -3648,7 +3464,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
-			/*if (!inGameLoad && ui_PrecacheModels.integer)
+			if (!inGameLoad && ui_PrecacheModels.integer)
 			{
 				CGhoul2Info_v ghoul2;
 				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
@@ -3657,7 +3473,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				{
 					DC->g2_RemoveGhoul2Model(ghoul2, 0);
 				}
-			}*/
+			}
 		}
 
 	}
@@ -5425,6 +5241,10 @@ static void UI_UpdateNPCCvars()
 	Cvar_Set("g_NPClegs", Cvar_VariableString("ui_char_skin_legs"));
 	Cvar_Set("g_NPCteam", Cvar_VariableString("ui_npc_team"));
 	Cvar_Set("g_NPCweapon", Cvar_VariableString("ui_npc_weapon"));
+	Cvar_Set("g_NPCsaber", Cvar_VariableString("ui_saber"));
+	Cvar_Set("g_NPCsabercolor", Cvar_VariableString("ui_saber_color"));
+	Cvar_Set("g_NPCsabertwo", Cvar_VariableString("ui_saber2"));
+	Cvar_Set("g_NPCsabertwocolor", Cvar_VariableString("ui_saber2_color"));
 	Cvar_Set("g_NPCLightningColor", Cvar_VariableString("ui_lightning_color"));
 	Cvar_Set("g_NPCspawnscript", Cvar_VariableString("ui_npc_spawnscript"));
 	Cvar_Set("g_NPCfleescript", Cvar_VariableString("ui_npc_fleescript"));
@@ -5468,7 +5288,7 @@ extern saber_colors_t TranslateSaberColor( const char *name );
 
 static void UI_UpdateSaberCvars ( void )
 {
-	if (!Cvar_VariableIntegerValue("ui_npc_menu"))
+	if (!Cvar_VariableIntegerValue("ui_saber_edit"))
 	{
 		Cvar_Set("g_saber_type", Cvar_VariableString("ui_saber_type"));
 		Cvar_Set("g_saber", Cvar_VariableString("ui_saber"));
@@ -5476,14 +5296,6 @@ static void UI_UpdateSaberCvars ( void )
 		Cvar_Set("g_saber_color", Cvar_VariableString("ui_saber_color"));
 		Cvar_Set("g_saber2_color", Cvar_VariableString("ui_saber2_color"));
 	}
-	else if (Cvar_VariableIntegerValue("ui_npc_menu"))
-	{
-		Cvar_Set("g_NPCSaber", Cvar_VariableString("ui_saber"));
-		Cvar_Set("g_NPCSaberTwo", Cvar_VariableString("ui_saber2"));
-		Cvar_Set("g_NPCSaberColor", Cvar_VariableString("ui_saber_color"));
-		Cvar_Set("g_NPCSaberTwoColor", Cvar_VariableString("ui_saber2_color"));
-	}
-
 
 	if (TranslateSaberColor(Cvar_VariableString("ui_saber_color")) >= SABER_RGB)
 	{
@@ -5491,13 +5303,13 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber_blue")));
-		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
+		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
 		{
 			Cvar_Set("g_saber_color", rgbColor);
 		}
 		else
 		{
-			Cvar_Set("g_NPCSaberColor", rgbColor);
+			Cvar_Set("ui_npc_saberonecolor", rgbColor);
 		}
 	}
 
@@ -5507,13 +5319,13 @@ static void UI_UpdateSaberCvars ( void )
 		Com_sprintf(rgbColor, 8, "x%02x%02x%02x", Cvar_VariableIntegerValue("ui_rgb_saber2_red"),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_green")),
 					(Cvar_VariableIntegerValue("ui_rgb_saber2_blue")));
-		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
+		if (!Cvar_VariableIntegerValue("ui_npc_saber"))
 		{
 			Cvar_Set( "g_saber2_color", rgbColor );
 		}
 		else
 		{
-			Cvar_Set("g_NPCSaberTwoColor", rgbColor);
+			Cvar_Set("ui_npc_sabertwocolor", rgbColor);
 		}
 	}
 
@@ -6635,6 +6447,7 @@ static void UI_RecordCharWeapons(const char **args)
 	weaponTwo = 0;
 	weaponThree = 0;
 	weaponFour = 0;
+	weaponFive = 0;
 
 	// Record 4 weapons (lightsaber is given in the menu if the character has one already, and every character gets melee regardless)
 	// This is a really ugly way of doing this...
@@ -6657,6 +6470,9 @@ static void UI_RecordCharWeapons(const char **args)
 	const char* fifthWeapon;
 	String_Parse(args, &fifthWeapon);
 	weaponFive = atoi(fifthWeapon);
+
+	// Clear weapons, just in case
+	args = 0;
 
 }
 
