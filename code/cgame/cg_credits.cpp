@@ -579,7 +579,7 @@ qboolean CG_Credits_Draw( void )
 				StringAndSize_t &StringAndSize = CreditCard.vstrText[i];
 				iWidth = StringAndSize.GetPixelLength();
 				iXpos  = (SCREEN_WIDTH - iWidth)/2;
-				cgi_R_Font_DrawString(iXpos, iYpos, CreditCard.strTitle.c_str(), gv4Color, ghFontHandle, -1, gfFontScale, cgs.widthRatioCoef);
+				cgi_R_Font_DrawString(iXpos, iYpos, CreditCard.vstrText[i].c_str(), gv4Color, ghFontHandle, -1, gfFontScale, cgs.widthRatioCoef);
 				iYpos += iFontHeight;
 			}
 
