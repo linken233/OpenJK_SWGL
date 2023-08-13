@@ -6604,6 +6604,43 @@ void NPC_BSJedi_FollowLeader( void )
 		Jedi_AggressionErosion(-1);
 	}
 
+	if (TIMER_Done(NPC, "breathing")
+		&& (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
+			|| !Q_stricmp(STALKER, NPC->NPC_type)
+			|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
+	{
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+			}
+		}
+		else
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(3131, 5000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
+			}
+		}
+	}
+
 	//did we drop our saber?  If so, go after it!
 	if ( NPC->client->ps.saberInFlight )
 	{//saber is not in hand
@@ -7785,6 +7822,7 @@ qboolean Jedi_InSpecialMove( void )
 extern void NPC_BSST_Patrol( void );
 extern void NPC_BSSniper_Default( void );
 extern void G_UcmdMoveForDir( gentity_t *self, usercmd_t *cmd, vec3_t dir );
+extern saber_colors_t TranslateSaberColor(const char* name);
 void NPC_BSJedi_Default( void )
 {
 	if ( Jedi_InSpecialMove() )
@@ -7794,12 +7832,14 @@ void NPC_BSJedi_Default( void )
 
 	if (TIMER_Done(NPC, "breathing")
 		&&(!Q_stricmp(VADER, NPC->NPC_type)
+		|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
 		|| !Q_stricmp(STALKER, NPC->NPC_type)
 		|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
 		|| !Q_stricmp(LORD_STK, NPC->NPC_type)
 		|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
 	{
-		if (!Q_stricmp(VADER, NPC->NPC_type))
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
 		{
 			if (NPC->health > (NPC->max_health * .33))
 			{
@@ -7828,15 +7868,27 @@ void NPC_BSJedi_Default( void )
 	}
 
 	if (TIMER_Done(NPC, "saber_switch") &&
-		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)))
+		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_SURVIVOR, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_INQUISITOR, NPC->NPC_type)))
 	{
 		if (!Q_stricmp("cal_kestis_staff", NPC->client->ps.saber[0].name))
 		{
+
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
 			WP_SetSaber(NPC, 0, "cal_kestis_single");
+			
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
 		}
 		else if (!Q_stricmp("cal_kestis_single", NPC->client->ps.saber[0].name))
 		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
 			WP_SetSaber(NPC, 0, "cal_kestis_staff");
+
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
+			
 		}
 		TIMER_Set(NPC, "saber_switch", Q_irand(5000, 20000));
 	}
@@ -7846,8 +7898,12 @@ void NPC_BSJedi_Default( void )
 		|| !Q_stricmp(THIRD_SIS, NPC->NPC_type)
 		|| !Q_stricmp(FIFTH_BRO, NPC->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, NPC->NPC_type)
-		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type))
+		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type)
+		|| !Q_stricmp(NINTH_SIS, NPC->NPC_type)
+		|| !Q_stricmp(INQ_STK, NPC->NPC_type))
 		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
 			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
 			{
 				WP_SetSaber(NPC, 0, "inquisitor_staff");
@@ -7856,13 +7912,16 @@ void NPC_BSJedi_Default( void )
 			{
 				WP_SetSaber(NPC, 0, "inquisitor");
 			}
-			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name))
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name) || NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inq_starkiller", NPC->client->ps.saber[0].name))
 			{
 				WP_SetSaber(NPC, 0, "2nd_sister_staff");
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("2nd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "2nd_sister");
+				if (!Q_stricmp(INQ_STK, NPC->NPC_type))
+					WP_SetSaber(NPC, 0, "inq_starkiller");
+				else
+					WP_SetSaber(NPC, 0, "2nd_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("3rd_sister", NPC->client->ps.saber[0].name))
 			{
@@ -7904,6 +7963,8 @@ void NPC_BSJedi_Default( void )
 			{
 				WP_SetSaber(NPC, 0, "9th_sister");
 			}
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
 		}
 
 	Jedi_CheckCloak();

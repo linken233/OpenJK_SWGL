@@ -1029,6 +1029,10 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_dbgalen/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if ( !Q_stricmp( "models/players/protocol/protocol", GLAName ) )
 		{//protocol droid duplicates many of these
 			return qtrue;
@@ -1142,6 +1146,10 @@ qboolean G_StandardHumanoid(const char* GLAName)
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Vader", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_dbgalen", GLAName))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
