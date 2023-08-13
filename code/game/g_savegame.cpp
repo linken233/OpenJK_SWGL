@@ -1157,7 +1157,8 @@ static void ReadGEntities(qboolean qbAutosave)
 			Vehicle_t tempVehicle;
 
 			// initialize the vehicle cache g_vehicleInfo
-			int vehicleIndex = BG_VehicleGetIndex(pEnt->NPC_type);
+			// Calling this function fixes the vehicle crashing issue
+			BG_VehicleGetIndex(pEnt->NPC_type);
 
 			EvaluateFields(savefields_gVHIC, &tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'));
 

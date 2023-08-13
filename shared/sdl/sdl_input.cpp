@@ -58,7 +58,6 @@ static SDL_Window* SDL_window = NULL;
 #define Com_QueueEvent Sys_QueEvent
 
 static int in_eventTime = 0;
-static qboolean mouse_focus;
 
 #define CTRL(a) ((a)-'a'+1)
 
