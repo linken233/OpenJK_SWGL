@@ -5293,7 +5293,7 @@ extern saber_colors_t TranslateSaberColor( const char *name );
 
 static void UI_UpdateSaberCvars ( void )
 {
-	if (!Cvar_VariableIntegerValue("ui_saber_edit"))
+	if (!Cvar_VariableIntegerValue("ui_saber_edit") && !Cvar_VariableIntegerValue("ui_npc_menu"))
 	{
 		Cvar_Set("g_saber_type", Cvar_VariableString("ui_saber_type"));
 		Cvar_Set("g_saber", Cvar_VariableString("ui_saber"));
