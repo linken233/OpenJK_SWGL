@@ -69,6 +69,17 @@ kbutton_t	in_buttons[32];
 qboolean	in_mlooking;
 
 extern cvar_t	*in_joystick;
+extern cvar_t* j_pitch;
+extern cvar_t* j_yaw;
+extern cvar_t* j_forward;
+extern cvar_t* j_side;
+extern cvar_t* j_up;
+extern cvar_t* j_pitch_axis;
+extern cvar_t* j_yaw_axis;
+extern cvar_t* j_forward_axis;
+extern cvar_t* j_side_axis;
+extern cvar_t* j_up_axis;
+extern cvar_t* j_sensitivity;
 
 static void IN_UseGivenForce(void)
 {
@@ -484,6 +495,11 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 	if ( axis < 0 || axis >= MAX_JOYSTICK_AXIS ) {
 		Com_Error( ERR_DROP, "CL_JoystickEvent: bad axis %i", axis );
 	}
+
+	if (Key_GetCatcher() & (KEYCATCH_UI)) {
+		return;
+	}
+
 	cl.joystickAxis[axis] = value;
 }
 
@@ -492,26 +508,72 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 CL_JoystickMove
 =================
 */
-void CL_JoystickMove( usercmd_t *cmd ) {
+void CL_JoystickMove(usercmd_t* cmd) {
 	float	anglespeed;
 
-	if ( !in_joystick->integer )
+	if (!in_joystick->integer)
 	{
 		return;
 	}
 
-	if ( !(in_speed.active ^ cl_run->integer) ) {
+	float yaw = j_yaw->value * cl.joystickAxis[j_yaw_axis->integer];
+	float right = j_side->value * cl.joystickAxis[j_side_axis->integer];
+	float forward = j_forward->value * cl.joystickAxis[j_forward_axis->integer];
+	float pitch = j_pitch->value * cl.joystickAxis[j_pitch_axis->integer];
+	float up = j_up->value * cl.joystickAxis[j_up_axis->integer];
+
+	if (!(in_speed.active ^ cl_run->integer)) {
+		cmd->buttons |= BUTTON_WALKING;
+	}
+	else if (pitch <= 180 && pitch >= -180 && pitch != 0)
+	{
 		cmd->buttons |= BUTTON_WALKING;
 	}
 
-	if ( in_speed.active ) {
+	if (in_speed.active) {
 		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
-	} else {
+	}
+	else {
 		anglespeed = 0.001 * cls.frametime;
 	}
 
-	if ( !in_strafe.active ) {
-		if ( cl_mYawOverride )
+	if (!in_strafe.active) {
+		if (cl_mYawOverride)
+		{
+			cl.viewangles[YAW] += 5.0f * cl_mYawOverride * yaw;
+		}
+		else
+		{
+			cl.viewangles[YAW] += anglespeed * (yaw * j_sensitivity->value);
+		}
+		cmd->rightmove = ClampCharMove(cmd->rightmove + (int)right);
+	}
+	else {
+		cl.viewangles[YAW] += anglespeed * right;
+		cmd->rightmove = ClampCharMove(cmd->rightmove + (int)yaw);
+	}
+
+	if (in_mlooking || cl_freelook->integer) {
+		if (cl_mPitchOverride)
+		{
+			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * forward;
+		}
+		else
+		{
+			cl.viewangles[PITCH] -= anglespeed * ((forward/11.38)*j_sensitivity->value);
+		}
+		cmd->forwardmove = ClampCharMove(cmd->forwardmove - (int)pitch);
+	}
+	else {
+		cl.viewangles[PITCH] += anglespeed * pitch;
+		cmd->forwardmove = ClampCharMove(cmd->forwardmove + (int)forward);
+	}
+
+	cmd->upmove = ClampCharMove(cmd->upmove + (int)up);
+
+#if 0
+	if (!in_strafe.active) {
+		if (cl_mYawOverride)
 		{
 			cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
 		}
@@ -522,11 +584,11 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 	else
 	{
-		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+		cmd->rightmove = ClampChar(cmd->rightmove + cl.joystickAxis[AXIS_SIDE]);
 	}
 
-	if ( in_mlooking ) {
-		if ( cl_mPitchOverride )
+	if (in_mlooking) {
+		if (cl_mPitchOverride)
 		{
 			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
 		}
@@ -534,11 +596,13 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		{
 			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
 		}
-	} else {
-		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+	}
+	else {
+		cmd->forwardmove = ClampChar(cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD]);
 	}
 
-	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+	cmd->upmove = ClampChar(cmd->upmove + cl.joystickAxis[AXIS_UP]);
+#endif
 }
 
 /*
