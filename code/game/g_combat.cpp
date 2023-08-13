@@ -6218,7 +6218,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 			if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
 			{
-				if (mod == MOD_FORCE_LIGHTNING)
+				if (mod == MOD_FORCE_LIGHTNING || mod == MOD_STRIKE)
 				{
 					switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
 					case FORCE_LEVEL_1:
