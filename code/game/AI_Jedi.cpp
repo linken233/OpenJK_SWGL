@@ -7257,28 +7257,58 @@ qboolean Rosh_TwinPresent( gentity_t *self )
 
 qboolean Rosh_TwinNearBy( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
-	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
-	}
-	if ( self->client
-		&& foundTwin->client )
-	{
-		if ( Distance( self->currentOrigin, foundTwin->currentOrigin ) <= 512.0f
-			&& G_ClearLineOfSight( self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE ) )
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
 		{
-			//make them look charge me for a bit while I do this
-			TIMER_Set( self, "chargeMeUp", Q_irand( 2000, 4000 ) );
-			return qtrue;
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
 		}
 	}
+
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
+		}
+	}
+	
 	return qfalse;
 }
 
@@ -7363,14 +7393,17 @@ qboolean Kothos_HealRosh( void )
 				TIMER_Set( NPC, "healRoshDebounce", Q_irand( 5000, 10000 ) );
 				NPC->count = 100;
 			}
+			
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+			{
+				// Sarek and Loomis lose their shields when Shakkra is being healed.
+				G_StopEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number);
+				NPC->client->ps.powerups[PW_INVINCIBLE] = 0;
+			}
 			//now protect me, too
-			if ( g_spskill->integer )
+			else if ( g_spskill->integer )
 			{//not on easy
-				if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
-					G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
-				else
-					G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
-
+				G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 				NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 			}
 			return qtrue;
@@ -7620,7 +7653,14 @@ qboolean Jedi_InSpecialMove( void )
 				NPC->client->leader->flags |= FL_UNDYING;
 				if ( NPC->client->leader->client )
 				{
-					NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_SHAKKRA_GUARDS;
+					}
+					else
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					}
 				}
 				if ( NPC->client->leader->client->ps.legsAnim == BOTH_FORCEHEAL_START
 					&& TIMER_Done( NPC, "healRoshDebounce" ) )
@@ -7659,6 +7699,14 @@ qboolean Jedi_InSpecialMove( void )
 				else if ( NPC->enemy && DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin ) < Twins_DangerDist() )
 				{
 					NPC->client->ps.SaberActivate();
+
+					// Sarek and Loomis are invulnerable until Shakkra goes down
+					if ((!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type)) && !helpingRosh)
+					{
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 1, qfalse);
+						NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
+					}
+					
 					if ( NPC->enemy && Kothos_Retreat() )
 					{
 						NPC_FaceEnemy( qtrue );
