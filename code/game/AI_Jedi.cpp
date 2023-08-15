@@ -7399,6 +7399,7 @@ qboolean Kothos_HealRosh( void )
 				// Sarek and Loomis lose their shields when Shakkra is being healed.
 				G_StopEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number);
 				NPC->client->ps.powerups[PW_INVINCIBLE] = 0;
+				NPC->NPC->scriptFlags &= ~SCF_NO_FORCE;
 			}
 			//now protect me, too
 			else if ( g_spskill->integer )
@@ -7687,6 +7688,17 @@ qboolean Jedi_InSpecialMove( void )
 				}
 				*/
 
+				if (!helpingRosh)
+				{
+					// Sarek and Loomis are invulnerable until Shakkra goes down
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+						NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
+						NPC->NPC->scriptFlags |= SCF_NO_FORCE;
+					}
+				}
+
 				if ( helpingRosh )
 				{
 					WP_ForcePowerStop( NPC, FP_LIGHTNING );
@@ -7699,13 +7711,6 @@ qboolean Jedi_InSpecialMove( void )
 				else if ( NPC->enemy && DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin ) < Twins_DangerDist() )
 				{
 					NPC->client->ps.SaberActivate();
-
-					// Sarek and Loomis are invulnerable until Shakkra goes down
-					if ((!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type)) && !helpingRosh)
-					{
-						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 1, qfalse);
-						NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
-					}
 					
 					if ( NPC->enemy && Kothos_Retreat() )
 					{
