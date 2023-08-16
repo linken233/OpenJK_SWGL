@@ -9247,7 +9247,8 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 
 	if ( (!pull && self->client->ps.forcePowersForced&(1<<FP_PUSH))
 		|| (pull && self->client->ps.forcePowersForced&(1<<FP_PULL))
-		|| (pull&&self->client->NPC_class==CLASS_KYLE&&(self->spawnflags&1)&&TIMER_Done( self, "kyleTakesSaber" )) )
+		|| (pull&&self->client->NPC_class==CLASS_KYLE&&
+			Q_stricmp(CIN_DRALLIG, self->NPC_type)&&(self->spawnflags&1)&&TIMER_Done( self, "kyleTakesSaber" )) )
 	{
 		noResist = qtrue;
 	}
@@ -9619,7 +9620,8 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 							&& push_list[x]->client->ps.weapon == WP_SABER
 							&& !push_list[x]->client->ps.saberInFlight
 							&& push_list[x]->client->ps.saberEntityNum < ENTITYNUM_WORLD
-							&& !PM_InOnGroundAnim( &push_list[x]->client->ps ) )
+							&& !PM_InOnGroundAnim( &push_list[x]->client->ps ) 
+							&& Q_stricmp(CIN_DRALLIG, self->NPC_type))
 						{
 							vec3_t throwVec;
 							VectorScale( pushDir, 10.0f, throwVec );
