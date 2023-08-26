@@ -3393,7 +3393,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
-			if (!inGameLoad && ui_PrecacheModels.integer)
+			/*if (!inGameLoad && ui_PrecacheModels.integer)
 			{
 				CGhoul2Info_v ghoul2;
 				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
@@ -3402,7 +3402,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				{
 					DC->g2_RemoveGhoul2Model(ghoul2, 0);
 				}
-			}
+			}*/
 
 			ui.FS_FCloseFile(f);
 		}
@@ -3469,7 +3469,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
-			if (!inGameLoad && ui_PrecacheModels.integer)
+			/*if (!inGameLoad && ui_PrecacheModels.integer)
 			{
 				CGhoul2Info_v ghoul2;
 				Com_sprintf(fpath, sizeof(fpath), "models/players/%s/model.glm", dirptr);
@@ -3478,7 +3478,7 @@ static void UI_BuildPlayerModel_List(qboolean inGameLoad)
 				{
 					DC->g2_RemoveGhoul2Model(ghoul2, 0);
 				}
-			}
+			}*/
 		}
 
 	}
