@@ -5730,7 +5730,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 
 	// Traya gains strength while her allies suffer.
-	if (traya &&
+	if (traya && traya->client &&
 		targ->client->playerTeam == traya->client->playerTeam
 		&& traya->client->playerTeam != TEAM_SOLO)
 	{
@@ -5794,7 +5794,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 
 	// Traya doesn't approve of her enemies fighting in a team. She'll punish any attacker who is not her active enemy (doesn't care if the enemy is TEAM_SOLO)
-	if (traya
+	if (traya && traya->client
 		&& traya == targ)
 	{
 		if (attacker
