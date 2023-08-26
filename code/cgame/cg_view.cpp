@@ -37,6 +37,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 float cg_zoomFov;
 
+extern cvar_t* static_cam;
+
 //#define CG_CAM_ABOVE	2
 extern qboolean CG_OnMovingPlat( playerState_t *ps );
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
@@ -861,8 +863,11 @@ static void CG_OffsetThirdPersonView( void )
 		cameraLastYaw = cameraFocusAngles[YAW];
 
 		// Move the target to the new location.
-		CG_UpdateThirdPersonTargetDamp();
-		CG_UpdateThirdPersonCameraDamp();
+		if (!static_cam->value)
+		{
+			CG_UpdateThirdPersonTargetDamp();
+			CG_UpdateThirdPersonCameraDamp();
+		}
 	}
 
 	// Now interestingly, the Quake method is to calculate a target focus point above the player, and point the camera at it.
