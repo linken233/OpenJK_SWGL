@@ -32,6 +32,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern	bool		in_camera;
 extern stringID_table_t SaberStyleTable[];
 
+extern cvar_t *static_cam;
+
 extern void ForceHeal( gentity_t *self );
 extern void ForceGrip( gentity_t *self );
 extern void ForceTelepathy( gentity_t *self );
@@ -627,6 +629,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		msg = "noclip ON\n";
 	}
 	ent->client->noclip = !ent->client->noclip;
+	ent->flags ^= FL_NOFORCE;
 
 	gi.SendServerCommand( ent-g_entities, "print \"%s\"", msg);
 }
@@ -1744,6 +1747,19 @@ void ClientCommand( int clientNum ) {
 		G_StartMatrixEffect(player);
 		gi.SetConfigstring(CS_MUSIC, "music/imhansolo");
 		G_ChangePlayerModel(&g_entities[0], "han_solo");
+	}
+	else if (Q_stricmp(cmd, "camerastatic") == 0)
+	{
+		if (!static_cam->value)
+		{
+			gi.SendServerCommand( ent-g_entities, "print \"Static Camera ON\n\"");
+			static_cam->value = 1;
+		}
+		else
+		{
+			gi.SendServerCommand(ent - g_entities, "print \"Static Camera OFF\n\"");
+			static_cam->value = 0;
+		}
 	}
 	else
 	{

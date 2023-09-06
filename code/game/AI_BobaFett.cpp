@@ -1214,8 +1214,7 @@ void	Boba_Update()
 		&& NPC->client->ps.forceJumpZStart
 		&& !Q_irand( 0, 10 ) )
 	{//take off
-		if (NPC->genericBolt1 != -1 && NPC->genericBolt2 != -1)
-			Boba_FlyStart( NPC );
+		Boba_FlyStart( NPC );
 	}
 
 

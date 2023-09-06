@@ -166,6 +166,12 @@ void NPC_Rosh_Dark_Precache( void )
 	G_EffectIndex( "force/kothos_beam.efx" );
 }
 
+void NPC_Shakkra_Precache(void)
+{
+	G_EffectIndex("force/guards_recharge.efx");
+	G_EffectIndex("force/guards_beam.efx");
+}
+
 void Jedi_ClearTimers( gentity_t *ent )
 {
 	TIMER_Set( ent, "roamTime", 0 );
@@ -6598,6 +6604,43 @@ void NPC_BSJedi_FollowLeader( void )
 		Jedi_AggressionErosion(-1);
 	}
 
+	if (TIMER_Done(NPC, "breathing")
+		&& (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
+			|| !Q_stricmp(STALKER, NPC->NPC_type)
+			|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
+	{
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+			}
+		}
+		else
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(3131, 5000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
+			}
+		}
+	}
+
 	//did we drop our saber?  If so, go after it!
 	if ( NPC->client->ps.saberInFlight )
 	{//saber is not in hand
@@ -7178,44 +7221,94 @@ qboolean Rosh_BeingHealed( gentity_t *self )
 
 qboolean Rosh_TwinPresent( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		// We only want Shakkra to be healed by Sarek or Loomis, not the reborns
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	return qtrue;
+	return qfalse;
 }
 
 qboolean Rosh_TwinNearBy( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
-	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
-	}
-	if ( self->client
-		&& foundTwin->client )
-	{
-		if ( Distance( self->currentOrigin, foundTwin->currentOrigin ) <= 512.0f
-			&& G_ClearLineOfSight( self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE ) )
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
 		{
-			//make them look charge me for a bit while I do this
-			TIMER_Set( self, "chargeMeUp", Q_irand( 2000, 4000 ) );
-			return qtrue;
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
 		}
 	}
+
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
+		}
+	}
+	
 	return qfalse;
 }
 
@@ -7230,6 +7323,7 @@ qboolean Kothos_HealRosh( void )
 		{
 			//NPC_FaceEntity( NPC->client->leader, qtrue );
 			NPC_SetAnim( NPC, SETANIM_TORSO, BOTH_FORCE_2HANDEDLIGHTNING_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			WP_DeactivateSaber(NPC);
 			NPC->client->ps.torsoAnimTimer = 1000;
 
 			//FIXME: unique effect and sound
@@ -7246,10 +7340,18 @@ qboolean Kothos_HealRosh( void )
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, fxOrg );
 				VectorSubtract( NPC->client->leader->currentOrigin, fxOrg, fxDir );
 				VectorNormalize( fxDir );
-				G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
+
+				if(!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), fxOrg, fxDir);
+				else
+					G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
 			}
 			//BEG HACK LINE
-			gentity_t *tent = G_TempEntity( NPC->currentOrigin, EV_KOTHOS_BEAM );
+			gentity_t* tent;
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+				tent = G_TempEntity(NPC->currentOrigin, EV_GUARDS_BEAM);
+			else
+				tent = G_TempEntity(NPC->currentOrigin, EV_KOTHOS_BEAM);
 			tent->svFlags |= SVF_BROADCAST;
 			tent->s.otherEntityNum = NPC->s.number;
 			tent->s.otherEntityNum2 = NPC->client->leader->s.number;
@@ -7263,7 +7365,12 @@ qboolean Kothos_HealRosh( void )
 				{//let him get up now
 					NPC_SetAnim( NPC->client->leader, SETANIM_BOTH, BOTH_FORCEHEAL_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 					//FIXME: temp effect
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse );
+
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+
 					//make him invincible while we recharge him
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + NPC->client->leader->client->ps.torsoAnimTimer;
 					NPC->client->leader->NPC->ignorePain = qfalse;
@@ -7271,7 +7378,11 @@ qboolean Kothos_HealRosh( void )
 				}
 				else
 				{
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse );
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 				}
 			}
@@ -7282,10 +7393,18 @@ qboolean Kothos_HealRosh( void )
 				TIMER_Set( NPC, "healRoshDebounce", Q_irand( 5000, 10000 ) );
 				NPC->count = 100;
 			}
+			
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+			{
+				// Sarek and Loomis lose their shields when Shakkra is being healed.
+				G_StopEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number);
+				NPC->client->ps.powerups[PW_INVINCIBLE] = 0;
+				NPC->NPC->scriptFlags &= ~SCF_NO_FORCE;
+			}
 			//now protect me, too
-			if ( g_spskill->integer )
+			else if ( g_spskill->integer )
 			{//not on easy
-				G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+				G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 				NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 			}
 			return qtrue;
@@ -7307,7 +7426,8 @@ void Kothos_PowerRosh( void )
 			NPC->client->ps.torsoAnimTimer = 500;
 			//FIXME: unique effect and sound
 			//NPC->client->ps.eFlags |= EF_POWERING_ROSH;
-			G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+			//G_PlayEffect(G_EffectIndex("force/kothos_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+			G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 			if ( NPC->client->leader->client )
 			{//hmm, give him some force?
 				NPC->client->leader->client->ps.forcePower++;
@@ -7512,9 +7632,19 @@ qboolean Jedi_InSpecialMove( void )
 	{
 		if ( (NPCInfo->aiFlags&NPCAI_HEAL_ROSH) )
 		{
+			// Kothos Twins and Sarek and Loomis have different leaders, they don't care about the other
 			if ( !NPC->client->leader )
-			{//find Rosh
-				NPC->client->leader = G_Find( NULL, FOFS(NPC_type), "rosh_dark" );
+			{
+				if (!Q_stricmp("dkothos", NPC->NPC_type) || !Q_stricmp("vkothos", NPC->NPC_type))
+				{	
+					//find Rosh
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), "rosh_dark");
+				}
+				else if (!NPC->client->leader && (!Q_stricmp(SAREK, NPC->NPC_type) || !Q_stricmp(LOOMIS, NPC->NPC_type)))
+				{
+					// Find Shakkra Kien
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), SHAKKRA_KIEN);
+				}
 			}
 			//NPC->client->ps.eFlags &= ~EF_POWERING_ROSH;
 			if ( NPC->client->leader )
@@ -7524,7 +7654,14 @@ qboolean Jedi_InSpecialMove( void )
 				NPC->client->leader->flags |= FL_UNDYING;
 				if ( NPC->client->leader->client )
 				{
-					NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_SHAKKRA_GUARDS;
+					}
+					else
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					}
 				}
 				if ( NPC->client->leader->client->ps.legsAnim == BOTH_FORCEHEAL_START
 					&& TIMER_Done( NPC, "healRoshDebounce" ) )
@@ -7551,6 +7688,17 @@ qboolean Jedi_InSpecialMove( void )
 				}
 				*/
 
+				if (!helpingRosh)
+				{
+					// Sarek and Loomis are invulnerable until Shakkra goes down
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+						NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
+						NPC->NPC->scriptFlags |= SCF_NO_FORCE;
+					}
+				}
+
 				if ( helpingRosh )
 				{
 					WP_ForcePowerStop( NPC, FP_LIGHTNING );
@@ -7562,6 +7710,8 @@ qboolean Jedi_InSpecialMove( void )
 				}
 				else if ( NPC->enemy && DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin ) < Twins_DangerDist() )
 				{
+					NPC->client->ps.SaberActivate();
+					
 					if ( NPC->enemy && Kothos_Retreat() )
 					{
 						NPC_FaceEnemy( qtrue );
@@ -7725,6 +7875,7 @@ qboolean Jedi_InSpecialMove( void )
 extern void NPC_BSST_Patrol( void );
 extern void NPC_BSSniper_Default( void );
 extern void G_UcmdMoveForDir( gentity_t *self, usercmd_t *cmd, vec3_t dir );
+extern saber_colors_t TranslateSaberColor(const char* name);
 void NPC_BSJedi_Default( void )
 {
 	if ( Jedi_InSpecialMove() )
@@ -7734,12 +7885,14 @@ void NPC_BSJedi_Default( void )
 
 	if (TIMER_Done(NPC, "breathing")
 		&&(!Q_stricmp(VADER, NPC->NPC_type)
+		|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
 		|| !Q_stricmp(STALKER, NPC->NPC_type)
 		|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
 		|| !Q_stricmp(LORD_STK, NPC->NPC_type)
 		|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
 	{
-		if (!Q_stricmp(VADER, NPC->NPC_type))
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
 		{
 			if (NPC->health > (NPC->max_health * .33))
 			{
@@ -7768,15 +7921,27 @@ void NPC_BSJedi_Default( void )
 	}
 
 	if (TIMER_Done(NPC, "saber_switch") &&
-		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)))
+		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_SURVIVOR, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_INQUISITOR, NPC->NPC_type)))
 	{
 		if (!Q_stricmp("cal_kestis_staff", NPC->client->ps.saber[0].name))
 		{
+
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
 			WP_SetSaber(NPC, 0, "cal_kestis_single");
+			
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
 		}
 		else if (!Q_stricmp("cal_kestis_single", NPC->client->ps.saber[0].name))
 		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
 			WP_SetSaber(NPC, 0, "cal_kestis_staff");
+
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
+			
 		}
 		TIMER_Set(NPC, "saber_switch", Q_irand(5000, 20000));
 	}
@@ -7786,8 +7951,12 @@ void NPC_BSJedi_Default( void )
 		|| !Q_stricmp(THIRD_SIS, NPC->NPC_type)
 		|| !Q_stricmp(FIFTH_BRO, NPC->NPC_type)
 		|| !Q_stricmp(SEVENTH_SIS, NPC->NPC_type)
-		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type))
+		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type)
+		|| !Q_stricmp(NINTH_SIS, NPC->NPC_type)
+		|| !Q_stricmp(INQ_STK, NPC->NPC_type))
 		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
 			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
 			{
 				WP_SetSaber(NPC, 0, "inquisitor_staff");
@@ -7796,13 +7965,16 @@ void NPC_BSJedi_Default( void )
 			{
 				WP_SetSaber(NPC, 0, "inquisitor");
 			}
-			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name))
+			else if ((NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name)) || (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inq_starkiller", NPC->client->ps.saber[0].name)))
 			{
 				WP_SetSaber(NPC, 0, "2nd_sister_staff");
 			}
 			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("2nd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
 			{
-				WP_SetSaber(NPC, 0, "2nd_sister");
+				if (!Q_stricmp(INQ_STK, NPC->NPC_type))
+					WP_SetSaber(NPC, 0, "inq_starkiller");
+				else
+					WP_SetSaber(NPC, 0, "2nd_sister");
 			}
 			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("3rd_sister", NPC->client->ps.saber[0].name))
 			{
@@ -7844,6 +8016,8 @@ void NPC_BSJedi_Default( void )
 			{
 				WP_SetSaber(NPC, 0, "9th_sister");
 			}
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
 		}
 
 	Jedi_CheckCloak();

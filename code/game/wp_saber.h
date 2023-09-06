@@ -200,6 +200,7 @@ enum
 #define FORCE_JUMP_CHARGE_TIME 1000.0f	//Force jump reaches maximum power in one second
 
 #define FORCE_POWERS_ROSH_FROM_TWINS ((1<<FP_SPEED)|(1<<FP_GRIP)|(1<<FP_RAGE)|(1<<FP_SABERTHROW)|(1<<FP_GRASP))
+#define FORCE_POWERS_SHAKKRA_GUARDS ((1<<FP_SPEED)|(1<<FP_ABSORB)|(1<<FP_PROTECT)|(1<<FP_HEAL)|(1<<FP_SABERTHROW))
 
 extern void WP_InitForcePowers( gentity_t *ent );
 extern int WP_GetVelocityForForceJump( gentity_t *self, vec3_t jumpVel, usercmd_t *ucmd );

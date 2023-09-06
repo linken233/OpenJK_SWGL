@@ -124,6 +124,8 @@ extern cvar_t	*g_debugMelee;
 extern vmCvar_t	cg_thirdPersonAlpha;
 extern vmCvar_t	cg_thirdPersonAutoAlpha;
 
+extern cvar_t* g_char_model;
+
 void ClientEndPowerUps( gentity_t *ent );
 
 int G_FindLookItem( gentity_t *self )
@@ -4360,6 +4362,49 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 			ent->client->idleTime = level.time;
 		}
 		return;
+	}
+	if((!Q_stricmp("am_vader", g_char_model->string)
+		|| !Q_stricmp("vader_infinities", g_char_model->string)
+		|| !Q_stricmp("cyber_recon", g_char_model->string)
+		|| !Q_stricmp("lord_stk", g_char_model->string)
+		|| !Q_stricmp("lord_stk_tat", g_char_model->string)
+		|| !Q_stricmp("sithstalker", g_char_model->string)) && !in_camera)
+	{
+		if (!TIMER_Exists(player, "breathing"))
+		{
+			TIMER_Set(player, "breathing", -level.time);
+		}
+		else if (TIMER_Done(player, "breathing"))
+		{
+			if (!Q_stricmp("am_vader", g_char_model->string)
+				|| !Q_stricmp("vader_infinities", g_char_model->string))
+			{
+				if (player->health > (player->max_health * .33))
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+					TIMER_Set(player, "breathing", Q_irand(7300, 10000));
+				}
+				else
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+					TIMER_Set(player, "breathing", Q_irand(1500, 3000));
+				}
+			}
+			else
+			{
+				if (player->health > (player->max_health * .33))
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+					TIMER_Set(player, "breathing", Q_irand(3500, 5000));
+				}
+				else
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+					TIMER_Set(player, "breathing", Q_irand(2120, 4000));
+				}
+			}
+			
+		}
 	}
 	if ( !VectorCompare( vec3_origin, ent->client->ps.velocity )
 		|| ucmd->buttons || ucmd->forwardmove || ucmd->rightmove || ucmd->upmove

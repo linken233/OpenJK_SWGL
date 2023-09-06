@@ -5551,6 +5551,7 @@ extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern void G_StartRoll( gentity_t *ent, int anim );
 extern void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
 
 /*
 ============
@@ -5713,7 +5714,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 
 	// Traya gains strength while her allies suffer.
-	if (traya &&
+	if (traya && traya->client &&
 		targ->client->playerTeam == traya->client->playerTeam
 		&& traya->client->playerTeam != TEAM_SOLO)
 	{
@@ -5777,12 +5778,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 
 	// Traya doesn't approve of her enemies fighting in a team. She'll punish any attacker who is not her active enemy (doesn't care if the enemy is TEAM_SOLO)
-	if (traya
+	if (traya && traya->client
 		&& traya == targ)
 	{
 		if (attacker
 			&& attacker->client
 			&& traya->enemy
+			&& traya->enemy->client
 			&& (attacker != targ->enemy)
 			&& ((attacker->client->playerTeam == traya->enemy->client->playerTeam && traya->enemy->client->playerTeam != TEAM_SOLO)))
 		{
@@ -5931,6 +5933,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	// Calculate damage for False Emperor (since there are rules)
 	damage = FalseEmperorDamage(damage, attacker, targ, mod);
+
+	// Calculate damage for Knightfall
+	damage = KnightfallDamage(damage, attacker, targ, mod);
 
 
 	if (targ
@@ -6172,7 +6177,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 			if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
 			{
-				if (mod == MOD_FORCE_LIGHTNING)
+				if (mod == MOD_FORCE_LIGHTNING || mod == MOD_STRIKE)
 				{
 					switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
 					case FORCE_LEVEL_1:
@@ -7009,6 +7014,34 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			}
 		}
 	}
+}
+
+extern qboolean IsPlayingOperationKnightfall();
+extern qboolean IsKnightfallBoss(gentity_t* ent);
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
+{
+	// If we're not playing Knightfall, just skip everything
+	if (IsPlayingOperationKnightfall())
+	{
+		if ((attacker && attacker->client)
+			&& (targ && targ->client))
+		{
+		
+		// Trying to stop friendly fire between the player and the clones
+		if (attacker->client->playerTeam == targ->client->playerTeam)
+			damage = 0;
+		// 2x damage from clones to Jedi (so they're actually helpful)
+		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
+			damage *= 2.0f;
+		}
+		else if (IsKnightfallBoss(attacker) && targ != player)
+		{
+			damage *= 3.0f;
+		}
+
+	}
+
+	return damage;
 }
 
 extern qboolean FalseEmperorMission();

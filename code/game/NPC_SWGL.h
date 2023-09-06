@@ -13,12 +13,17 @@
 #define SION "Darth_Sion"
 #define SION_TFU "Darth_Sion_TFU"
 #define TRAYA "Darth_Traya"
+#define TENEBRAE "Tenebrae"
+
+// Dread Masters
+#define BRONTES "Brontes"
 
 
 
 // Galactic Republic
 #define BULTAR_SWAN "Bultar_Swan"
 #define CIN_DRALLIG "Cin_Drallig"
+#define KELLERAN_BEQ "Kelleran_Beq"
 #define KOFFI_ARANA	"Koffi_Arana"
 #define EP3_VADER "ep3_vader"
 #define PABLO_JILL "Pablo-Jill"
@@ -53,17 +58,21 @@
 #define SEVENTH_SIS "Seventh_Sister"
 #define FIFTH_BRO "Fifth_Brother"
 #define EIGHTH_BRO "Eighth_Brother"
+#define NINTH_SIS "Ninth_Sister"
 #define GORC "Gorc"
 #define ISB_F "isb_agent_f"
 #define ISB_M "isb_agent_m"
 #define PURGE_TROOPER "Purge_Trooper"
 #define PURGE_BATONS "Purge_Trooper_Batons"
 #define PURGE_COMMANDER "Purge_Trooper_Commander"
+#define PURGE_UPRISING "Purge_Trooper_Uprising"
 #define REBORN_ELITE "rebornelite"
 #define REBORN_ELITE_D "rebornelitedual"
 #define REBORN_ELITE_S "rebornelitestaff"
 #define ST_SHADOW "st_shadowtrooper"
 #define SHOCK_TROOPER "Imperial_Shock_Trooper"
+#define STORMCOMMANDO "Storm_Commando"
+#define SUPERCOMMANDO "Supercommando"
 #define VADER "Darth_Vader"
 
 
@@ -104,6 +113,9 @@
 
 // Force Users
 #define CAL_KESTIS "Cal_Kestis"
+#define CAL_KESTIS_SURVIVOR "Cal_Kestis_Survivor"
+#define CAL_KESTIS_INQUISITOR "Cal_Kestis_Inquisitor"
+#define ABELOTH "abeloth"
 #define VALKORION "valkorion"
 
 
@@ -111,10 +123,15 @@
 // Infinities
 #define ANAKIN_INFINITIES "anakin_apprentice"
 #define SHAKKRA_KIEN "Shakkra_Kien"
+#define LOOMIS "Loomis"
+#define SAREK "Sarek"
+#define XYRUS "Xyrus_Sedaya"
 #define STALKER "Sith_Stalker"
 #define CYBER_RECON "Cybernetic_Reconstruction"
 #define LORD_STK "Lord_Starkiller"
 #define LORD_STK_TAT "Lord_Starkiller_Tatooine"
+#define INQ_STK "Inquisitor_Starkiller"
+#define VADER_INFINITIES "vader_infinities"
 #define WONKA "Wilbur_Wonka"
 
 #endif /* NPC_SWGL_H */

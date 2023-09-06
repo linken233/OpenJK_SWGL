@@ -246,6 +246,9 @@ gentity_t *SelectRandomDeathmatchSpawnPoint( team_t team ) {
 	spot = NULL;
 
 	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+		if (count >= MAX_SPAWN_POINTS) {
+			G_Error("Too many spawnpoints in map, must not exceed %d", MAX_SPAWN_POINTS);
+		}
 		/*if ( team == TEAM_RED && ( spot->spawnflags & 2 ) ) {
 			continue;
 		}
@@ -1029,6 +1032,10 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/_humanoid_dbgalen/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if ( !Q_stricmp( "models/players/protocol/protocol", GLAName ) )
 		{//protocol droid duplicates many of these
 			return qtrue;
@@ -1142,6 +1149,10 @@ qboolean G_StandardHumanoid(const char* GLAName)
 			return qtrue;
 		}
 		if (!Q_stricmp("_humanoid_Vader", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_dbgalen", GLAName))
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
@@ -1984,10 +1995,38 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 		if (strchr(customSkin, '|'))
 		{//three part skin
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/|%s", modelName, customSkin );
+			if (ent == player)
+			{
+				
+				char name[MAX_QPATH];
+				strcpy(name, customSkin);
+				char* p = strchr(name, '|');
+				*p = 0;
+				p++;
+
+				gi.cvar_set("g_char_skin_head", name);
+
+				//advance to second
+				char* p2 = strchr(p, '|');
+				if (!p2)
+				{
+					return;
+				}
+				*p2 = 0;
+				p2++;
+				gi.cvar_set("g_char_skin_torso", p);
+				gi.cvar_set("g_char_skin_legs", p2);
+			}
 		}
 		else
 		{
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/model_%s.skin", modelName, customSkin );
+			if (ent == player)
+			{
+				gi.cvar_set("g_char_skin_head", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_torso", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_legs", va("model_%s", customSkin));
+			}
 		}
 	}
 	int skin = gi.RE_RegisterSkin( skinName );

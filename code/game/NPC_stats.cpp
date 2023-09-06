@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 #include "../cgame/cg_local.h"
 #if !defined(RUFL_HSTRING_INC)
 	#include "../Rufl/hstring.h"
@@ -1491,11 +1492,12 @@ extern void RT_Precache( void );
 extern void SandCreature_Precache( void );
 extern void NPC_TavionScepter_Precache( void );
 extern void NPC_TavionSithSword_Precache( void );
-extern void NPC_Rosh_Dark_Precache( void );
+extern void NPC_Rosh_Dark_Precache(void);
 extern void NPC_Tusken_Precache( void );
 extern void NPC_Saboteur_Precache( void );
 extern void NPC_CultistDestroyer_Precache( void );
 extern void NPC_GalakMech_Precache(void);
+extern void NPC_Shakkra_Precache(void);
 void NPC_Jawa_Precache( void )
 {
 	for ( int i = 1; i < 7; i++ )
@@ -1589,7 +1591,7 @@ void NPC_PrecacheByClassName( const char* type )
 	{
 		NPC_GalakMech_Precache();
 	}
-	else if (!Q_stricmp("darth_vader", type))
+	else if (!Q_stricmp(VADER, type) || !Q_stricmp(VADER_INFINITIES, type))
 	{
 		NPC_Vader_Precache();
 	}
@@ -1640,6 +1642,10 @@ void NPC_PrecacheByClassName( const char* type )
 	else if ( !Q_stricmpn( "jawa", type, 4 ) )
 	{
 		NPC_Jawa_Precache();
+	}
+	else if (!Q_stricmp(SHAKKRA_KIEN, type))
+	{
+		NPC_Shakkra_Precache();
 	}
 }
 

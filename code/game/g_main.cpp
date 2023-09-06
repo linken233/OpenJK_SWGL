@@ -273,6 +273,8 @@ cvar_t	*g_adoptcharstats;
 
 qboolean	stop_icarus = qfalse;
 
+cvar_t	*static_cam;
+
 extern char *G_GetLocationForEnt( gentity_t *ent );
 extern void CP_FindCombatPointWaypoints( void );
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
@@ -798,6 +800,8 @@ void G_InitCvars( void ) {
 	gi.cvar( "ui_prisonerobj_maxtotal", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 
 	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
+
+	static_cam = gi.cvar("static_Cam", "0", CVAR_NORESTART);
 
 }
 /*

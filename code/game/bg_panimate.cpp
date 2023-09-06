@@ -5189,6 +5189,8 @@ void PM_TorsoAnimLightsaber()
 		{
 			if (!NoSaberTwirlCharacter(pm->gent))
 				PM_SetSaberMove(LS_DRAW);
+			else
+				PM_SetSaberMove(LS_READY);
 		}
 		return;
 	}
@@ -5198,6 +5200,8 @@ void PM_TorsoAnimLightsaber()
 		{
 			if (!NoSaberTwirlCharacter(pm->gent))
 				PM_SetSaberMove(LS_PUTAWAY);
+			else
+				PM_SetSaberMove(LS_NONE);
 		}
 		return;
 	}

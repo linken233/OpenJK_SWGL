@@ -278,6 +278,7 @@ qboolean CG_ConsoleCommand( void ) {
 
 static const char *gcmds[] = {
 	"bow",
+	"camerastatic",
 	"entitylist",
 	"difficulty",
 	"dualwield",

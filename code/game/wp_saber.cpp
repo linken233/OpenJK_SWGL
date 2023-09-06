@@ -6711,8 +6711,12 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 				|| !Q_stricmp(THIRD_SIS, self->NPC_type)
 				|| !Q_stricmp(FIFTH_BRO, self->NPC_type)
 				|| !Q_stricmp(SEVENTH_SIS, self->NPC_type)
-				|| !Q_stricmp(EIGHTH_BRO, self->NPC_type)))
+				|| !Q_stricmp(EIGHTH_BRO, self->NPC_type)
+				|| !Q_stricmp(NINTH_SIS, self->NPC_type)
+				|| !Q_stricmp(INQ_STK, self->NPC_type)))
 			{
+				saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
 				// Inquisitor sabers should switch to staff when thrown
 				if (!Q_stricmp("inquisitor", self->client->ps.saber[0].name))
 				{
@@ -6732,7 +6736,7 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
 				// Inquisitor sabers should switch to staff when thrown
-				else if (!Q_stricmp("2nd_sister", self->client->ps.saber[0].name))
+				else if (!Q_stricmp("2nd_sister", self->client->ps.saber[0].name) || !Q_stricmp("inq_starkiller", self->client->ps.saber[0].name))
 				{
 					WP_SetSaber(self, 0, "2nd_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
@@ -6755,6 +6759,8 @@ qboolean WP_SaberLaunch( gentity_t *self, gentity_t *saber, qboolean thrown, qbo
 					WP_SetSaber(self, 0, "9th_sister_staff");
 					TIMER_Set(NPC, "saber_switch", Q_irand(3000, 5000));
 				}
+				NPC->client->ps.saber[0].blade[0].color = currentColor;
+				NPC->client->ps.saber[0].blade[1].color = currentColor;
 			}
 			//this is a regular throw, so take force power
 			if ( self->client->ps.forcePowerLevel[FP_SABERTHROW] > FORCE_LEVEL_2 )
@@ -9241,7 +9247,8 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 
 	if ( (!pull && self->client->ps.forcePowersForced&(1<<FP_PUSH))
 		|| (pull && self->client->ps.forcePowersForced&(1<<FP_PULL))
-		|| (pull&&self->client->NPC_class==CLASS_KYLE&&(self->spawnflags&1)&&TIMER_Done( self, "kyleTakesSaber" )) )
+		|| (pull&&self->client->NPC_class==CLASS_KYLE&&
+			Q_stricmp(CIN_DRALLIG, self->NPC_type)&&(self->spawnflags&1)&&TIMER_Done( self, "kyleTakesSaber" )) )
 	{
 		noResist = qtrue;
 	}
@@ -9613,7 +9620,8 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 							&& push_list[x]->client->ps.weapon == WP_SABER
 							&& !push_list[x]->client->ps.saberInFlight
 							&& push_list[x]->client->ps.saberEntityNum < ENTITYNUM_WORLD
-							&& !PM_InOnGroundAnim( &push_list[x]->client->ps ) )
+							&& !PM_InOnGroundAnim( &push_list[x]->client->ps ) 
+							&& Q_stricmp(CIN_DRALLIG, self->NPC_type))
 						{
 							vec3_t throwVec;
 							VectorScale( pushDir, 10.0f, throwVec );
@@ -11111,10 +11119,11 @@ qboolean IsKnightfallBoss(gentity_t *ent)
 			|| !Q_stricmp(SHAAK_TI, ent->NPC_type)
 			|| !Q_stricmp(KOFFI_ARANA, ent->NPC_type)
 			|| !Q_stricmp(BULTAR_SWAN, ent->NPC_type)
-			|| !Q_stricmp(YADDLE, ent->NPC_type)
+			|| !Q_stricmp(KELLERAN_BEQ, ent->NPC_type)
 			|| !Q_stricmp(SORA_BULQ, ent->NPC_type)
 			|| !Q_stricmp(TERA_SINUBE, ent->NPC_type)
-			|| !Q_stricmp(PABLO_JILL, ent->NPC_type))
+			|| !Q_stricmp(PABLO_JILL, ent->NPC_type)
+			|| !Q_stricmp(XYRUS, ent->NPC_type))
 			return qtrue;
 	
 	}
@@ -11957,6 +11966,11 @@ void WP_FireBlast(gentity_t *ent, int forceLevel)
 	missile->damage = damage;
 
 	missile->dflags = DAMAGE_EXTRA_KNOCKBACK;
+
+	if (ent->s.number != 0)
+	{
+		missile->dflags |= DAMAGE_NO_KILL;
+	}
 
 	missile->methodOfDeath = MOD_BLAST;
 	missile->splashMethodOfDeath = MOD_BLAST;// ?SPLASH;
