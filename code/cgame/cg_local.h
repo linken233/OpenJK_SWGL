@@ -835,6 +835,7 @@ void CG_Weapon_f( void );
 void CG_DPNextWeapon_f( void );
 void CG_DPPrevWeapon_f(void);
 void CG_Dualwield_f(void);
+qboolean CG_SwitchDynWpnMdl_f(qboolean nextDynWpn);
 void CG_SwitchDynWpnMdl_f(void);
 void CG_DPNextInventory_f( void );
 void CG_DPPrevInventory_f( void );

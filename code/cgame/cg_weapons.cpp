@@ -2447,7 +2447,8 @@ void CG_NextWeapon_f( void ) {
 		}
 		else
 		{
-			cg.weaponSelect++;
+			if(!CG_SwitchDynWpnMdl_f(qtrue))
+				cg.weaponSelect++;
 		}
 
 		if ( cg.weaponSelect < firstWeapon || cg.weaponSelect >= WP_NUM_WEAPONS) {
@@ -2554,6 +2555,44 @@ void CG_SwitchDynWpnMdl_f(void)
 			gi.cvar_set("cg_switchDynWpnMdl", va("%d", cg_switchDynWpnMdl.integer + 1));
 		}
 	}
+}
+
+/*
+====================
+CG_SwitchDynWpnMdl_f
+====================
+*/
+qboolean CG_SwitchDynWpnMdl_f(qboolean nextDynWpn)
+{
+	if (CG_IsWeaponDynamic(cg.weaponSelect))
+	{
+		if (nextDynWpn)
+		{
+			if (cg_switchDynWpnMdl.integer == CG_GetMaxDynWpn(cg.weaponSelect))
+			{
+				return qfalse;
+			}
+			else
+			{
+				gi.cvar_set("cg_switchDynWpnMdl", va("%d", cg_switchDynWpnMdl.integer + 1));
+				return qtrue;
+			}
+		}
+		else
+		{
+			if (cg_switchDynWpnMdl.integer != 0)
+			{
+				gi.cvar_set("cg_switchDynWpnMdl", va("%d", cg_switchDynWpnMdl.integer - 1));
+				return qtrue;
+
+			}
+			else
+			{
+				return qfalse;
+			}
+		}
+	}
+	return qfalse;
 }
 
 /*
@@ -2687,7 +2726,8 @@ void CG_PrevWeapon_f( void ) {
 		}
 		else
 		{
-			cg.weaponSelect--;
+			if (!CG_SwitchDynWpnMdl_f(qfalse))
+				cg.weaponSelect--;
 		}
 
 
