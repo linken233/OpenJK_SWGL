@@ -7031,7 +7031,7 @@ int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
 		if (attacker->client->playerTeam == targ->client->playerTeam)
 			damage = 0;
 		// 2x damage from clones to Jedi (so they're actually helpful)
-		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
+		else if ((mod == MOD_BLASTER || mod == MOD_BLASTER_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
 			damage *= 2.0f;
 		}
 		else if (IsKnightfallBoss(attacker) && targ != player)

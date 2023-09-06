@@ -6808,10 +6808,6 @@ void Item_ListBox_Paint(itemDef_t *item)
 	}
 	else if (item->special == FEEDER_MODEL_SKINS)
 	{
-		float x = 0.0f, y = 0.0f;
-		int count = 0, i = 0, thumb = 0;
-		qhandle_t image = NULL_HANDLE;
-		qhandle_t optionalImage = NULL_HANDLE;
 		float size, sizeWidth, i2, sizeHeight;
 		int count, i, thumb, startPos;
 		qhandle_t image;
