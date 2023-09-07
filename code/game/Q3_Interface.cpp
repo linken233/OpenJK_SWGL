@@ -3438,6 +3438,15 @@ static void Q3_SetWeapon (int entID, const char *wp_name)
 	else
 		wp = GetIDForString( WPTable, wp_name );
 
+	int dynWpnNum = GetIDForString(DynWPTable, wp_name);
+
+	// The weapon read is a dynamic weapon.
+	if (wp == -1 && dynWpnNum >= 0)
+	{
+		wp = CG_GetBaseWpnFromDynWpn(dynWpnNum);
+		NPC->client->ps.dynWpnVals[wp] = CG_GetDynWpnValue(wp, dynWpnNum);
+	}
+
 	if ( !self )
 	{
 		Quake3Game()->DebugPrint( IGameInterface::WL_WARNING, "Q3_SetWeapon: invalid entID %d\n", entID);
