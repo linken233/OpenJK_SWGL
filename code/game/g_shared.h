@@ -505,7 +505,7 @@ public:
 }; // objectives_t
 // NOTE: This is an arbitrary number greater than our current number of objectives with
 // some fluff just in case we add more in the future.
-#define MAX_MISSION_OBJ 100
+#define MAX_MISSION_OBJ 400
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 class missionStats_t
@@ -743,6 +743,8 @@ public:
 	//Used to be in gentity_t, now here.. mostly formation stuff
 	team_t		playerTeam;
 	team_t		enemyTeam;
+	team_t		savedPlayerTeam;
+	team_t		savedEnemyTeam;
 	gentity_t	*leader;
 	class_t		NPC_class;
 
@@ -823,6 +825,8 @@ public:
 		saved_game.write<int32_t>(breathPuffTime);
 		saved_game.write<int32_t>(playerTeam);
 		saved_game.write<int32_t>(enemyTeam);
+		saved_game.write<int32_t>(savedEnemyTeam);
+		saved_game.write<int32_t>(savedPlayerTeam);
 		saved_game.write<int32_t>(leader);
 		saved_game.write<int32_t>(NPC_class);
 		saved_game.write<float>(hiddenDist);
@@ -889,6 +893,8 @@ public:
 		saved_game.read<int32_t>(breathPuffTime);
 		saved_game.read<int32_t>(playerTeam);
 		saved_game.read<int32_t>(enemyTeam);
+		saved_game.read<int32_t>(savedEnemyTeam);
+		saved_game.read<int32_t>(savedPlayerTeam);
 		saved_game.read<int32_t>(leader);
 		saved_game.read<int32_t>(NPC_class);
 		saved_game.read<float>(hiddenDist);
@@ -1086,6 +1092,7 @@ Ghoul2 Insert End
 //Health and damage fields
 	int			health;
 	int			max_health;
+	lightningColor_t			lightningColor;
 	qboolean	takedamage;
 	material_t	material;
 	int			damage;
@@ -1165,6 +1172,16 @@ Ghoul2 Insert End
 	team_t		noDamageTeam;
 
 // Ghoul2 Animation info
+	short			headModel;
+	short			headRootBone;
+	short			headMotionBone;
+	short			headCraniumBone;
+	short			headCervicalBone;
+	short			headThoracicBone;
+	short			headUpperLumbarBone;
+	short			headLowerLumbarBone;
+	short			headHipsBone;
+	short			headFaceBone;
 	short			playerModel;
 	short			weaponModel[MAX_INHAND_WEAPONS];
 	short			handRBolt;
@@ -1206,6 +1223,8 @@ Ghoul2 Insert End
 	short			genericBolt5;
 
 	qhandle_t		cinematicModel;
+	   
+	qboolean inStasis;
 
 //==========================================================================================
 
@@ -1228,6 +1247,15 @@ Ghoul2 Insert End
 	char		*NPC_type;
 	char		*NPC_targetname;
 	char		*NPC_target;
+	char		*NPC_skin;
+	char		*NPC_team;
+	char		*NPC_SaberOne;
+	char		*NPC_SaberOneColor;
+	char		*NPC_SaberTwo;
+	char		*NPC_SaberTwoColor;
+	char		*NPC_Weapon;
+	char		*NPC_LightningColor;
+	char		*NPC_LightningVictim;
 
 //Variables used by movers (most likely exclusively by them)
 	moverState_t moverState;
@@ -1442,6 +1470,15 @@ Ghoul2 Insert End
 		saved_game.write<int32_t>(NPC_type);
 		saved_game.write<int32_t>(NPC_targetname);
 		saved_game.write<int32_t>(NPC_target);
+		saved_game.write<int32_t>(NPC_skin);
+		saved_game.write<int32_t>(NPC_LightningColor);
+		saved_game.write<int32_t>(NPC_LightningVictim);
+		saved_game.write<int32_t>(NPC_team);
+		saved_game.write<int32_t>(NPC_Weapon);
+		saved_game.write<int32_t>(NPC_SaberOne);
+		saved_game.write<int32_t>(NPC_SaberTwo);
+		saved_game.write<int32_t>(NPC_SaberOneColor);
+		saved_game.write<int32_t>(NPC_SaberTwoColor);
 		saved_game.write<int32_t>(moverState);
 		saved_game.write<int32_t>(soundPos1);
 		saved_game.write<int32_t>(sound1to2);
@@ -1631,6 +1668,15 @@ Ghoul2 Insert End
 		saved_game.read<int32_t>(NPC_type);
 		saved_game.read<int32_t>(NPC_targetname);
 		saved_game.read<int32_t>(NPC_target);
+		saved_game.read<int32_t>(NPC_skin);
+		saved_game.read<int32_t>(NPC_LightningColor);
+		saved_game.read<int32_t>(NPC_LightningVictim);
+		saved_game.read<int32_t>(NPC_team);
+		saved_game.read<int32_t>(NPC_Weapon);
+		saved_game.read<int32_t>(NPC_SaberOne);
+		saved_game.read<int32_t>(NPC_SaberTwo);
+		saved_game.read<int32_t>(NPC_SaberOneColor);
+		saved_game.read<int32_t>(NPC_SaberTwoColor);
 		saved_game.read<int32_t>(moverState);
 		saved_game.read<int32_t>(soundPos1);
 		saved_game.read<int32_t>(sound1to2);

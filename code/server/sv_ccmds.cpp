@@ -41,6 +41,8 @@ These commands can only be entered from stdin or by a remote operator datagram
 */
 
 qboolean qbLoadTransition = qfalse;
+extern qboolean openedAngles;
+
 
 //=========================================================
 // don't call this directly, it should only be called from SV_Map_f() or SV_MapTransition_f()
@@ -49,8 +51,26 @@ static bool SV_Map_( ForceReload_e eForceReload )
 {
 	char		*map = NULL;
 	char		expanded[MAX_QPATH] = {0};
+	char		*kor_align = NULL;
+
+	char* jk2maps[] = { "kejim_post", "kejim_base", "artus_mine", "artus_detention", "artus_topside",
+		"valley", "yavin_temple", "yavin_trial", "ns_streets", "ns_hideout", "ns_starpad",
+		"bespin_undercity", "bespin_streets", "bespin_platform", "cairn_bay", "cairn_assembly",
+		"cairn_reactor", "cairn_dock1", "doom_comm", "doom_detention", "doom_shields", "yavin_swamp",
+		"yavin_canyon", "yavin_courtyard", "yavin_final" };
+
+	char* jkamaps[] = { "academy1", "academy2", "academy3", "academy4", "academy5", "academy6", 
+						"hoth2", "hoth3", "kor1", "kor2", "t1_danger", "t1_fatal", "t1_inter", 
+						"t1_rail", "t1_sour", "t1_surprise", "t2_dpred", "t2_rancor", "t2_rogue", "t2_trip", 
+						"t2_wedge", "t3_bounty", "t3_byss", "t3_hevil", "t3_rift", "t3_stamp", "taspir1", "taspir2", 
+						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2"};
+
+	char* knightfallMaps[] = { "ep3_ok_anakin_r1", "ep3_ok_anakin_r2", "ep3_ok_anakin_r3", "ep3_ok_anakin_r4", "ep3_ok_anakin_r5", "ep3_ok_anakin_r6",
+						"ep3_ok_anakin_r7", "ep3_ok_anakin_r8" };
 
 	map = Cmd_Argv(1);
+	kor_align = Cmd_Argv(2);
+
 	if ( !*map ) {
 		Com_Printf ("no map specified\n");
 		return false;
@@ -75,11 +95,105 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		return false;
 	}
 
+	if (!g_validJKO->integer)
+	{
+		for (int i = 0; i < (sizeof(jk2maps)/sizeof(jk2maps[0])); i++)
+		{
+			if (strcmp(map, jk2maps[i]) == 0)
+			{
+				Com_Printf("Can't find map %s\n", expanded);
+				return false;
+			}
+		}
+			
+	}
+
+	if (g_validJKO->integer)
+	{
+		for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+		{
+			if (strcmp(map, jk2maps[i]) == 0)
+			{
+				Cvar_Set("g_char_model", "kyle");
+				Cvar_Set("g_char_skin_head", "model_default");
+				Cvar_Set("g_char_skin_torso", "model_default");
+				Cvar_Set("g_char_skin_legs", "model_default");
+				Cvar_Set("g_saber", "kyle");
+				Cvar_Set("g_saber_color", "blue");
+				Cvar_Set("snd", "kyle");
+				Cvar_Set("sex", "m");
+
+			}
+		}
+
+	}
+
+	bool notJKMap = true;
+	bool notKnightfallMap = true;
+
+	for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+	{
+		if (strcmp(map, jk2maps[i]) == 0)
+		{
+			notJKMap = false;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(knightfallMaps) / sizeof(knightfallMaps[0])); i++)
+	{
+		if (strcmp(map, knightfallMaps[i]) == 0)
+		{
+			notKnightfallMap = false;
+		}
+	}
+
+
+	for (int i = 0; i < (sizeof(jkamaps) / sizeof(jkamaps[0])); i++)
+	{
+		if (strcmp(map, jkamaps[i]) == 0)
+		{
+			notJKMap = false;
+		}
+	}
+
+	if (notJKMap)
+	{
+		Cvar_Set("g_newgameplus", "0");
+	}
+
+	if (!notKnightfallMap)
+	{
+		Cvar_Set("g_knightfall", "1");
+	}
+	else
+	{
+		Cvar_Set("g_knightfall", "0");
+	}
+	
+	if (!strcmp(kor_align, "dark") && (!strcmp(map, "kor1") || !strcmp(map, "kor2")))
+	{
+		Cvar_Set("g_darkkorriban", "1");
+	}
+	else if (!strcmp(kor_align, "light") && (!strcmp(map, "kor1") || !strcmp(map, "kor2")))
+	{
+		Cvar_Set("g_darkkorriban", "0");
+	}
+	else if (!strcmp(map, "kor1") || !strcmp(map, "kor2"))
+	{
+	}
+	else
+	{
+		Cvar_Set("g_darkkorriban", "0");
+	}
+
+
 	if (map[0]!='_')
 	{
 		SG_WipeSavegame("auto");
 	}
 
+	Cvar_Set("d_npcfreeze", "0"); // Turn off NPC freeze since you don't need it between maps
+	openedAngles = qfalse;
 	SV_SpawnServer( map, eForceReload, qtrue );	// start up the map
 	return true;
 }
@@ -131,10 +245,9 @@ void SV_Player_EndOfLevelSave(void)
 						);
 #else
 				//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
-				s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+				s = va("%i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 						pState->stats[STAT_HEALTH],
 						pState->stats[STAT_ARMOR],
-						pState->stats[STAT_WEAPONS],
 						pState->stats[STAT_ITEMS],
 						pState->weapon,
 						pState->weaponstate,
@@ -193,6 +306,14 @@ void SV_Player_EndOfLevelSave(void)
 #endif
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
+#ifndef JK2_MODE
+		s2 = "";
+		for (i=0;i< WP_NUM_WEAPONS; i++)
+		{
+			s2 = va("%s %i",s2, pState->weapons[i]);
+		}
+		Cvar_Set( "playerweaps", s2 );
+#endif
 		//ammo
 		s2 = "";
 		for (i=0;i< AMMO_MAX; i++)
@@ -259,6 +380,7 @@ extern void SCR_UnprecacheScreenshot();
 static void SV_Map_f( void )
 {
 	Cvar_Set( sCVARNAME_PLAYERSAVE, "");
+	Cvar_Set( "playerweaps", "");
 	Cvar_Set( "spawntarget", "" );
 	Cvar_Set("tier_storyinfo", "0");
 	Cvar_Set("tiers_complete", "");

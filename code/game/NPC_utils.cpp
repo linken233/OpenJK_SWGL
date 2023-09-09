@@ -280,7 +280,18 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 			NPC->s.weapon==WP_REPEATER ||
 			NPC->s.weapon==WP_FLECHETTE ||
 			NPC->s.weapon==WP_BRYAR_PISTOL ||
-			NPC->s.weapon==WP_NOGHRI_STICK)
+			NPC->s.weapon==WP_NOGHRI_STICK ||
+			NPC->s.weapon==WP_BATTLEDROID ||
+			NPC->s.weapon==WP_THEFIRSTORDER ||
+			NPC->s.weapon==WP_CLONECARBINE ||
+			NPC->s.weapon==WP_REBELBLASTER ||
+			NPC->s.weapon==WP_CLONERIFLE ||
+			NPC->s.weapon==WP_CLONECOMMANDO ||
+			NPC->s.weapon==WP_REBELRIFLE ||
+			NPC->s.weapon==WP_REY ||
+			NPC->s.weapon==WP_JANGO ||
+			NPC->s.weapon==WP_BOBA ||
+			NPC->s.weapon==WP_CLONEPISTOL)
 		{
 			yawSpeed *= 10.0f;
 		}
@@ -1021,6 +1032,11 @@ qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy )
 		return qtrue;
 	}
 
+	if (self->client->playerTeam == TEAM_SOLO || enemy->client->playerTeam == TEAM_SOLO)
+	{
+		return qtrue;
+	}
+
 	//Can't be on the same team
 	if ( enemy->client->playerTeam == self->client->playerTeam )
 	{
@@ -1036,7 +1052,7 @@ qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy )
 		|| (enemy->client->NPC_class == CLASS_WAMPA && enemy->enemy )//a rampaging wampa
 		|| (enemy->client->NPC_class == CLASS_RANCOR && enemy->enemy )//a rampaging rancor
 		|| (enemy->client->playerTeam == TEAM_FREE && enemy->client->enemyTeam == TEAM_FREE && enemy->enemy && enemy->enemy->client && (enemy->enemy->client->playerTeam == self->client->playerTeam||(enemy->enemy->client->playerTeam != TEAM_ENEMY&&self->client->playerTeam==TEAM_PLAYER))) //enemy is a rampaging non-aligned creature who is attacking someone on our team or a non-enemy (this last condition is used only if we're a good guy - in effect, we protect the innocent)
-		)
+		|| (self->client->enemyTeam == TEAM_FREE && enemy->client->NPC_class == self->client->NPC_class))
 	{
 		return qtrue;
 	}
@@ -1548,6 +1564,31 @@ void G_CheckCharmed( gentity_t *self )
 		}
 	}
 
+	// Force Fear
+	if (self
+		&& self->client
+		&& self->client->playerTeam == TEAM_SOLO
+		&& self->NPC
+		&& self->NPC->charmedTime
+		&& (self->NPC->charmedTime < level.time || self->health <= 0))
+	{//we were charmed, set us back!
+	//NOTE: presumptions here...
+		self->client->enemyTeam = self->client->savedEnemyTeam;
+		self->client->playerTeam = self->client->savedPlayerTeam;
+		self->client->leader = NULL;
+		self->NPC->charmedTime = 0;
+		if (self->health > 0)
+		{
+			if (self->NPC->tempBehavior == BS_FOLLOW_LEADER)
+			{
+				self->NPC->tempBehavior = BS_DEFAULT;
+			}
+			G_ClearEnemy(self);
+			//say something to let player know you've snapped out of it
+			G_AddVoiceEvent(self, Q_irand(EV_CONFUSE1, EV_CONFUSE3), 2000);
+		}
+	}
+
 }
 
 void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int modelIndex = 0 )
@@ -1630,7 +1671,7 @@ qboolean JET_Flying( gentity_t *self )
 	{
 		return qfalse;
 	}
-	if ( self->client->NPC_class == CLASS_BOBAFETT )
+	if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 	{
 		return (Boba_Flying(self));
 	}
@@ -1651,9 +1692,10 @@ void JET_FlyStart( gentity_t *self )
 		return;
 	}
 	self->lastInAirTime = level.time;
-	if ( self->client->NPC_class == CLASS_BOBAFETT )
+	if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 	{
-		Boba_FlyStart( self );
+		if (self == player || (self->genericBolt1 != -1 && self->genericBolt2 != -1))
+			Boba_FlyStart( self );
 	}
 	else if ( self->client->NPC_class == CLASS_ROCKETTROOPER )
 	{
@@ -1667,7 +1709,7 @@ void JET_FlyStop( gentity_t *self )
 	{
 		return;
 	}
-	if ( self->client->NPC_class == CLASS_BOBAFETT )
+	if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 	{
 		Boba_FlyStop( self );
 	}

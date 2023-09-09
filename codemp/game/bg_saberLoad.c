@@ -178,6 +178,12 @@ saber_colors_t TranslateSaberColor( const char *name ) {
 		return SABER_BLUE;
 	if ( !Q_stricmp( name, "purple" ) )
 		return SABER_PURPLE;
+	if (!Q_stricmp(name, "rgb"))
+		return SABER_RGB;
+	if (!Q_stricmp(name, "unstable_red"))
+		return SABER_UNSTABLE_RED;
+	if (!Q_stricmp(name, "black"))
+		return SABER_BLACK;
 	if ( !Q_stricmp( name, "random" ) )
 		return (saber_colors_t)Q_irand( SABER_ORANGE, SABER_PURPLE );
 
@@ -191,6 +197,9 @@ const char *SaberColorToString( saber_colors_t color ) {
 	if ( color == SABER_GREEN )		return "green";
 	if ( color == SABER_BLUE )		return "blue";
 	if ( color == SABER_PURPLE )	return "purple";
+	if (color == SABER_RGB)		return "rgb";
+	if (color == SABER_UNSTABLE_RED)		return "unstable_red";
+	if (color == SABER_BLACK)		return "black";
 
 	return NULL;
 }
@@ -2611,4 +2620,3 @@ void BG_SI_DeactivateTrail ( saberInfo_t *saber, float duration )
 		BG_BLADE_DeactivateTrail(&saber->blade[i], duration);
 	}
 }
-

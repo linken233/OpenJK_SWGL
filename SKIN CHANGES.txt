@@ -1,0 +1,36 @@
+-------g_shared.h-------
+
+1231: char *NPC_skin;
+
+1446: saved_game.write<int32_t>(NPC_skin);
+
+-------g_utils.cpp---------
+
+if (ed->NPC_skin && gi.bIsFromZone(ed->NPC_skin, TAG_G_ALLOC)) 
+{
+	gi.Free(ed->NPC_skin);
+}
+
+--------NPC_Spawn.cpp---------
+
+1691: newent->NPC_skin = G_NewString(ent->NPC_skin);
+
+4735-4737: NPCspawner->NPC_skin = G_NewString(gi.argv(3));
+	
+	NPCspawner->behaviorSet[BSET_SPAWN] =  G_NewString(gi.argv(4));
+
+4739: NPCspawner->NPC_targetname = G_NewString(gi.argv(5));
+
+4741: NPCspawner->soundSet = G_NewString(gi.argv(6));
+
+
+--------NPC_stats.cpp------------
+
+1626: gi.Printf(S_COLOR_RED"CG_NPC_Precache: Skin assigned! '%s'\n", customSkin);
+
+1984-1987: if(!NPC->NPC_skin)
+		strcpy(customSkin, "default");
+	else
+		strcpy(customSkin, NPC->NPC_skin);
+
+1990: gi.Printf(S_COLOR_RED"NPC_ParseParms: Skin assigned! '%s'\n", customSkin);

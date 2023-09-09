@@ -64,6 +64,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/AI_Tusken.cpp"
 	"${SPDir}/game/AI_Utils.cpp"
 	"${SPDir}/game/AI_Wampa.cpp"
+	"${SPDir}/game/AI_Vehicle.cpp"
 	"${SPDir}/game/g_active.cpp"
 	"${SPDir}/game/g_breakable.cpp"
 	"${SPDir}/game/g_camera.cpp"
@@ -114,6 +115,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/NPC_sounds.cpp"
 	"${SPDir}/game/NPC_spawn.cpp"
 	"${SPDir}/game/NPC_stats.cpp"
+	"${SPDir}/game/NPC_SWGL.h"
 	"${SPDir}/game/NPC_utils.cpp"
 	"${SPDir}/game/Q3_Interface.h"
 	"${SPDir}/game/wp_atst.cpp"
@@ -134,6 +136,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/wp_saber.cpp"
 	"${SPDir}/game/wp_saberLoad.cpp"
 	"${SPDir}/game/wp_stun_baton.cpp"
+	"${SPDir}/game/wp_swgl.cpp"
 	"${SPDir}/game/wp_thermal.cpp"
 	"${SPDir}/game/wp_trip_mine.cpp"
 	"${SPDir}/game/wp_tusken.cpp"
@@ -210,6 +213,7 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/cg_snapshot.cpp"
 	"${SPDir}/cgame/cg_syscalls.cpp"
 	"${SPDir}/cgame/cg_text.cpp"
+	"${SPDir}/cgame/cg_trueview.cpp"
 	"${SPDir}/cgame/cg_view.cpp"
 	"${SPDir}/cgame/cg_weapons.cpp"
 	"${SPDir}/cgame/FX_ATSTMain.cpp"
@@ -217,6 +221,8 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/FX_Bowcaster.cpp"
 	"${SPDir}/cgame/FX_BryarPistol.cpp"
 	"${SPDir}/cgame/FX_Concussion.cpp"
+	"${SPDir}/cgame/FX_Clone.cpp"
+	"${SPDir}/cgame/FX_Destruction.cpp"
 	"${SPDir}/cgame/FX_DEMP2.cpp"
 	"${SPDir}/cgame/FX_Disruptor.cpp"
 	"${SPDir}/cgame/FX_Emplaced.cpp"
@@ -386,18 +392,18 @@ endif()
 if(WIN32)
 	install(TARGETS ${SPGame}
 		RUNTIME
-		DESTINATION "${JKAInstallDir}/OpenJK"
+		DESTINATION "${JKAInstallDir}/SWGL"
 		COMPONENT ${JKASPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildSPEngine)
 		install(TARGETS ${SPGame}
 			LIBRARY
-			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
+			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/SWGL"
 			COMPONENT ${JKASPClientComponent})
 	else()
 		install(TARGETS ${SPGame}
 			LIBRARY
-			DESTINATION "${JKAInstallDir}/OpenJK"
+			DESTINATION "${JKAInstallDir}/SWGL"
 			COMPONENT ${JKASPClientComponent})
 	endif()
 endif()

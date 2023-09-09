@@ -93,7 +93,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 
 	if ( ent->client && ent->client->NPC_class == CLASS_GALAKMECH )
 	{
-		missile = CreateMissile( start, ent->client->hiddenDir, ent->client->hiddenDist, 10000, ent, qtrue );
+		missile = CreateMissile(start, ent->client->hiddenDir, ent->client->hiddenDist, 10000, ent, qtrue);
 	}
 	else
 	{

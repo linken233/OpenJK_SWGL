@@ -416,6 +416,8 @@ void CL_InitUI( void );
 void CL_ShutdownUI( void );
 void CL_GenericMenu_f(void);
 void CL_DataPad_f(void);
+void CL_Spawner_f(void);
+void CL_System_f(void);
 void CL_EndScreenDissolve_f(void);
 int Key_GetCatcher( void );
 void Key_SetCatcher( int catcher );

@@ -56,6 +56,7 @@ extern bool Boba_Flee();
 extern bool Boba_Tactics();
 extern void BubbleShield_Update();
 extern qboolean PM_LockedAnim( int anim );
+extern void NPC_BSGM_Default(void);
 
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
@@ -86,12 +87,18 @@ static bState_t G_CurrentBState( gNPC_t *gNPC );
 
 extern int eventClearTime;
 
+extern void GM_Dying(gentity_t* self);
 void CorpsePhysics( gentity_t *self )
 {
 	// run the bot through the server like it was a real client
 	memset( &ucmd, 0, sizeof( ucmd ) );
 	ClientThink( self->s.number, &ucmd );
 	VectorCopy( self->s.origin, self->s.origin2 );
+
+	if (self->client->NPC_class == CLASS_GALAKMECH)
+	{
+		GM_Dying(self);
+	}
 
 	//FIXME: match my pitch and roll for the slope of my groundPlane
 	if ( self->client->ps.groundEntityNum != ENTITYNUM_NONE && !(self->flags&FL_DISINTEGRATED) )
@@ -114,7 +121,7 @@ void CorpsePhysics( gentity_t *self )
 		{//can't be dismembered once dead
 			if ( self->client->NPC_class != CLASS_PROTOCOL )
 			{
-				self->client->dismembered = true;
+				//self->client->dismembered = true;
 			}
 		}
 	}
@@ -1900,7 +1907,7 @@ void NPC_RunBehavior( int team, int bState )
 	{//force-only reborn
 		NPC_BehaviorSet_Jedi( bState );
 	}
-	else if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+	else if (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 	{
 		Boba_Update();
 		if (NPCInfo->surrenderTime)
@@ -2024,6 +2031,9 @@ void NPC_RunBehavior( int team, int bState )
 				return;
 			case CLASS_MARK2:
 				NPC_BehaviorSet_Mark2( bState );
+				return;
+			case CLASS_GALAKMECH:
+				NPC_BSGM_Default();
 				return;
 			default:
 				break;
@@ -2375,12 +2385,20 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	VectorCopy( self->client->ps.moveDir, oldMoveDir );
 	VectorClear( self->client->ps.moveDir );
 	// see if NPC ai is frozen
-	if ( debugNPCFreeze->integer || (NPC->svFlags&SVF_ICARUS_FREEZE) )
+	if ( debugNPCFreeze->integer || (NPC->svFlags&SVF_ICARUS_FREEZE) || (self && self->client && self->client->ps.stasisTime > level.time))
 	{
+		self->inStasis = qtrue;
 		NPC_UpdateAngles( qtrue, qtrue );
 		ClientThink(self->s.number, &ucmd);
 		VectorCopy(self->s.origin, self->s.origin2 );
 		return;
+	}
+	else
+	{
+		if(self->inStasis)
+			self->s.loopSound = 0;
+
+		self->inStasis = qfalse;
 	}
 
 	if(!self || !self->NPC || !self->client)
@@ -2624,6 +2642,11 @@ void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags, int 
 	}
 
 	if ( !setAnimParts )
+	{
+		return;
+	}
+
+	if (ent->client->ps.stasisTime > level.time)
 	{
 		return;
 	}

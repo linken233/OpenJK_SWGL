@@ -579,6 +579,7 @@ extern void GasBurst					(gentity_t *self, gentity_t *inflictor, gentity_t *atta
 extern void CrystalCratePain			(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, const vec3_t point, int damage, int mod, int hitLoc=HL_NONE);
 extern void TurretPain					(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, const vec3_t point, int damage, int mod, int hitLoc=HL_NONE );
 extern void eweb_pain					(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, const vec3_t point, int damage, int mod,int hitLoc=HL_NONE);
+extern void NPC_GM_Pain					(gentity_t* self, gentity_t* inflictor, gentity_t* attacker, const vec3_t point, int damage, int mod, int hitLoc = HL_NONE);
 
 //	void		(*die)(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
 typedef enum

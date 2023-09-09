@@ -41,6 +41,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "g_navigator.h"
 #include "qcommon/ojk_saved_game_helper.h"
+#include <ctime>
+#include "NPC_SWGL.h"
 
 extern	cvar_t	*com_buildScript;
 
@@ -53,6 +55,7 @@ extern void InitMoverTrData( gentity_t *ent );
 extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
+extern cvar_t *g_setSaberLocking;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 static void Q3_SetWeapon (int entID, const char *wp_name);
 static void Q3_SetItem (int entID, const char *item_name);
@@ -67,6 +70,9 @@ extern void WP_SaberSetColor( gentity_t *ent, int saberNum, int bladeNum, char *
 extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
+extern void G_ChangeModel(gentity_t *ent, const char *newModel);
+extern void G_ChangeSkin(gentity_t *ent, const char *newSkin);
+extern void G_ChangeScale(const char* data);
 extern vehicleType_t TranslateVehicleName( char *name );
 extern void WP_SetSaberOrigin( gentity_t *self, vec3_t newOrg );
 extern void JET_FlyStart( gentity_t *self );
@@ -76,10 +82,16 @@ extern void Rail_UnLockCenterOfTrack(const char* trackName);
 extern void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int modelIndex = 0 );
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 
+const char* GetSaberColor(int color);
+
 extern int	BMS_START;
 extern int	BMS_MID;
 extern int	BMS_END;
 extern cvar_t	*g_skippingcin;
+
+extern cvar_t *g_darkkorriban;
+
+extern cvar_t* g_char_model;
 
 extern qboolean	stop_icarus;
 
@@ -161,6 +173,17 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TUSKEN_STAFF),
 	ENUM2STRING(WP_SCEPTER),
 	ENUM2STRING(WP_NOGHRI_STICK),
+	ENUM2STRING(WP_BATTLEDROID),
+	ENUM2STRING(WP_THEFIRSTORDER),
+	ENUM2STRING(WP_CLONECARBINE),
+	ENUM2STRING(WP_REBELBLASTER),
+	ENUM2STRING(WP_CLONERIFLE),
+	ENUM2STRING(WP_CLONECOMMANDO),
+	ENUM2STRING(WP_REBELRIFLE),
+	ENUM2STRING(WP_REY),
+	ENUM2STRING(WP_JANGO),
+	ENUM2STRING(WP_BOBA),
+	ENUM2STRING(WP_CLONEPISTOL),
 	{ "", 0 }
 };
 
@@ -260,6 +283,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_BEHAVIOR_STATE),
 	ENUM2STRING(SET_HEALTH),
 	ENUM2STRING(SET_ARMOR),
+	ENUM2STRING(SET_AMMO_BLASTER),
 	ENUM2STRING(SET_DEFAULT_BSTATE),
 	ENUM2STRING(SET_CAPTURE),
 	ENUM2STRING(SET_DPITCH),
@@ -419,6 +443,12 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FORCE_ABSORB_LEVEL),
 	ENUM2STRING(SET_FORCE_DRAIN_LEVEL),
 	ENUM2STRING(SET_FORCE_SIGHT_LEVEL),
+	ENUM2STRING(SET_FORCE_STASIS_LEVEL),
+	ENUM2STRING(SET_FORCE_GRASP_LEVEL),
+	ENUM2STRING(SET_FORCE_BLAST_LEVEL),
+	ENUM2STRING(SET_FORCE_DESTRUCTION_LEVEL),
+	ENUM2STRING(SET_FORCE_FEAR_LEVEL),
+	ENUM2STRING(SET_FORCE_LIGHTNING_STRIKE_LEVEL),
 	ENUM2STRING(SET_SABER1_COLOR1),
 	ENUM2STRING(SET_SABER1_COLOR2),
 	ENUM2STRING(SET_SABER2_COLOR1),
@@ -440,6 +470,8 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_NO_GROUPS),
 	ENUM2STRING(SET_FIRE_WEAPON),
 	ENUM2STRING(SET_FIRE_WEAPON_NO_ANIM),
+	ENUM2STRING(SET_SABERLOCKING),
+	ENUM2STRING(SET_FORCE_REGEN),
 	ENUM2STRING(SET_SAFE_REMOVE),
 	ENUM2STRING(SET_BOBA_JET_PACK),
 	ENUM2STRING(SET_INACTIVE),
@@ -467,6 +499,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_USE_SUBTITLES),
 	ENUM2STRING(SET_CLEAN_DAMAGING_ENTS),
 	ENUM2STRING(SET_HUD),
+	ENUM2STRING(SET_FORCE_CHOKING),
 	//JKA
 	ENUM2STRING(SET_NO_PVS_CULL),
 	ENUM2STRING(SET_CLOAK),
@@ -485,10 +518,21 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FORCE_PROTECT),
 	ENUM2STRING(SET_FORCE_ABSORB),
 	ENUM2STRING(SET_FORCE_DRAIN),
+		ENUM2STRING(SET_FORCE_STASIS),
+		ENUM2STRING(SET_FORCE_BLAST),
+		ENUM2STRING(SET_FORCE_GRASP),
+		ENUM2STRING(SET_FORCE_DESTRUCTION),
+		ENUM2STRING(SET_FORCE_LIGHTNING_STRIKE),
+		ENUM2STRING(SET_FORCE_FEAR),
 	ENUM2STRING(SET_WINTER_GEAR),
 	ENUM2STRING(SET_NO_ANGLES),
 	ENUM2STRING(SET_SABER_ORIGIN),
 	ENUM2STRING(SET_SKIN),
+	ENUM2STRING(SET_MODEL),
+	ENUM2STRING(SET_PLAYERSKIN),
+	ENUM2STRING(SET_PLAYERSCALE),
+	ENUM2STRING(SET_SOUNDSET),
+	ENUM2STRING(SET_GENDER),
 
 	{ "",	SET_ }
 };
@@ -995,33 +1039,97 @@ static qboolean G_AddSexToPlayerString ( char *string, qboolean qDoBoth )
 {
 	char *start;
 
-	if VALIDSTRING( string ) {
-		if ( g_sex->string[0] == 'f' ) {
+	if VALIDSTRING( string ) 
+	{
+		if ( g_sex->string[0] == 'f' ) 
+		{
 			start = strstr( string, "jaden_male/" );
-			if ( start != NULL ) {
+			if ( start != NULL ) 
+			{
 				strncpy( start, "jaden_fmle", 10 );
 				return qtrue;
-			} else {
+			} 
+			else 
+			{
 				start = strrchr( string, '/' );		//get the last slash before the wav
-				if (start != NULL) {
-					if (!strncmp( start, "/mr_", 4) ) {
-						if (qDoBoth) {	//we want to change mr to ms
+				if (start != NULL) 
+				{
+					if (!strncmp( start, "/mr_", 4) ) 
+					{
+						if (qDoBoth) 
+						{	//we want to change mr to ms
 							start[2] = 's';	//change mr to ms
 							return qtrue;
-						} else {	//IF qDoBoth
+						} 
+						else 
+						{	//IF qDoBoth
 							return qfalse;	//don't want this one
 						}
 					}
 				}	//IF found slash
 			}
 		}	//IF Female
-		else {	//i'm male
+		else 
+		{	//i'm male
 			start = strrchr( string, '/' );		//get the last slash before the wav
-			if (start != NULL) {
-				if (!strncmp( start, "/ms_", 4) ) {
+			if (start != NULL) 
+			{
+				if (!strncmp( start, "/ms_", 4) ) 
+				{
 					return qfalse;	//don't want this one
 				}
 			}	//IF found slash
+		}
+
+		std::time_t tp = std::time(NULL);
+
+		std::tm* ts = std::localtime(&tp);
+
+		// April Fools day gets a special treat :)
+		if (ts->tm_mon == 3 && ts->tm_mday == 1)
+		{
+			start = strstr(string, "maul_3/dooku");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/wonka", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/standard");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/lollypop", 15);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/palpatine7");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/palplolly7", 17);
+				return qtrue;
+			}
+			start = strstr(string, "maul_3/palpatine8");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_3/palplolly8", 15);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul3");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk3", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul4");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk4", 12);
+				return qtrue;
+			}
+			start = strstr(string, "maul_7/maul10");
+			if (start != NULL)
+			{
+				strncpy(start, "maul_7/wonk10", 13);
+				return qtrue;
+			}
 		}
 	}	//if VALIDSTRING
 	return qtrue;
@@ -2195,6 +2303,7 @@ stringID_table_t teamTable [] =
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
+	ENUM2STRING(TEAM_SOLO),
 	{ "", TEAM_FREE },
 };
 
@@ -2355,6 +2464,35 @@ static void Q3_SetArmor( int entID, int data )
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 		}
 	}
+}
+
+/*
+============
+Q3_SetAmmo
+Description	:
+Return type	: static void
+Argument		:  int entID
+Argument		: int data
+============
+*/
+static void Q3_SetAmmoBlaster(int entID, int data)
+{
+	gentity_t	*ent = &g_entities[entID];
+
+	if (!ent)
+	{
+		Quake3Game()->DebugPrint(IGameInterface::WL_WARNING, "Q3_SetAmmo: invalid entID %d\n", entID);
+		return;
+	}
+
+	if (!ent->client)
+	{
+		return;
+	}
+	ent->client->ps.ammo[AMMO_BLASTER] = data != -1 ? data : ammoData[AMMO_BLASTER].max;
+	ent->client->ps.ammo[AMMO_METAL_BOLTS] = data != -1 ? data : ammoData[AMMO_METAL_BOLTS].max;
+	
+	return;
 }
 
 /*
@@ -3234,13 +3372,17 @@ void G_SetWeapon( gentity_t *self, int wp )
 	gitem_t *item = FindItemForWeapon( (weapon_t) wp);
 	RegisterItem( item );	//make sure the weapon is cached in case this runs at startup
 
-	if ( self->client->ps.stats[STAT_WEAPONS]&( 1 << wp ) )
+	if ( self->client->ps.weapons[wp] )
 	{
 		hadWeapon = qtrue;
 	}
 	if ( self->NPC )
 	{//Should NPCs have only 1 weapon at a time?
-		self->client->ps.stats[STAT_WEAPONS] = ( 1 << wp );
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			self->client->ps.weapons[i] = 0;
+		}
+		self->client->ps.weapons[wp] = 1;
 		self->client->ps.ammo[weaponData[wp].ammoIndex] = 999;
 
 		ChangeWeapon( self, wp );
@@ -3250,7 +3392,7 @@ void G_SetWeapon( gentity_t *self, int wp )
 	}
 	else
 	{
-		self->client->ps.stats[STAT_WEAPONS] |= ( 1 << wp );
+		self->client->ps.weapons[wp] = 1;
 		self->client->ps.ammo[weaponData[wp].ammoIndex] = ammoData[weaponData[wp].ammoIndex].max;
 
 		G_AddEvent( self, EV_ITEM_PICKUP, (item - bg_itemlist) );
@@ -3277,7 +3419,16 @@ void G_SetWeapon( gentity_t *self, int wp )
 static void Q3_SetWeapon (int entID, const char *wp_name)
 {
 	gentity_t	*self  = &g_entities[entID];
-	int		wp = GetIDForString( WPTable, wp_name );
+	int	wp = 0;
+
+	if ((self == player && !Q_stricmp("WP_BLASTER_PISTOL", wp_name)) &&
+		(!Q_stricmp("kyle", g_char_model->string)
+			|| !Q_stricmp("kylejk2", g_char_model->string)))
+	{
+		wp = GetIDForString(WPTable, "WP_BRYAR_PISTOL");
+	}
+	else
+		wp = GetIDForString( WPTable, wp_name );
 
 	if ( !self )
 	{
@@ -4636,7 +4787,7 @@ static void Q3_SetBobaJetPack(int entID, qboolean add)
 	}
 
 	// make sure we this is Boba Fett
-	if ( ent->client && ent->client->NPC_class != CLASS_BOBAFETT )
+	if (ent->client && (ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
 	{
 		Quake3Game()->DebugPrint( IGameInterface::WL_WARNING, "Q3_SetBobaJetPack: '%s' is not Boba Fett!\n", ent->targetname );
 		return;
@@ -6408,7 +6559,7 @@ static void Q3_SetSaberActive( int entID, qboolean active )
 
 	if ( ent->client->ps.weapon != WP_SABER )
 	{
-		if ( (ent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SABER)) )
+		if ( (ent->client->ps.weapons[WP_SABER]) )
 		{//change to it right now
 			if ( ent->NPC )
 			{
@@ -6472,7 +6623,7 @@ static void Q3_SetSaberBladeActive( int entID, int iSaber, int iBlade, qboolean 
 
 	if ( ent->client->ps.weapon != WP_SABER )
 	{
-		if ( (ent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SABER)) )
+		if ( (ent->client->ps.weapons[WP_SABER]) )
 		{//change to it right now
 			if ( ent->NPC )
 			{
@@ -6527,6 +6678,77 @@ static void Q3_SetNoKnockback( int entID, qboolean noKnockback )
 	{
 		ent->flags &= ~FL_NO_KNOCKBACK;
 	}
+}
+
+static void Q3_ForceChoke(int entID, qboolean choking)
+{
+	gentity_t* ent = &g_entities[entID];
+
+	if (!ent)
+	{
+		Quake3Game()->DebugPrint(IGameInterface::WL_WARNING, "Q3_ForceChoke: invalid entID %d\n", entID);
+		return;
+	}
+
+	if (choking)
+	{
+		// An entity choking will be doing the choke anim, may or may not lose their weapon, will raise up in the air a little bit, and can't attack
+
+		// Set gravity to 0
+		ent->svFlags |= SVF_CUSTOM_GRAVITY;
+		ent->client->ps.gravity = 0.0f;
+
+		ent->client->ps.legsAnimTimer = ent->client->ps.torsoAnimTimer = 0;
+		NPC_SetAnim(ent, SETANIM_BOTH, BOTH_CHOKE3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		ent->client->ps.torsoAnimTimer = ent->client->ps.legsAnimTimer = -1;
+		ent->client->ps.SaberDeactivate();
+		NPCInfo->ignorePain = qtrue;
+
+
+		// Set their behavior
+		if (!Q3_SetBState(entID, "BS_CINEMATIC"))
+		{
+			Q3_TaskIDSet(ent, TID_BSTATE, SET_BEHAVIOR_STATE);
+		}
+
+		// Adjust origin
+		vec3_t vector_data;
+
+		vector_data[0] = ent->currentOrigin[0];
+		vector_data[1] = ent->currentOrigin[1];
+		vector_data[2] = ent->currentOrigin[2]+30;
+
+
+		G_SetOrigin(ent, vector_data);
+		gi.linkentity(ent);
+
+		// Force immunity
+		ent->NPC->scriptFlags |= SCF_NO_FORCE;
+		ent->enemy = NULL;
+		ent->client->leader = NULL;
+
+		VectorClear(ent->client->ps.velocity);
+		VectorClear(ent->client->ps.moveDir);
+	}
+	else
+	{
+		// Set gravity to 0
+		ent->svFlags &= ~SVF_CUSTOM_GRAVITY;
+		ent->client->ps.gravity = 800.0f;
+
+		Q3_SetAnimHoldTime(entID, 1, qfalse);
+		Q3_SetAnimHoldTime(entID, 1, qtrue);
+
+		// Set their behavior
+		if (!Q3_SetBState(entID, "BS_DEFAULT"))
+		{
+			Q3_TaskIDSet(ent, TID_BSTATE, SET_BEHAVIOR_STATE);
+		}
+
+		ent->NPC->scriptFlags &= ~SCF_NO_FORCE;
+	}
+
+	return;
 }
 
 /*
@@ -8404,9 +8626,22 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		Q3_SetHealth( entID, int_data );
 		break;
 
+	case SET_SABERLOCKING:
+		int_data = atoi((char *)data);
+		if(int_data < 1)
+			gi.cvar_set("g_allowSaberLocking", "0");
+		else
+			gi.cvar_set("g_allowSaberLocking", "1");
+		break;
+
 	case SET_ARMOR:
 		int_data = atoi((char *) data);
 		Q3_SetArmor( entID, int_data );
+		break;
+
+	case SET_AMMO_BLASTER:
+		int_data = atoi((char *)data);
+		Q3_SetAmmoBlaster(entID, int_data);
 		break;
 
 	case SET_BEHAVIOR_STATE:
@@ -9292,6 +9527,17 @@ extern void LockDoors(gentity_t *const ent);
 		}
 		break;
 
+	case SET_FORCE_CHOKING:
+		if (!Q_stricmp("true", ((char*)data)))
+		{
+			Q3_ForceChoke(entID, qtrue);
+		}
+		else
+		{
+			Q3_ForceChoke(entID, qfalse);
+		}
+		break;
+
 	case SET_VIDEO_PLAY:
 		// don't do this check now, James doesn't want a scripted cinematic to also skip any Video cinematics as well,
 		//	the "timescale" and "skippingCinematic" cvars will be set back to normal in the Video code, so doing a
@@ -9439,6 +9685,12 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_FORCE_RAGE_LEVEL:
 	case SET_FORCE_PROTECT_LEVEL:
 	case SET_FORCE_ABSORB_LEVEL:
+	case SET_FORCE_GRASP_LEVEL:
+	case SET_FORCE_BLAST_LEVEL:
+	case SET_FORCE_STASIS_LEVEL:
+	case SET_FORCE_DESTRUCTION_LEVEL:
+	case SET_FORCE_FEAR_LEVEL:
+	case SET_FORCE_LIGHTNING_STRIKE_LEVEL:
 	case SET_FORCE_DRAIN_LEVEL:
 	case SET_FORCE_SIGHT_LEVEL:
 		int_data = atoi((char *) data);
@@ -9447,17 +9699,64 @@ extern void LockDoors(gentity_t *const ent);
 
 	case SET_SABER1:
 	case SET_SABER2:
+		if (!Q_stricmp(data, DOOKU))
+		{
+			std::time_t tp = std::time(NULL);
+
+			std::tm* ts = std::localtime(&tp);
+			if (ts->tm_mon == 3 && ts->tm_mday == 1)
+			{
+				data = "wonka_lolly";
+			}
+		}
 		WP_SetSaber( &g_entities[entID], toSet-SET_SABER1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			if (toSet == SET_SABER1)
+			{
+				gi.cvar_set("g_saber", (char*)data);
+			}
+			else if (toSet == SET_SABER2)
+			{
+				gi.cvar_set("g_saber2", (char*)data);
+			}
+		}
 		break;
 
 	case SET_PLAYERMODEL:
 		G_ChangePlayerModel( &g_entities[entID], (const char *)data );
 		break;
 
+	case SET_MODEL:
+		G_ChangeModel(&g_entities[entID], (const char*)data);
+		break;
+
+	case SET_PLAYERSCALE:
+		G_ChangeScale((const char*)data);
+		break;
+
+	case SET_SOUNDSET:
+		gi.cvar_set("snd", (const char*)data);
+		break;
+
+	case SET_GENDER:
+		gi.cvar_set("sex", (const char*)data);
+		break;
 	// NOTE: Preconditions for entering a vehicle still exist. This is not assured to work. -Areis
 	case SET_VEHICLE:
 		Use( entID, (char *)data );
 //		G_DriveVehicle( &g_entities[entID], NULL, (char *)data );
+		break;
+
+	case SET_FORCE_REGEN:
+		if (&g_entities[entID] == player)
+		{
+			int amount = atoi(data);
+			if (amount < 1)
+				amount = 1;
+
+			player->client->ps.forcePowerRegenRate = amount;
+		}
 		break;
 
 	case SET_SECURITY_KEY:
@@ -9467,10 +9766,18 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_SABER1_COLOR1:
 	case SET_SABER1_COLOR2:
 		WP_SaberSetColor( &g_entities[entID], 0, toSet-SET_SABER1_COLOR1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			gi.cvar_set("g_saber_color", (char*)data);			
+		}
 		break;
 	case SET_SABER2_COLOR1:
 	case SET_SABER2_COLOR2:
 		WP_SaberSetColor( &g_entities[entID], 1, toSet-SET_SABER2_COLOR1, (char *)data );
+		if (&g_entities[entID] == player)
+		{
+			gi.cvar_set("g_saber2_color", (char*)data);
+		}
 		break;
 	case SET_DISMEMBER_LIMB:
 		Q3_DismemberLimb( entID, (char *)data );
@@ -9513,6 +9820,24 @@ extern void Saboteur_Cloak( gentity_t *self );
 		break;
 	case SET_FORCE_LIGHTNING:
 		Q3_SetForcePower( entID, FP_LIGHTNING, (qboolean)(Q_stricmp("true",(char*)data)==0) );
+		break;
+	case SET_FORCE_STASIS:
+		Q3_SetForcePower(entID, FP_STASIS, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_GRASP:
+		Q3_SetForcePower(entID, FP_GRASP, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_BLAST:
+		Q3_SetForcePower(entID, FP_BLAST, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_DESTRUCTION:
+		Q3_SetForcePower(entID, FP_DESTRUCTION, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_FEAR:
+		Q3_SetForcePower(entID, FP_FEAR, (qboolean)(Q_stricmp("true", (char*)data) == 0));
+		break;
+	case SET_FORCE_LIGHTNING_STRIKE:
+		Q3_SetForcePower(entID, FP_LIGHTNING_STRIKE, (qboolean)(Q_stricmp("true", (char*)data) == 0));
 		break;
 	case SET_FORCE_SABERTHROW:
 		Q3_SetForcePower( entID, FP_SABERTHROW, (qboolean)(Q_stricmp("true",(char*)data)==0) );
@@ -9586,8 +9911,63 @@ extern cvar_t	*g_char_skin_legs;
 					gi.G2API_SetSkin( &ent->ghoul2[ent->playerModel], G_SkinIndex( (char *)data ), iSkinID );
 				}
 			}
+			if (ent == player)
+			{
+				std::string str = (char*)data;
+
+				int modelFind = str.find("players/");
+
+				int skinFind = str.find("/model_");
+
+				int skinFileFind = str.find(".skin");
+
+				std::string model = str.substr((modelFind + 8), skinFind - modelFind - 8);
+				std::string skin = str.substr((skinFind + 1), (skinFileFind - skinFind - 1));
+
+				const char* finalModel = model.c_str();
+				const char* finalSkin = skin.c_str();
+				
+ 				gi.cvar_set("g_char_model", finalModel);
+				gi.cvar_set("g_char_skin_head", finalSkin);
+				gi.cvar_set("g_char_skin_torso", finalSkin);
+				gi.cvar_set("g_char_skin_legs", finalSkin);
+
+				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
+				gi.cvar_set("g_saber_color", GetSaberColor(ent->client->ps.saber[0].blade[0].color));
+
+				if (player->client->ps.dualSabers)
+				{
+					gi.cvar_set("g_saber2", ent->client->ps.saber[0].name);
+					gi.cvar_set("g_saber2_color", GetSaberColor(ent->client->ps.saber[1].blade[0].color));
+				}
+				else
+				{
+					gi.cvar_set("g_saber2", "");
+					gi.cvar_set("g_saber2_color", "");
+				}
+
+				G_ChangePlayerModel(player, "player");
+
+				
+
+			}
 		}
 		break;
+
+	case SET_PLAYERSKIN:
+		// If this is a (fake) Player NPC or this IS the Player...
+	{//just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
+		gentity_t *ent = &g_entities[entID];
+		if (ent && ent->inuse && ent->ghoul2.size())
+		{
+			int iSkinID = gi.RE_RegisterSkin((char *)data);
+			if (iSkinID)
+			{
+				gi.G2API_SetSkin(&ent->ghoul2[ent->playerModel], G_SkinIndex((char *)data), iSkinID);
+			}
+		}
+	}
+	break;
 
 	default:
 		//DebugPrint( WL_ERROR, "Set: '%s' is not a valid set field\n", type_name );
@@ -9597,6 +9977,33 @@ extern cvar_t	*g_char_skin_legs;
 	}
 
 	IIcarusInterface::GetIcarus()->Completed( ent->m_iIcarusID, taskID );
+}
+
+const char* GetSaberColor(int color)
+{
+	switch (color)
+	{
+		case SABER_RED:
+			return "red";
+		case SABER_ORANGE:
+			return "orange";
+		case SABER_YELLOW:
+			return "yellow";
+		case SABER_GREEN:
+			return "green";
+		case SABER_BLUE:
+			return "blue";
+		case SABER_PURPLE:
+			return "purple";
+		case SABER_UNSTABLE_RED:
+			return "unstable_red";
+		case SABER_DARKSABER:
+			return "darksaber";
+		case SABER_BLACK:
+			return "black";
+	}
+
+	return "blue";
 }
 
 void CQuake3GameInterface::PrisonerObjCheck(const char *name,const char *data)
@@ -10016,6 +10423,10 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 		{
 			*value = g_gravity->value;
 		}
+		break;
+
+	case SET_SABERLOCKING:
+		*value = g_setSaberLocking->value;
 		break;
 
 	case SET_FACEEYESCLOSED:
@@ -10478,7 +10889,15 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 
 	case SET_OBJECTIVE_LIGHTSIDE:
 	{
-		*value = level.clients[0].sess.mission_objectives[LIGHTSIDE_OBJ].status;
+		if (g_darkkorriban->integer)
+		{
+			*value = 2;
+			player->client->playerTeam = TEAM_FREE;
+			player->client->enemyTeam = TEAM_FREE;
+
+		}
+		else
+			*value = level.clients[0].sess.mission_objectives[LIGHTSIDE_OBJ].status;
 		break;
 	}
 

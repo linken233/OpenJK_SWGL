@@ -32,6 +32,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern	bool		in_camera;
 extern stringID_table_t SaberStyleTable[];
 
+extern cvar_t *static_cam;
+
 extern void ForceHeal( gentity_t *self );
 extern void ForceGrip( gentity_t *self );
 extern void ForceTelepathy( gentity_t *self );
@@ -39,6 +41,12 @@ extern void ForceRage( gentity_t *self );
 extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
 extern void ForceSeeing( gentity_t *self );
+extern void ForceStasis( gentity_t *self );
+extern void ForceDestruction(gentity_t *self);
+extern void ForceGrasp(gentity_t *self);
+extern void ForceFear(gentity_t *self);
+extern void ForceLightningStrike(gentity_t *self);
+extern void ForceBlast(gentity_t *self);
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, int boltNum, int weaponNum );
 extern void G_StartMatrixEffect( gentity_t *ent, int meFlags = 0, int length = 1000, float timeScale = 0.0f, int spinTime = 0 );
 extern void ItemUse_Bacta(gentity_t *ent);
@@ -174,8 +182,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "health") )
 	{
-		if ( argc == 3 )
-			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_MAX_HEALTH] = atoi(args);
+
+			ent->health = Com_Clampi(1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 		if ( !give_all )
@@ -184,8 +196,12 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.stats[STAT_ARMOR] = atoi(args);
+
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi(0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi(args));
+		}
 		else
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 
@@ -195,8 +211,18 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "force" ) )
 	{
-		if ( argc == 3 )
-			ent->client->ps.forcePower = Com_Clampi( 0, ent->client->ps.forcePowerMax, atoi( args ) );
+		if (argc == 3)
+		{
+			ent->client->ps.forcePowerMax = atoi(args);
+
+			// Such a big number it turns negative 
+			if (ent->client->ps.forcePowerMax < 0 || ent->client->ps.forcePowerMax > 10000000)
+			{
+				ent->client->ps.forcePowerMax = 10000000;
+			}
+
+			ent->client->ps.forcePower = Com_Clampi(0, ent->client->ps.forcePowerMax, atoi(args));
+		}
 		else
 			ent->client->ps.forcePower = ent->client->ps.forcePowerMax;
 
@@ -206,20 +232,31 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 
 	if ( give_all || !Q_stricmp( name, "weapons" ) )
 	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << (WP_MELEE)) - ( 1 << WP_NONE );
+		for ( int i = 0; i < WP_MELEE; i++ )
+		{
+			ent->client->ps.weapons[i] = 1;
+		}
+		// Skip the unusable weapons, add in extra weapons.
+		for (int i = WP_BATTLEDROID; i < WP_NUM_WEAPONS; i++)
+		{
+			ent->client->ps.weapons[i] = 1;
+		}
 		if ( !give_all )
 			return;
 	}
 
 	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
 	{
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
+		ent->client->ps.weapons[ atoi(args) ] = 1;
 		return;
 	}
 
 	if ( !give_all && !Q_stricmp( name, "eweaps" ) )	//for developing, gives you all the weapons, including enemy
 	{
-		ent->client->ps.stats[STAT_WEAPONS] = (unsigned)(1 << WP_NUM_WEAPONS) - ( 1 << WP_NONE ); // NOTE: this wasn't giving the last weapon in the list
+		for ( int i = 0; i < WP_NUM_WEAPONS; i++ )
+		{
+			ent->client->ps.weapons[i] = 1;
+		}
 		return;
 	}
 
@@ -280,6 +317,30 @@ void Cmd_Give_f( gentity_t *ent )
 	G_Give( ent, gi.argv(1), ConcatArgs( 2 ), gi.argc() );
 }
 
+void Cmd_ForceRegen_f( gentity_t* ent )
+{
+	if (!CheatsOk(ent)) 
+	{
+		return;
+	}
+	int amt = atoi(gi.argv(1));
+	
+	if(!amt)
+	{
+		gi.SendServerCommand(0, "print \"Usage: setForceRegen <number> \nDefault value is 100\nThe lower the value, the faster your force will regenerate\n\"");
+		return;
+	}
+
+	if (amt > 0)
+	{
+		player->client->ps.forcePowerRegenRate = amt;
+	}
+	else
+	{
+		gi.SendServerCommand(0, "print \"Invalid number, please input a number larger than 0\n\"");
+	}
+	return;
+}
 //------------------
 void Cmd_Fx( gentity_t *ent )
 {
@@ -440,6 +501,33 @@ void Cmd_God_f (gentity_t *ent)
 
 /*
 ==================
+Cmd_Noforce_f
+
+Sets client to be immune to the force
+
+argv(0) noforce
+==================
+*/
+void Cmd_Noforce_f(gentity_t *ent)
+{
+	const char	*msg;
+
+	if (!CheatsOk(ent)) {
+		return;
+	}
+
+	ent->flags ^= FL_NOFORCE;
+	if (!(ent->flags & FL_NOFORCE))
+		msg = "No Force OFF\n";
+	else
+		msg = "No Force ON\n";
+
+	gi.SendServerCommand(ent - g_entities, "print \"%s\"", msg);
+}
+
+
+/*
+==================
 Cmd_Undying_f
 
 Sets client to undead mode
@@ -515,6 +603,7 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 }
 
 
+
 /*
 ==================
 Cmd_Noclip_f
@@ -535,6 +624,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		msg = "noclip ON\n";
 	}
 	ent->client->noclip = !ent->client->noclip;
+	ent->flags ^= FL_NOFORCE;
 
 	gi.SendServerCommand( ent-g_entities, "print \"%s\"", msg);
 }
@@ -1346,7 +1436,7 @@ void Cmd_SaberDrop_f( gentity_t *ent, int saberNum )
 		&& ent->weaponModel[1] <= 0 )
 	{//no sabers left!
 		//remove saber from inventory
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1<<WP_SABER);
+		ent->client->ps.weapons[WP_SABER] = 0;
 		//change weapons
 		if ( ent->s.number < MAX_CLIENTS )
 		{//player
@@ -1365,6 +1455,7 @@ void Cmd_SaberDrop_f( gentity_t *ent, int saberNum )
 ClientCommand
 =================
 */
+extern void G_ChangePlayerModel(gentity_t* ent, const char* newModel);
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
 	const char	*cmd;
@@ -1382,14 +1473,18 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	if (Q_stricmp (cmd, "give") == 0)
-		Cmd_Give_f (ent);
-	else if (Q_stricmp (cmd, "god") == 0)
-		Cmd_God_f (ent);
+	if (Q_stricmp(cmd, "give") == 0)
+		Cmd_Give_f(ent);
+	else if (Q_stricmp(cmd, "god") == 0)
+		Cmd_God_f(ent);
+	else if (Q_stricmp(cmd, "noforce") == 0)
+		Cmd_Noforce_f(ent);
 	else if (Q_stricmp (cmd, "undying") == 0)
 		Cmd_Undying_f (ent);
 	else if (Q_stricmp (cmd, "notarget") == 0)
 		Cmd_Notarget_f (ent);
+	else if (Q_stricmp(cmd, "setForceRegen") == 0)
+			Cmd_ForceRegen_f(ent);
 	else if (Q_stricmp (cmd, "noclip") == 0)
 	{
 		Cmd_Noclip_f (ent);
@@ -1431,6 +1526,36 @@ void ClientCommand( int clientNum ) {
 	{
 		ent = G_GetSelfForPlayerCmd();
 		ForceHeal( ent );
+	}
+	else if (Q_stricmp(cmd, "force_stasis") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceStasis(ent);
+	}
+	else if (Q_stricmp(cmd, "force_blast") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceBlast(ent);
+	}
+	else if (Q_stricmp(cmd, "force_grasp") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceGrasp(ent);
+	}
+	else if (Q_stricmp(cmd, "force_destruction") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceDestruction(ent);
+	}
+	else if (Q_stricmp(cmd, "force_strike") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceLightningStrike(ent);
+	}
+	else if (Q_stricmp(cmd, "force_fear") == 0)
+	{
+		ent = G_GetSelfForPlayerCmd();
+		ForceFear(ent);
 	}
 	else if (Q_stricmp (cmd, "force_grip") == 0)
 	{
@@ -1610,6 +1735,25 @@ void ClientCommand( int clientNum ) {
 		else
 		{//drop either left or right
 			Cmd_SaberDrop_f( ent, saberNum );
+		}
+	}
+	else if (Q_stricmp(cmd, "imhansolo") == 0)
+	{
+		G_StartMatrixEffect(player);
+		gi.SetConfigstring(CS_MUSIC, "music/imhansolo");
+		G_ChangePlayerModel(&g_entities[0], "han_solo");
+	}
+	else if (Q_stricmp(cmd, "camerastatic") == 0)
+	{
+		if (!static_cam->value)
+		{
+			gi.SendServerCommand( ent-g_entities, "print \"Static Camera ON\n\"");
+			static_cam->value = 1;
+		}
+		else
+		{
+			gi.SendServerCommand(ent - g_entities, "print \"Static Camera OFF\n\"");
+			static_cam->value = 0;
 		}
 	}
 	else

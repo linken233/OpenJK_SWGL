@@ -174,6 +174,15 @@ typedef struct {
 	qhandle_t	blueSaberCoreShader;
 	qhandle_t	purpleSaberGlowShader;
 	qhandle_t	purpleSaberCoreShader;
+	qhandle_t	unstableRedSaberGlowShader;
+	qhandle_t	unstableRedSaberCoreShader;
+	qhandle_t	blackSaberGlowShader;
+	qhandle_t	blackSaberCoreShader;
+	qhandle_t	blackSaberBlurShader;
+	qhandle_t	rgbSaberGlowShader;
+	qhandle_t	rgbSaberCoreShader;
+	qhandle_t	darkSaberGlowShader;
+	qhandle_t	darkSaberCoreShader;
 
 	qhandle_t	explosionModel;
 	qhandle_t	surfaceExplosionShader;
@@ -185,6 +194,13 @@ typedef struct {
 	qhandle_t	electricBody2Shader;
 	qhandle_t	refractShader;
 	qhandle_t	boltShader;
+	qhandle_t	redBoltShader;
+	qhandle_t	orangeBoltShader;
+	qhandle_t	yellowBoltShader;
+	qhandle_t	greenBoltShader;
+	qhandle_t	purpleBoltShader;
+	qhandle_t	whiteBoltShader;
+	qhandle_t	blackBoltShader;
 
 	// Disruptor zoom graphics
 	qhandle_t	disruptorMask;
@@ -206,6 +222,10 @@ typedef struct {
 	qhandle_t	laGogglesSideBit;
 	qhandle_t	laGogglesBracket;
 	qhandle_t	laGogglesArrow;
+
+	// Scope Types graphics
+	qhandle_t	scopeTypeMask;
+	qhandle_t	scopeTypeInsert;
 
 	// wall mark shaders
 	qhandle_t	scavMarkShader;
@@ -258,6 +278,11 @@ typedef struct {
 	qhandle_t	sightShell;
 	qhandle_t	drainShader;
 
+	//SFX Sabers
+	qhandle_t SaberTrailShader;
+	qhandle_t SaberBladeShader;
+	qhandle_t SaberEndShader;
+
 	// sounds
 	sfxHandle_t disintegrateSound;
 	sfxHandle_t disintegrate2Sound;
@@ -307,6 +332,12 @@ typedef struct {
 	//new stuff for Jedi Academy
 	sfxHandle_t	drainSound;
 
+	sfxHandle_t	destructionSound;
+
+	sfxHandle_t	blastSound;
+
+	sfxHandle_t	strikeSound;
+
 } cgMedia_t;
 
 
@@ -328,6 +359,15 @@ typedef struct
 	fxHandle_t	blasterWallImpactEffect;
 	fxHandle_t	blasterFleshImpactEffect;
 
+	// Clone
+	fxHandle_t	cloneShotEffect;
+	fxHandle_t	clonePowerupShotEffect;
+	fxHandle_t	cloneOverchargeEffect;
+	fxHandle_t	cloneWallImpactEffect;
+	fxHandle_t	cloneWallImpactEffect2;
+	fxHandle_t	cloneWallImpactEffect3;
+	fxHandle_t	cloneFleshImpactEffect;
+
 	// BOWCASTER
 	fxHandle_t	bowcasterShotEffect;
 	fxHandle_t	bowcasterBounceEffect;
@@ -344,6 +384,25 @@ typedef struct
 	fxHandle_t	forceConfusion;
 	fxHandle_t	forceLightning;
 	fxHandle_t	forceLightningWide;
+
+	// Other ForceLightnings
+	fxHandle_t	greenForceLightning;
+	fxHandle_t	greenForceLightningWide;
+	fxHandle_t	redForceLightning;
+	fxHandle_t	redForceLightningWide;
+	fxHandle_t	purpleForceLightning;
+	fxHandle_t	purpleForceLightningWide;
+	fxHandle_t	yellowForceLightning;
+	fxHandle_t	yellowForceLightningWide;
+	fxHandle_t	orangeForceLightning;
+	fxHandle_t	orangeForceLightningWide;
+	fxHandle_t	indigoForceLightning;
+	fxHandle_t	indigoForceLightningWide;
+	fxHandle_t	whiteForceLightning;
+	fxHandle_t	whiteForceLightningWide;
+	fxHandle_t	blackForceLightning;
+	fxHandle_t	blackForceLightningWide;
+
 	//fxHandle_t	forceInvincibility;
 	fxHandle_t	forceHeal;
 
@@ -351,6 +410,15 @@ typedef struct
 	fxHandle_t forceDrain;
 	fxHandle_t forceDrainWide;
 	fxHandle_t forceDrained;
+
+	fxHandle_t destructionProjectile;
+	fxHandle_t destructionHit;
+
+	fxHandle_t blastProjectile;
+	fxHandle_t blastHit;
+
+	fxHandle_t strikeProjectile;
+	fxHandle_t strikeHit;
 
 	//footstep effects
 	fxHandle_t footstepMud;
@@ -406,6 +474,8 @@ typedef struct {
 
 	// effects
 	cgEffects_t		effects;
+
+	float			widthRatioCoef;
 
 } cgs_t;
 

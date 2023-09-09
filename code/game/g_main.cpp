@@ -151,12 +151,19 @@ cvar_t	*g_stepSlideFix;
 
 cvar_t	*g_sex;
 cvar_t	*g_spskill;
+cvar_t	*g_newgameplus;
 cvar_t	*g_cheats;
 cvar_t	*g_developer;
 cvar_t	*g_timescale;
 cvar_t	*g_knockback;
 cvar_t	*g_dismemberment;
 cvar_t	*g_corpseRemovalTime;
+
+cvar_t	*g_newforcepowers;
+
+cvar_t	*g_allowForceAbsorb;
+
+cvar_t	*g_allowForceProtect;
 
 cvar_t	*g_synchSplitAnims;
 #ifndef FINAL_BUILD
@@ -200,6 +207,14 @@ cvar_t	*g_debugMelee;
 cvar_t	*g_saberRestrictForce;
 cvar_t	*g_saberPickuppableDroppedSabers;
 cvar_t	*g_dismemberProbabilities;
+cvar_t	*g_allowSaberLocking;
+cvar_t	*g_setSaberLocking;
+
+cvar_t	*g_validJKO;
+
+cvar_t	*g_forceLightningColor;
+
+cvar_t	*g_charKey;
 
 cvar_t	*g_speederControlScheme;
 
@@ -210,11 +225,38 @@ cvar_t	*g_char_skin_legs;
 cvar_t	*g_char_color_red;
 cvar_t	*g_char_color_green;
 cvar_t	*g_char_color_blue;
+cvar_t	*g_npc_color_red;
+cvar_t	*g_npc_color_green;
+cvar_t	*g_npc_color_blue;
 cvar_t	*g_saber;
 cvar_t	*g_saber2;
 cvar_t	*g_saber_color;
 cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
+
+// NPC attributes
+cvar_t *g_NPCtype;
+cvar_t *g_NPCteam;
+cvar_t *g_NPCweapon;
+cvar_t *g_NPCsaber;
+cvar_t *g_NPCsabercolor;
+cvar_t *g_NPCLightningColor;
+cvar_t *g_NPCsabertwo;
+cvar_t *g_NPCsabertwocolor;
+cvar_t *g_NPChealth;
+cvar_t *g_NPCspawnscript;
+cvar_t *g_NPCfleescript;
+cvar_t *g_NPCdeathscript;
+cvar_t *g_NPChead;
+cvar_t *g_NPCtorso;
+cvar_t *g_NPClegs;
+
+cvar_t* g_darkkorriban;
+
+cvar_t *g_knightfall;
+
+cvar_t *g_allowSaberTwirling;
+
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
@@ -226,7 +268,13 @@ cvar_t	*g_broadsword;
 
 cvar_t	*g_allowBunnyhopping;
 
+cvar_t	*g_allowAlignmentChange;
+
+cvar_t	*g_adoptcharstats;
+
 qboolean	stop_icarus = qfalse;
+
+cvar_t	*static_cam;
 
 extern char *G_GetLocationForEnt( gentity_t *ent );
 extern void CP_FindCombatPointWaypoints( void );
@@ -626,9 +674,17 @@ void G_InitCvars( void ) {
 	// change anytime vars
 	g_speed = gi.cvar( "g_speed", "250", CVAR_CHEAT );
 	g_gravity = gi.cvar( "g_gravity", "800", CVAR_SAVEGAME|CVAR_ROM );
+
+	g_newforcepowers = gi.cvar("g_newforcepowers", "1", CVAR_ARCHIVE);
+
+	g_allowForceAbsorb = gi.cvar("g_allowForceAbsorb", "1", CVAR_ARCHIVE);
+
+	g_allowForceProtect = gi.cvar("g_allowForceProtect", "1", CVAR_ARCHIVE);
+	
 	g_stepSlideFix = gi.cvar( "g_stepSlideFix", "1", CVAR_ARCHIVE );
 	g_sex = gi.cvar ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
+	g_newgameplus = gi.cvar("g_newgameplus", "0", CVAR_ARCHIVE | CVAR_SAVEGAME);
 	g_knockback = gi.cvar( "g_knockback", "1000", CVAR_CHEAT );
 	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
 	// for now I'm making default 10 seconds
@@ -670,9 +726,22 @@ void G_InitCvars( void ) {
 	g_saberNewControlScheme = gi.cvar( "g_saberNewControlScheme", "0", CVAR_ARCHIVE );//use +forcefocus to pull off all the special moves
 	g_debugSaberLock = gi.cvar( "g_debugSaberLock", "0", CVAR_CHEAT );//just for debugging/development, makes saberlocks happen all the time
 	g_saberLockRandomNess = gi.cvar( "g_saberLockRandomNess", "2", CVAR_ARCHIVE );//just for debugging/development, controls frequency of saberlocks
-	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
+	g_debugMelee = gi.cvar( "g_debugMelee", "1", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
-	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
+	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_ARCHIVE );//lets you pick up sabers that are dropped
+
+	g_allowSaberLocking = gi.cvar("g_allowSaberLocking", "1", CVAR_ARCHIVE);//Lets you enable or disable saber locking while ingame.
+	g_setSaberLocking = gi.cvar("g_setSaberLocking", "1", CVAR_INIT);//Lets you enable or disable saber locking while ingame. (Cvar used only in cutscenes so as not to override the player's own preference)
+
+	g_adoptcharstats = gi.cvar("g_adoptcharstats", "1", CVAR_ARCHIVE);// Lets the player adopt the health and armor of characters they select while ingame (or disable it). Disabled by default in missions.
+
+	g_validJKO = gi.cvar("g_validJKO", "0", CVAR_INIT);
+
+	g_knightfall = gi.cvar("g_knightfall", "0", CVAR_INIT);
+
+	g_forceLightningColor = gi.cvar("g_forceLightningColor", "0", CVAR_ARCHIVE);
+
+	g_charKey = gi.cvar("g_charKey", "stormtrooper", CVAR_ARCHIVE);
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
@@ -690,11 +759,36 @@ void G_InitCvars( void ) {
 	g_char_color_red = gi.cvar( "g_char_color_red", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_color_green = gi.cvar( "g_char_color_green", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_char_color_blue = gi.cvar( "g_char_color_blue", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_npc_color_red = gi.cvar("g_npc_color_red", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	g_npc_color_green = gi.cvar("g_npc_color_green", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	g_npc_color_blue = gi.cvar("g_npc_color_blue", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	g_saber = gi.cvar( "g_saber", "single_1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber2 = gi.cvar( "g_saber2", "", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber_color = gi.cvar( "g_saber_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saber2_color = gi.cvar( "g_saber2_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saberDarkSideSaberColor = gi.cvar( "g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE );	//when you turn evil, it turns your saber red!
+
+	g_NPCtype = gi.cvar("g_NPCtype", "stormtrooper", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCteam = gi.cvar("g_NPCteam", "enemy", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPChealth = gi.cvar("g_NPChealth", "100", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCspawnscript = gi.cvar("g_NPCspawnscript", "spawnscripts/no_follow", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCfleescript = gi.cvar("g_NPCfleescript", "fleescripts/surrender", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCdeathscript = gi.cvar("g_NPCdeathscript", "deathscripts/losehead", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPChead = gi.cvar("g_NPChead", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCtorso = gi.cvar("g_NPCtorso", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPClegs = gi.cvar("g_NPClegs", "model_default", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCweapon = gi.cvar("g_NPCweapon", "WP_BLASTER", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsaber = gi.cvar("g_NPCsaber", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabertwo = gi.cvar("g_NPCsabertwo", "single_1", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabercolor = gi.cvar("g_NPCsabercolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCsabertwocolor = gi.cvar("g_NPCsabertwocolor", "red", CVAR_ARCHIVE | CVAR_NORESTART);
+	g_NPCLightningColor = gi.cvar("g_NPCLightningColor", "blue", CVAR_ARCHIVE | CVAR_NORESTART);
+
+	g_allowSaberTwirling = gi.cvar("g_allowSaberTwirling", "1", CVAR_ARCHIVE | CVAR_NORESTART);
+
+	g_darkkorriban = gi.cvar("g_darkkorriban", "0", CVAR_INIT);
+
+	g_allowAlignmentChange = gi.cvar("g_allowAlignmentChange", "0", CVAR_ARCHIVE | CVAR_NORESTART);
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 
@@ -707,6 +801,8 @@ void G_InitCvars( void ) {
 	gi.cvar( "ui_prisonerobj_maxtotal", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 
 	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
+
+	static_cam = gi.cvar("static_Cam", "0", CVAR_NORESTART);
 
 }
 /*
@@ -1442,6 +1538,86 @@ static inline qboolean G_RagWantsHumanoidsOnly( CGhoul2Info *ghlInfo )
 	assert(GLAName);
 
 	if ( !Q_stricmp( "models/players/_humanoid/_humanoid", GLAName ) )
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/JK2anims/JK2anims", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Clones/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Drallig/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_DVader/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_jabba/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_JBrute/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Jedi/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Jedi2/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_kotor/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_lanakin/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_malak/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_OldBen/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Palpatine/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Serra/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected eto have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Shaak/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Shakkra/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Sidious/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_TDroid/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_TGuard/_humanoid", GLAName))
+	{//only _humanoid skeleton is expected to have these
+		return qtrue;
+	}
+	if (!Q_stricmp("models/players/_humanoid_Vader/_humanoid", GLAName))
 	{//only _humanoid skeleton is expected to have these
 		return qtrue;
 	}

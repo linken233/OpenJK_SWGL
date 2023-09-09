@@ -157,6 +157,29 @@ static void IT_Name(const char **holdBuf)
 		itemNum = ITM_SCEPTER_PICKUP;
 	else if (!Q_stricmp(tokenStr,"ITM_NOGHRI_STICK_PICKUP"))
 		itemNum = ITM_NOGHRI_STICK_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_BATTLEDROID_PICKUP"))
+		itemNum = ITM_BATTLEDROID_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_THEFIRSTORDER_PICKUP"))
+		itemNum = ITM_THEFIRSTORDER_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CLONECARBINE_PICKUP"))
+		itemNum = ITM_CLONECARBINE_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_REBELBLASTER_PICKUP"))
+		itemNum = ITM_REBELBLASTER_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CLONERIFLE_PICKUP"))
+		itemNum = ITM_CLONERIFLE_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CLONECOMMANDO_PICKUP"))
+		itemNum = ITM_CLONECOMMANDO_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_REBELRIFLE_PICKUP"))
+		itemNum = ITM_REBELRIFLE_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_REY_PICKUP"))
+		itemNum = ITM_REY_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_JANGO_PICKUP"))
+		itemNum = ITM_JANGO_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_BOBA_PICKUP"))
+		 itemNum = ITM_BOBA_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CLONEPISTOL_PICKUP"))
+	 	 itemNum = ITM_CLONEPISTOL_PICKUP;
+
 	//ammo
 	else if (!Q_stricmp(tokenStr,"ITM_AMMO_FORCE_PICKUP"))
 		itemNum = ITM_AMMO_FORCE_PICKUP;
@@ -374,6 +397,28 @@ static void IT_Tag(const char **holdBuf)
 		tag = WP_SCEPTER;
 	else if (!Q_stricmp(tokenStr,"WP_NOGHRI_STICK"))
 		tag = WP_NOGHRI_STICK;
+	else if (!Q_stricmp(tokenStr, "WP_BATTLEDROID"))
+		tag = WP_BATTLEDROID;
+	else if (!Q_stricmp(tokenStr, "WP_THEFIRSTORDER"))
+		tag = WP_THEFIRSTORDER;
+	else if (!Q_stricmp(tokenStr, "WP_CLONECARBINE"))
+		tag = WP_CLONECARBINE;
+	else if (!Q_stricmp(tokenStr, "WP_REBELBLASTER"))
+		tag = WP_REBELBLASTER;
+	else if (!Q_stricmp(tokenStr, "WP_CLONERIFLE"))
+		tag = WP_CLONERIFLE;
+	else if (!Q_stricmp(tokenStr, "WP_CLONECOMMANDO"))
+		tag = WP_CLONECOMMANDO;
+	else if (!Q_stricmp(tokenStr, "WP_REBELRIFLE"))
+		tag = WP_REBELRIFLE;
+	else if (!Q_stricmp(tokenStr, "WP_REY"))
+		tag = WP_REY;
+	else if (!Q_stricmp(tokenStr, "WP_JANGO"))
+		tag = WP_JANGO;
+	else if (!Q_stricmp(tokenStr, "WP_BOBA"))
+	  tag = WP_BOBA;
+	else if (!Q_stricmp(tokenStr, "WP_CLONEPISTOL"))
+		tag = WP_CLONEPISTOL;
 	else if (!Q_stricmp(tokenStr,"AMMO_FORCE"))
 		tag = AMMO_FORCE;
 	else if (!Q_stricmp(tokenStr,"AMMO_BLASTER"))
@@ -424,7 +469,37 @@ static void IT_Tag(const char **holdBuf)
 	{
 		tag = FP_LIGHTNING;
 	}
-	else if (!Q_stricmp(tokenStr,"FP_SABERTHROW"))
+	else if (!Q_stricmp(tokenStr, "FP_STASIS"))
+	{
+		tag = FP_STASIS;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_BLAST"))
+	{
+		tag = FP_BLAST;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_GRASP"))
+	{
+		tag = FP_GRASP;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_LIGHTNING_STRIKE"))
+	{
+		tag = FP_LIGHTNING_STRIKE;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_DESTRUCTION"))
+	{
+		tag = FP_DESTRUCTION;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_LIGHTNING"))
+	{
+		tag = FP_LIGHTNING;
+	}
+	else if (!Q_stricmp(tokenStr, "FP_FEAR"))
+	{
+		tag = FP_FEAR;
+	}
+	// The absence of this check resulted in an error
+	// when debugging.
+	else if (!Q_stricmp(tokenStr, "FP_SABERTHROW"))
 	{
 		tag = FP_SABERTHROW;
 	}
@@ -700,4 +775,3 @@ void IT_LoadItemParms (void)
 
 	gi.FS_FreeFile( buffer );	//let go of the buffer
 }
-

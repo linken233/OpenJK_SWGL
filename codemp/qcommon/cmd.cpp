@@ -981,8 +981,8 @@ Cmd_Init
 */
 void Cmd_Init (void) {
 	Cmd_AddCommand( "cmdlist", Cmd_List_f, "List all commands to console" );
-	Cmd_AddCommand( "help", Cmd_PrintHelp_f, "Print command help" );
-	Cmd_SetCommandCompletionFunc( "help", Cmd_CompleteCmdName );
+	Cmd_AddCommand( "cmdinfo", Cmd_PrintHelp_f, "Print command help" );
+	Cmd_SetCommandCompletionFunc( "helpcmd", Cmd_CompleteCmdName );
 	Cmd_AddCommand( "echo", Cmd_Echo_f, "Print message to console" );
 	Cmd_AddCommand( "exec", Cmd_Exec_f, "Execute a script file" );
 	Cmd_AddCommand( "execq", Cmd_Exec_f, "Execute a script file without displaying a message" );

@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "Q3_Interface.h"
 #include "g_navigator.h"
+#include "NPC_SWGL.h"
 
 #define TURN_OFF			0x00000100
 
@@ -52,6 +53,9 @@ extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_dismemberProbabilities;
 
 gentity_t *g_lastClientDamaged;
+
+
+extern gentity_t* traya;
 
 extern int killPlayerTimer;
 
@@ -129,8 +133,10 @@ gentity_t *TossClientItems( gentity_t *self )
 {
 	//FIXME: drop left-hand weapon, too?
 	gentity_t	*dropped = NULL;
+	gentity_t	*dropped2 = NULL;
 	gitem_t		*item = NULL;
 	int			weapon;
+	qboolean 	is_pistol = qfalse;
 
 	if ( self->client->NPC_class == CLASS_SEEKER
 		|| self->client->NPC_class == CLASS_REMOTE
@@ -144,6 +150,11 @@ gentity_t *TossClientItems( gentity_t *self )
 
 	// drop the weapon if not a saber or enemy-only weapon
 	weapon = self->s.weapon;
+	is_pistol = (qboolean)(self->weaponModel[1] > 0 && (weapon == WP_BLASTER_PISTOL
+							|| weapon == WP_REY
+							|| weapon == WP_JANGO
+							|| weapon == WP_CLONEPISTOL));
+
 	if ( weapon == WP_SABER )
 	{
 		if ( self->weaponModel[0] < 0 )
@@ -179,14 +190,15 @@ gentity_t *TossClientItems( gentity_t *self )
 			}
 		}
 	}
-	else if ( weapon == WP_BLASTER_PISTOL )
+	/*else if ( weapon == WP_BLASTER_PISTOL )
 	{//FIXME: either drop the pistol and make the pickup only give ammo or drop ammo
 	}
+	*/
 	else if ( weapon == WP_STUN_BATON
 		|| weapon == WP_MELEE )
 	{//never drop these
 	}
-	else if ( weapon > WP_SABER && weapon <= MAX_PLAYER_WEAPONS )//&& self->client->ps.ammo[ weaponData[weapon].ammoIndex ]
+	else if ( weapon > WP_SABER && weapon < WP_NUM_WEAPONS && playerUsableWeapons[weapon] )//&& self->client->ps.ammo[ weaponData[weapon].ammoIndex ]
 	{
 		self->s.weapon = WP_NONE;
 
@@ -257,6 +269,25 @@ gentity_t *TossClientItems( gentity_t *self )
 				case WP_STUN_BATON:
 					dropped->count = 20;
 					break;
+				case WP_TUSKEN_RIFLE:
+					dropped->count = 20;
+					break;
+				case WP_NOGHRI_STICK:
+					dropped->count = 15;
+					break;
+				case WP_BATTLEDROID:
+				case WP_THEFIRSTORDER:
+				case WP_CLONECARBINE:
+				case WP_REBELBLASTER:
+				case WP_CLONERIFLE:
+				case WP_CLONECOMMANDO:
+				case WP_REBELRIFLE:
+				case WP_REY:
+				case WP_JANGO:
+				case WP_BOBA:
+				case WP_CLONEPISTOL:
+					dropped->count = 50;
+					break;
 				default:
 					dropped->count = 0;
 					break;
@@ -270,6 +301,38 @@ gentity_t *TossClientItems( gentity_t *self )
 				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 				dropped->s.radius = 10;
 			}
+		}
+
+		if (item && !dropped2 && is_pistol)
+		{
+			dropped2 = Drop_Item(self, item, 45, qtrue);
+			dropped2->e_ThinkFunc = thinkF_NULL;
+			dropped2->nextthink = -1;
+
+			if (!self->s.number)
+			{
+				dropped2->count = 0;
+			}
+			else
+			{
+				switch (weapon)
+				{
+					case WP_BLASTER_PISTOL:
+						dropped2->count = 20;
+						break;
+					case WP_REY:
+					case WP_JANGO:
+					case WP_CLONEPISTOL:
+						dropped2->count = 50;
+						break;
+					default:
+						dropped2->count = 0;
+						break;
+				}
+			}
+
+			gi.G2API_InitGhoul2Model(dropped2->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
+			dropped2->s.radius = 10;
 		}
 	}
 //	else if (( self->client->NPC_class == CLASS_SENTRY ) || ( self->client->NPC_class == CLASS_PROBE )) // Looks dumb, Steve told us to take it out.
@@ -3618,7 +3681,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	int			cliff_fall = 0;
 
 	//FIXME: somehow people are sometimes not completely dying???
-	if ( self->client->ps.pm_type == PM_DEAD && (meansOfDeath != MOD_SNIPER || (self->flags & FL_DISINTEGRATED)) )
+	if ( self->client->ps.pm_type == PM_DEAD && ((meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION && meansOfDeath != MOD_HIGH_POWERED_SHOT)
+		|| (self->flags & FL_DISINTEGRATED)) )
 	{//do dismemberment/twitching
 		if ( self->client->NPC_class == CLASS_MARK1 )
 		{
@@ -3808,7 +3872,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			RunEmplacedWeapon( self, &ad_cmd );
 			//self->owner = old;
 		}
-		if ( self->client->NPC_class == CLASS_BOBAFETT
+		if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO
 			|| self->client->NPC_class == CLASS_ROCKETTROOPER )
 		{
 			if ( self->client->moveType == MT_FLYSWIM )
@@ -3856,7 +3920,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				}
 			}
 		}
-		if ( (self->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER)) )
+		if ( (self->client->ps.weapons[WP_SCEPTER]) )
 		{
 			G_StopEffect( G_EffectIndex( "scepter/beam_warmup.efx" ), self->weaponModel[1], self->genericBolt1, self->s.number );
 			G_StopEffect( G_EffectIndex( "scepter/beam.efx" ), self->weaponModel[1], self->genericBolt1, self->s.number );
@@ -4081,7 +4145,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		TossClientItems( self );
 	}
 
-	if ( meansOfDeath == MOD_SNIPER )
+	if ( meansOfDeath == MOD_SNIPER || meansOfDeath == MOD_DESTRUCTION 
+		|| meansOfDeath == MOD_HIGH_POWERED_SHOT)
 	{//I was disintegrated
 		if ( self->message )
 		{//I was holding a key
@@ -4154,6 +4219,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			WP_StopForceHealEffects( self );
 		}
 	}
+	self->client->ps.stasisTime = 0;
 	VectorCopy( self->currentAngles, self->client->ps.viewangles );
 	//FACING==========================================================
 	if ( player && player->client && player->client->ps.viewEntity == self->s.number )
@@ -4204,7 +4270,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			NPC_SetAnim( self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		}
 	}
-	else if ( self->s.number && self->message && meansOfDeath != MOD_SNIPER )
+	else if ( self->s.number && self->message && meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_HIGH_POWERED_SHOT )
 	{//imp with a key on his arm
 		//pick a death anim that leaves key visible
 		switch ( Q_irand( 0, 3 ) )
@@ -4316,8 +4382,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{//drowned
 				anim = BOTH_DEATH17;
 			}
-			else if ( meansOfDeath != MOD_SNIPER //disintegrates
-				&& meansOfDeath != MOD_CONC_ALT )//does its own death throw
+			else if (meansOfDeath != MOD_SNIPER && meansOfDeath != MOD_DESTRUCTION //disintegrates
+				&& meansOfDeath != MOD_CONC_ALT && meansOfDeath != MOD_HIGH_POWERED_SHOT)//does its own death throw
 			{
 				cliff_fall = G_CheckLedgeDive( self, 128, self->client->ps.velocity, qtrue, qfalse );
 				if ( cliff_fall == 2 )
@@ -4507,7 +4573,9 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				self->NPC->timeOfDeath = level.time + 10000;
 			}
 		}
-		else if ( meansOfDeath == MOD_SNIPER )
+		else if ( meansOfDeath == MOD_SNIPER 
+			|| meansOfDeath == MOD_DESTRUCTION
+			|| meansOfDeath == MOD_HIGH_POWERED_SHOT)
 		{
 			gentity_t	*tent;
 			vec3_t		spot;
@@ -4557,7 +4625,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				&& meansOfDeath!=MOD_LASERTRIP
 				&& meansOfDeath!=MOD_LASERTRIP_ALT
 				&& meansOfDeath!=MOD_EXPLOSIVE
-				&& meansOfDeath!=MOD_EXPLOSIVE_SPLASH )
+				&& meansOfDeath!=MOD_EXPLOSIVE_SPLASH 
+				&& meansOfDeath!= MOD_DESTRUCTION)
 			{//no sound when killed by headshot (explosions don't count)
 				G_AlertTeam( self, attacker, 512, 0 );
 				if ( gi.VoiceVolume[self->s.number] )
@@ -4734,7 +4803,7 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const 
 		if ( blasterTest && chargerTest )
 		{//lost both side guns
 			//take away that weapon
-			self->client->ps.stats[STAT_WEAPONS] &= ~( 1 << WP_ATST_SIDE );
+			self->client->ps.weapons[WP_ATST_SIDE] = 0;
 			//switch to primary guns
 			if ( self->client->ps.weapon == WP_ATST_SIDE )
 			{
@@ -5102,7 +5171,8 @@ void G_CheckKnockdown( gentity_t *targ, gentity_t *attacker, vec3_t newDir, int 
 			&&mod!=MOD_LASERTRIP
 			&&mod!=MOD_LASERTRIP_ALT
 			&&mod!=MOD_EXPLOSIVE
-			&&mod!=MOD_EXPLOSIVE_SPLASH )
+			&&mod!=MOD_EXPLOSIVE_SPLASH
+			&&mod != MOD_DESTRUCTION)
 		{
 			return;
 		}
@@ -5334,10 +5404,6 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_BRYAR_ALT:
 			weapon = WP_BRYAR_PISTOL;
 			break;
-		case MOD_BLASTER:
-		case MOD_BLASTER_ALT:
-			weapon = WP_BLASTER;
-			break;
 		case MOD_DISRUPTOR:
 		case MOD_SNIPER:
 			weapon = WP_DISRUPTOR;
@@ -5387,6 +5453,44 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 				weapon = WP_MELEE;
 			}
 			break;
+		case MOD_BLASTER:
+		case MOD_BLASTER_ALT:
+			weapon = WP_BLASTER;
+			weapon = WP_THEFIRSTORDER;
+			weapon = WP_CLONECARBINE;
+			break;
+		case MOD_CLONERIFLE:
+		case MOD_CLONERIFLE_ALT:
+			weapon = WP_CLONERIFLE;
+			break;
+		case MOD_REBELBLASTER:
+		case MOD_REBELBLASTER_ALT:
+			weapon = WP_REBELBLASTER;
+			break;
+		case MOD_CLONECOMMANDO:
+		case MOD_CLONECOMMANDO_ALT:
+			weapon = WP_CLONECOMMANDO;
+			break;
+		case MOD_REBELRIFLE:
+		case MOD_REBELRIFLE_ALT:
+			weapon = WP_REBELRIFLE;
+			break;
+		case MOD_REY:
+		case MOD_REY_ALT:
+			weapon = WP_REY;
+			break;
+		case MOD_CLONEPISTOL:
+		case MOD_CLONEPISTOL_ALT:
+			weapon = WP_CLONEPISTOL;
+			break;
+		case MOD_JANGO:
+		case MOD_JANGO_ALT:
+			weapon = WP_JANGO;
+			break;
+		case MOD_BOBA:
+		case MOD_BOBA_ALT:
+			weapon = WP_BOBA;
+			break;
 		}
 	}
 	if ( weapon != WP_NONE )
@@ -5412,7 +5516,8 @@ qboolean G_NonLocationSpecificDamage( int meansOfDeath )
 		|| meansOfDeath == MOD_FORCE_GRIP
 		|| meansOfDeath == MOD_KNOCKOUT
 		|| meansOfDeath == MOD_CRUSH
-		|| meansOfDeath == MOD_EXPLOSIVE_SPLASH )
+		|| meansOfDeath == MOD_EXPLOSIVE_SPLASH
+		|| meansOfDeath == MOD_DESTRUCTION)
 	{
 		return qtrue;
 	}
@@ -5445,6 +5550,8 @@ qboolean G_ImmuneToGas( gentity_t *ent )
 		|| ent->client->NPC_class == CLASS_SWAMPTROOPER
 		|| ent->client->NPC_class == CLASS_TUSKEN
 		|| ent->client->NPC_class == CLASS_BOBAFETT
+		|| ent->client->NPC_class == CLASS_MANDALORIAN
+		|| ent->client->NPC_class == CLASS_JANGO
 		|| ent->client->NPC_class == CLASS_ROCKETTROOPER
 		|| ent->client->NPC_class == CLASS_SABER_DROID
 		|| ent->client->NPC_class == CLASS_ASSASSIN_DROID
@@ -5459,6 +5566,8 @@ qboolean G_ImmuneToGas( gentity_t *ent )
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern void G_StartRoll( gentity_t *ent, int anim );
 extern void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
+int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod);
 
 /*
 ============
@@ -5489,7 +5598,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	gclient_t	*client;
 	int			take;
 	int			asave = 0;
-	int			knockback;
+	int			knockback; 
 	vec3_t		newDir;
 	qboolean	alreadyDead = qfalse;
 
@@ -5505,10 +5614,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			return;
 		}
 	}
-
+	
 	if ( targ->health <= 0 && !targ->client )
 	{	// allow corpses to be disintegrated
-		if( mod != MOD_SNIPER || (targ->flags & FL_DISINTEGRATED) )
+		if( (mod != MOD_SNIPER && mod != MOD_DESTRUCTION && mod != MOD_HIGH_POWERED_SHOT) || (targ->flags & FL_DISINTEGRATED))
 		return;
 	}
 
@@ -5620,6 +5729,26 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		attacker = &g_entities[ENTITYNUM_WORLD];
 	}
 
+	// Traya gains strength while her allies suffer.
+	if (traya && traya->client &&
+		targ->client->playerTeam == traya->client->playerTeam
+		&& traya->client->playerTeam != TEAM_SOLO)
+	{
+		if (traya->health > 0 && traya->health < (traya->max_health * 2) && traya->health <= 2000000000)
+		{
+			if (!Q_stricmp(NIHILUS, targ->NPC_type)
+				|| !Q_stricmp(SION, targ->NPC_type)
+				|| !Q_stricmp(SION_TFU, targ->NPC_type))
+			{
+				traya->health += damage;
+			}
+			else
+			{
+				traya->health += 5;
+			}
+		}
+	}
+
 	// no more weakling allies!
 //	if ( attacker->s.number != 0 && damage >= 2 && targ->s.number != 0 && attacker->client && attacker->client->playerTeam == TEAM_PLAYER )
 //	{//player-helpers do only half damage to enemies
@@ -5661,6 +5790,22 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		if ( (targ->flags&FL_GODMODE) || (targ->flags&FL_UNDYING) )
 		{//have god or undying on, so ignore no protection flag
 			dflags &= ~DAMAGE_NO_PROTECTION;
+		}
+	}
+
+	// Traya doesn't approve of her enemies fighting in a team. She'll punish any attacker who is not her active enemy (doesn't care if the enemy is TEAM_SOLO)
+	if (traya && traya->client
+		&& traya == targ)
+	{
+		if (attacker
+			&& attacker->client
+			&& traya->enemy
+			&& traya->enemy->client
+			&& (attacker != targ->enemy)
+			&& ((attacker->client->playerTeam == traya->enemy->client->playerTeam && traya->enemy->client->playerTeam != TEAM_SOLO)))
+		{
+			if(!Q_irand(0,2))
+				G_Damage(attacker, targ, targ, 0, 0, Q_irand(1,3), DAMAGE_NO_KILL, MOD_GAS, HL_CHEST);
 		}
 	}
 
@@ -5740,6 +5885,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				|| mod == MOD_LASERTRIP
 				|| mod == MOD_LASERTRIP_ALT
 				|| mod == MOD_EXPLOSIVE_SPLASH
+				|| mod == MOD_DESTRUCTION
 				|| mod == MOD_ENERGY_SPLASH
 				|| mod == MOD_SABER )
 			{//galak without shields takes quarter damage from explosives and lightsaber
@@ -5771,7 +5917,42 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		{
 			damage *= 6;// more damage to turret things
 		}
+
+		if (targ->s.number >= MAX_CLIENTS && mod == MOD_DESTRUCTION) //Destruction should do less damage to enemies
+		{
+			if (targ->s.weapon == WP_SABER && 
+				(targ->client->NPC_class == CLASS_KYLE
+				|| targ->client->NPC_class == CLASS_LUKE
+					|| targ->client->NPC_class == CLASS_TAVION
+					|| targ->client->NPC_class == CLASS_DESANN))
+			{
+				if (client)
+				{
+					switch (client->ps.forcePowerLevel[FP_SABER_DEFENSE])
+					{
+					case FORCE_LEVEL_3:
+						damage *= 0.4;
+						break;
+					case FORCE_LEVEL_2:
+						damage *= 0.6;
+						break;
+					case FORCE_LEVEL_1:
+						damage *= 0.8;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
 	}
+
+	// Calculate damage for False Emperor (since there are rules)
+	damage = FalseEmperorDamage(damage, attacker, targ, mod);
+
+	// Calculate damage for Knightfall
+	damage = KnightfallDamage(damage, attacker, targ, mod);
+
 
 	if (targ
 		&& targ->client
@@ -5839,6 +6020,22 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_BLASTER:
 				case MOD_BLASTER_ALT:
 				case MOD_REPEATER:
+				case MOD_REBELBLASTER:
+				case MOD_REBELBLASTER_ALT
+				case MOD_CLONERIFLE:
+				case MOD_CLONERIFLE_ALT
+				case MOD_CLONECOMMANDO:
+				case MOD_CLONECOMMANDO_ALT
+				case MOD_REBELRIFLE:
+				case MOD_REBELRIFLE_ALT
+				case MOD_REY:
+				case MOD_REY_ALT
+				case MOD_JANGO:
+				case MOD_JANGO_ALT
+				case MOD_BOBA:
+				case MOD_BOBA_ALT
+				case MOD_CLONEPISTOL:
+				case MOD_CLONEPISTOL_ALT
 				case MOD_FLECHETTE:
 				case MOD_WATER:
 				case MOD_SLIME:
@@ -5880,6 +6077,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_EMPLACED:
 				case MOD_EXPLOSIVE:
 				case MOD_EXPLOSIVE_SPLASH:
+				case MOD_DESTRUCTION:
 				case MOD_SABER:
 				case MOD_DISRUPTOR:
 				case MOD_SNIPER:
@@ -5895,6 +6093,22 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_BRYAR_ALT:
 				case MOD_BLASTER:
 				case MOD_BLASTER_ALT:
+				case MOD_REBELBLASTER:
+				case MOD_REBELBLASTER_ALT:
+				case MOD_CLONERIFLE:
+				case MOD_CLONERIFLE_ALT:
+				case MOD_CLONECOMMANDO:
+				case MOD_CLONECOMMANDO_ALT:
+				case MOD_REBELRIFLE:
+				case MOD_REBELRIFLE_ALT:
+				case MOD_REY:
+				case MOD_REY_ALT:
+				case MOD_CLONEPISTOL:
+				case MOD_CLONEPISTOL_ALT:
+				case MOD_JANGO:
+				case MOD_JANGO_ALT:
+				case MOD_BOBA:
+				case MOD_BOBA_ALT:
 				case MOD_REPEATER:
 				case MOD_FLECHETTE:
 				case MOD_WATER:
@@ -5902,6 +6116,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_LAVA:
 				case MOD_FALLING:
 				case MOD_MELEE:
+				case MOD_HIGH_POWERED_SHOT:
 					doSound = (qboolean)(Q_irand(0,4)==0);
 					switch ( targ->client->ps.forcePowerLevel[FP_PROTECT] )
 					{
@@ -5960,6 +6175,67 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 			}
 		}
 		//absorb
+
+		if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
+		{
+			if (mod == MOD_DESTRUCTION)
+			{
+				switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
+				case FORCE_LEVEL_1:
+					damage *= 0.8f;
+					break;
+				case FORCE_LEVEL_2:
+					damage *= 0.6f;
+					break;
+				case FORCE_LEVEL_3:
+					damage *= 0.4f;
+					break;
+				default:
+					damage = 0;
+					break;
+				}
+			}
+			else if (mod == MOD_BLAST)
+			{				
+				switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) 
+				{
+				case FORCE_LEVEL_1:
+					damage *= 0.8f;
+					break;
+				case FORCE_LEVEL_2:
+					damage *= 0.4f;
+					break;
+				case FORCE_LEVEL_3:
+					damage *= 0.0f;
+					break;
+				default:
+					damage = 0;
+					break;
+				}				
+			}
+
+		}
+
+			if ((targ->client->ps.forcePowersActive & (1 << FP_ABSORB)))
+			{
+				if (mod == MOD_FORCE_LIGHTNING || mod == MOD_STRIKE)
+				{
+					switch (targ->client->ps.forcePowerLevel[FP_ABSORB]) {
+					case FORCE_LEVEL_1:
+						damage *= 0.9f;
+						break;
+					case FORCE_LEVEL_2:
+						damage *= 0.5f;
+						break;
+					case FORCE_LEVEL_3:
+						damage *= 0.25f;
+						break;
+					default:
+						damage = 0;
+						break;
+					}
+				}
+			}
 		/*
 		if ( (targ->client->ps.forcePowersActive & (1 << FP_ABSORB)) )
 		{
@@ -6554,7 +6830,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		//		attackerTeam = TEAM_PLAYER;
 		//	}
 
-			if ( targTeam != attackerTeam
+			if ( (targTeam != attackerTeam || targTeam == TEAM_SOLO)
 				|| (targ->s.number < MAX_CLIENTS && targTeam == TEAM_FREE)//evil player hit
 				|| (attacker && attacker->s.number < MAX_CLIENTS && attackerTeam == TEAM_FREE) )//evil player attacked
 			{//on opposite team
@@ -6576,9 +6852,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					{
 						if ( targ->NPC == NULL || !(targ->NPC->aiFlags&NPCAI_ROSH) || !Rosh_TwinPresent( targ ) )
 						{//NOTE: Rosh won't run his deathscript until he doesn't have the twins to heal him
+							targ->client->dismembered = qtrue;
 							G_ActivateBehavior( targ, BSET_DEATH );
 						}
 						targ->health = 1;
+						if (!Q_stricmp(SION, targ->NPC_type)
+							|| !Q_stricmp(SION_TFU, targ->NPC_type))
+						{
+							NPC_SetAnim(targ, SETANIM_BOTH, BOTH_FORCE_RAGE, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+							targ->health = ((targ->max_health/(Q_irand(1,4)))+1);
+							if (!Q_irand(0, 2))
+							{
+								targ->flags &= ~FL_UNDYING;
+								targ->client->dismembered = qtrue;
+							}
+						}
 					}
 				}
 				else if ( targ->health < 1 && attacker->client )
@@ -6586,7 +6874,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					attacker->client->ps.persistant[PERS_ENEMIES_KILLED]++;
 				}
 			}
-			else if ( targTeam == TEAM_PLAYER )
+
+			else if ( (targTeam == TEAM_PLAYER && (targ->s.number == 0)) || (targTeam == TEAM_PLAYER && attacker == player) || targTeam == TEAM_SOLO)
 			{//on the same team, and target is an ally
 				qboolean takeDamage = qtrue;
 				qboolean yellAtAttacker = qtrue;
@@ -6704,7 +6993,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 		if ( targ->health > 0 && targ->NPC && targ->NPC->surrenderTime > level.time )
 		{//he was surrendering, goes down with one hit
-			if (!targ->client || targ->client->NPC_class!=CLASS_BOBAFETT)
+			if (!targ->client || (targ->client->NPC_class != CLASS_BOBAFETT && targ->client->NPC_class != CLASS_MANDALORIAN && targ->client->NPC_class != CLASS_JANGO))
 			{
 				targ->health = 0;
 			}
@@ -6768,6 +7057,92 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 }
 
+extern qboolean IsPlayingOperationKnightfall();
+extern qboolean IsKnightfallBoss(gentity_t* ent);
+int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
+{
+	// If we're not playing Knightfall, just skip everything
+	if (IsPlayingOperationKnightfall())
+	{
+		if ((attacker && attacker->client)
+			&& (targ && targ->client))
+		{
+		
+		// Trying to stop friendly fire between the player and the clones
+		if (attacker->client->playerTeam == targ->client->playerTeam)
+			damage = 0;
+		// 2x damage from clones to Jedi (so they're actually helpful)
+		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
+			damage *= 2.0f;
+		}
+		else if (IsKnightfallBoss(attacker) && targ != player)
+		{
+			damage *= 3.0f;
+		}
+
+	}
+
+	return damage;
+}
+
+extern qboolean FalseEmperorMission();
+int FalseEmperorDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
+{
+	// If we're not playing False Emperor, just skip everything
+	if (FalseEmperorMission())
+	{
+		// Damage changes per map, so we need this information
+		const char* info = CG_ConfigString(CS_SERVERINFO);
+		const char* s = Info_ValueForKey(info, "mapname");
+
+		// Jedi Knight deals more damage with a lightsaber and takes less damage from a lightsaber
+		if (!Q_stricmp(s, "swtor_fe_jedi"))
+		{
+			if (mod == MOD_SABER)
+			{
+				// Player deals 3x damage with a lightsaber and takes 50% less damage from a lightsaber.
+				if (attacker == player)
+					damage *= 1.5f;
+			}
+			if (targ == player)
+				damage /= 2;
+		}
+		// Sith Inquisitor deals more damage with Force Powers and takes less damage from Force Powers
+		else if (!Q_stricmp(s, "swtor_fe_sith"))
+		{
+			if (mod == MOD_BLAST
+				|| mod == MOD_FORCE_GRIP
+				|| mod == MOD_FORCE_LIGHTNING
+				|| mod == MOD_FORCE_DRAIN
+				|| mod == MOD_STRIKE)
+			{
+				// Player deals 5x damage with the Force and takes 50% less damage from the Force.
+				if (attacker == player)
+					damage *= 5;
+				else if (targ == player)
+					damage /= 2;
+			}
+		}
+		// Bounty Hunter gets a decent damage boost but no defensive boost since they can fly away anyway
+		else if (!Q_stricmp(s, "swtor_fe_hunter"))
+		{
+			if (attacker == player)
+				damage *= 3;
+		}
+		// Trooper is the real MVP since they have no natural defense.
+		else
+		{
+			// 80% less damage from Malgus
+			if (targ == player)
+				damage *= 0.8f;
+			// 5x more damage against Malgus
+			else if (attacker == player)
+				damage *= 5;
+		}
+	}
+
+	return damage;
+}
 
 /*
 ============

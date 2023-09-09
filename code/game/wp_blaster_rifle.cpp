@@ -25,8 +25,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "w_local.h"
-
-
 //---------------
 //	Blaster
 //---------------
@@ -46,7 +44,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 	else
 	{
 		// If an enemy is shooting at us, lower the velocity so you have a chance to evade
-		if ( ent->client && ent->client->ps.clientNum != 0 && ent->client->NPC_class != CLASS_BOBAFETT )
+		if (ent->client && ent->client->ps.clientNum != 0 && ((ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO) && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
 		{
 			if ( g_spskill->integer < 2 )
 			{
@@ -69,7 +67,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 	missile->s.weapon = WP_BLASTER;
 
 	// Do the damages
-	if ( ent->s.number != 0 && ent->client->NPC_class != CLASS_BOBAFETT )
+	if (ent->s.number != 0 && ((ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO) && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
 	{
 		if ( g_spskill->integer == 0 )
 		{

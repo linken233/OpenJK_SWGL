@@ -515,11 +515,11 @@ Ghoul2 Insert End
 } cg_t;
 
 
-#define MAX_SHOWPOWERS 12
+#define MAX_SHOWPOWERS 18
 extern int showPowers[MAX_SHOWPOWERS];
 extern const char *showPowersName[MAX_SHOWPOWERS];
 extern int force_icons[NUM_FORCE_POWERS];
-#define MAX_DPSHOWPOWERS 16
+#define MAX_DPSHOWPOWERS 22
 
 //==============================================================================
 
@@ -655,6 +655,23 @@ extern	vmCvar_t		cg_fovViewmodelAdjust;
 
 extern	vmCvar_t		cg_scaleVehicleSensitivity;
 
+extern	vmCvar_t		cg_trueguns;
+extern	vmCvar_t		cg_fpls;
+
+extern	vmCvar_t		cg_trueroll;
+extern	vmCvar_t		cg_trueflip;
+extern	vmCvar_t		cg_truespin;
+extern	vmCvar_t		cg_truemoveroll;
+extern  vmCvar_t		cg_truesaberonly;
+extern	vmCvar_t		cg_trueeyeposition;
+extern	vmCvar_t		cg_trueinvertsaber;
+extern	vmCvar_t		cg_truefov;
+extern  vmCvar_t        cg_truebobbing;
+
+extern	vmCvar_t		cg_hudRatio;
+
+extern	vmCvar_t		cg_dualWielding;
+
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c
@@ -723,13 +740,13 @@ void CG_FillRect( float x, float y, float width, float height, const float *colo
 void CG_Scissor( float x, float y, float width, float height);
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
 void CG_DrawPic2( float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader );
-void CG_DrawRotatePic( float x, float y, float width, float height,float angle, qhandle_t hShader );
-void CG_DrawRotatePic2( float x, float y, float width, float height,float angle, qhandle_t hShader );
+void CG_DrawRotatePic(float x, float y, float width, float height, float angle, qhandle_t hShader, float aspectCorrection = 1.0f);
+void CG_DrawRotatePic2(float x, float y, float width, float height, float angle, qhandle_t hShader, float aspectCorrection = 1.0f);
 void CG_DrawString( float x, float y, const char *string,
 				   float charWidth, float charHeight, const float *modulate );
 void CG_PrintInterfaceGraphics(int min,int max);
 void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill);
-void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
+void CG_DrawProportionalString(int x, int y, const char* str, int style, vec4_t color, float aspectCorrection = 1.0f);
 
 
 void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
@@ -814,7 +831,8 @@ void CG_NextWeapon_f( void );
 void CG_PrevWeapon_f( void );
 void CG_Weapon_f( void );
 void CG_DPNextWeapon_f( void );
-void CG_DPPrevWeapon_f( void );
+void CG_DPPrevWeapon_f(void);
+void CG_Dualwield_f(void);
 void CG_DPNextInventory_f( void );
 void CG_DPPrevInventory_f( void );
 void CG_DPNextForcePower_f( void );
@@ -831,6 +849,8 @@ void CG_AddViewWeapon (playerState_t *ps);
 void CG_DrawWeaponSelect( void );
 
 void CG_OutOfAmmoChange( void );	// should this be in pmove?
+
+qboolean CG_PlayerIsDualWielding(int weapon);
 
 //
 // cg_marks.c
@@ -1012,10 +1032,10 @@ qhandle_t	cgi_R_RegisterSkin( const char *name );
 qhandle_t	cgi_R_RegisterShader( const char *name );			// returns default shader if not found
 qhandle_t	cgi_R_RegisterShaderNoMip( const char *name );			// returns all white if not found
 qhandle_t	cgi_R_RegisterFont( const char *name );
-int			cgi_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale = 1.0f);
+int			cgi_R_Font_StrLenPixels(const char* text, const int iFontIndex, const float scale = 1.0f, const float aspectCorrection = 1.0f);
 int			cgi_R_Font_StrLenChars(const char *text);
 int			cgi_R_Font_HeightPixels(const int iFontIndex, const float scale = 1.0f);
-void		cgi_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale = 1.0f);
+void		cgi_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale = 1.0f, const float aspectCorrection = 1.0f);
 qboolean	cgi_Language_IsAsian(void);
 qboolean	cgi_Language_UsesSpaces(void);
 unsigned	cgi_AnyLanguage_ReadCharFromString( const char *psText, int *iAdvanceCount, qboolean *pbIsTrailingPunctuation = NULL );
@@ -1045,10 +1065,10 @@ void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFr
 					 float frac, const char *tagName );
 // Does weird, barely controllable rotation behaviour
 void	cgi_R_DrawRotatePic( float x, float y, float w, float h,
-	float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
+	float s1, float t1, float s2, float t2,float a, qhandle_t hShader, float aspectCorrection);
 // rotates image around exact center point of passed in coords
 void	cgi_R_DrawRotatePic2( float x, float y, float w, float h,
-	float s1, float t1, float s2, float t2,float a, qhandle_t hShader );
+	float s1, float t1, float s2, float t2,float a, qhandle_t hShader, float aspectCorrection);
 void	cgi_R_SetRangeFog(float range);
 void	cgi_R_LAGoggles( void );
 void	cgi_R_Scissor( float x, float y, float w, float h);
@@ -1117,6 +1137,27 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
 void FX_BlasterWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid );
 
+void FX_DestructionProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_DestructionHitWall(vec3_t origin, vec3_t normal);
+void FX_DestructionHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_BlastProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_BlastHitWall(vec3_t origin, vec3_t normal);
+void FX_BlastHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_StrikeProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_StrikeHitWall(vec3_t origin, vec3_t normal);
+void FX_StrikeHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+
+void FX_LightningStrike(vec3_t start, vec3_t end);
+void FX_RedLightningStrike(vec3_t start, vec3_t end);
+void FX_OrangeLightningStrike(vec3_t start, vec3_t end);
+void FX_YellowLightningStrike(vec3_t start, vec3_t end);
+void FX_GreenLightningStrike(vec3_t start, vec3_t end);
+void FX_PurpleLightningStrike(vec3_t start, vec3_t end);
+void FX_WhiteLightningStrike(vec3_t start, vec3_t end);
+void FX_BlackLightningStrike(vec3_t start, vec3_t end);
+
 void FX_DisruptorMainShot( vec3_t start, vec3_t end );
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean full );
 void FX_DisruptorAltMiss( vec3_t origin, vec3_t normal );
@@ -1161,6 +1202,17 @@ void FX_TuskenShotWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal,
 void FX_NoghriShotProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
 void FX_NoghriShotWeaponHitWall( vec3_t origin, vec3_t normal );
 void FX_NoghriShotWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid );
+
+void FX_CloneProjectileThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneAltFireThink(centity_t *cent, const struct weaponInfo_s *weapon);
+void FX_CloneAltHitWall(vec3_t origin, vec3_t normal, int power);
+void FX_CloneWeaponHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneWeaponHitPlayer(gentity_t *hit, vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneAltHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoHitWall(vec3_t origin, vec3_t normal);
+void FX_CloneCommandoHitPlayer(vec3_t origin, vec3_t normal, qboolean humanoid);
+void FX_CloneCommandoSniperShot(vec3_t start, vec3_t end);
+void FX_CloneCommandoSniperMiss( vec3_t origin, vec3_t normal );
 
 void CG_BounceEffect( centity_t *cent, int weapon, vec3_t origin, vec3_t normal );
 void CG_MissileStick( centity_t *cent, int weapon, vec3_t origin );
@@ -1230,5 +1282,9 @@ void CG_PlayEffectID( const int fxID, vec3_t origin, const vec3_t fwd );
 void	CG_ClearLightStyles( void );
 void	CG_RunLightStyles( void );
 void	CG_SetLightstyle( int i );
+
+//trueview stuff
+void CG_TrueViewInit( void );
+void CG_AdjustEyePos (const char *modelName);
 
 #endif	//__CG_LOCAL_H__

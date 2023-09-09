@@ -45,7 +45,7 @@ enum {
 #define TT_PUNCTUATION				5			// punctuation
 #endif
 
-#define SLIDER_WIDTH 128.0
+#define SLIDER_WIDTH 96.0
 #define SLIDER_HEIGHT 16.0
 #define SLIDER_THUMB_WIDTH 12.0
 #define SLIDER_THUMB_HEIGHT 16.0
@@ -112,7 +112,7 @@ typedef struct multiDef_s {
 #define CVAR_HIDE		0x00000008
 #define CVAR_SUBSTRING	0x00000010	//when using enable or disable, just check for strstr instead of ==
 
-#define STRING_POOL_SIZE (2*1024*1024)
+#define STRING_POOL_SIZE (8*1024*1024)
 
 #define	NUM_CROSSHAIRS			9
 
@@ -247,13 +247,15 @@ typedef struct {
 
 	int			screenshotFormat;
 
+	float		widthRatioCoef;
+
 } displayContextDef_t;
 
 void UI_InitMemory( void );
 
 
 #define MAX_COLOR_RANGES	10
-#define MAX_MENUITEMS		150
+#define MAX_MENUITEMS		4800
 #define MAX_MENUS			64
 
 
@@ -353,6 +355,7 @@ typedef struct modelDef_s {
 #define ITF_ISCHARACTER		0x0002					// a character item, uses customRGBA
 #define ITF_ISSABER			0x0004					// first saber item, draws blade
 #define ITF_ISSABER2		0x0008					// second saber item, draws blade
+#define ITF_ISNPC			0x0010					// an NPC item, uses customRGBA
 
 #define ITF_ISANYSABER		(ITF_ISSABER|ITF_ISSABER2)	//either saber
 
@@ -380,6 +383,7 @@ typedef struct itemDef_s {
 	const char	*mouseEnter;				// mouse enter script
 	const char	*mouseExit;					// mouse exit script
 	const char	*action;					// select script
+	const char	*exec;						// Exec command
 //JLFACCEPT MPMOVED
 	const char  *accept;
 //JLFDPADSCRIPT MPMOVED
@@ -410,6 +414,7 @@ typedef struct itemDef_s {
 typedef struct {
 	Window window;
 	const char  *font;						// font
+	const char* savedPage;					// Last page visited
 	qboolean	fullScreen;					// covers entire screen
 	int			itemCount;					// number of items;
 	int			fontIndex;					//

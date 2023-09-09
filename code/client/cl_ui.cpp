@@ -347,6 +347,21 @@ void CL_DataPad_f(void)
 	}
 }
 
+void CL_Spawner_f(void)
+{
+	if (cls.uiStarted && cls.cgameStarted && (cls.state == CA_ACTIVE)) {
+		UI_SetActiveMenu("IngameSWGLChars", NULL);
+		Cvar_Set("ui_npc_menu", "1");
+	}
+}
+
+void CL_System_f(void)
+{
+	if (cls.uiStarted && cls.cgameStarted && (cls.state == CA_ACTIVE)) {
+		UI_SetActiveMenu("GameSelectionMenu", NULL);
+	}
+}
+
 /*
 ====================
 CL_GetGlConfig

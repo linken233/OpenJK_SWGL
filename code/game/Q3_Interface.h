@@ -74,6 +74,13 @@ typedef enum //# setType_e
 	SET_RAILCENTERTRACKUNLOCKED, //## %s="targetname"  # Turn on the centered movers on the given track
 	SET_SKIN,//## %s="models/players/???/model_default.skin" # just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
 
+	//# #Player scripts
+	SET_MODEL,//## %s="NULL" # Set Player's model
+	SET_PLAYERSKIN,//## %s="model_" # Set Player's skin
+	SET_PLAYERSCALE,//## %d="100" # Set Player's size
+	SET_SOUNDSET,//## %s="NULL" # Set Player's soundset
+	SET_GENDER,//## %s="m/f" # Set Player's gender
+
 	//# #sep Standard strings
 	SET_ENEMY,//## %s="NULL" # Set enemy by targetname
 	SET_LEADER,//## %s="NULL" # Set for BS_FOLLOW_LEADER
@@ -157,6 +164,7 @@ typedef enum //# setType_e
 	SET_ANIM_HOLDTIME_BOTH,//## %d="0" # Hold lower and upper anims for number of milliseconds
 	SET_HEALTH,//## %d="0" # Change health
 	SET_ARMOR,//## %d="0" # Change armor
+	SET_AMMO_BLASTER,// ## %d="0" # Change ammo for blaster weapons
 	SET_WALKSPEED,//## %d="0" # Change walkSpeed
 	SET_RUNSPEED,//## %d="0" # Change runSpeed
 	SET_YAWSPEED,//## %d="0" # Change yawSpeed
@@ -181,6 +189,8 @@ typedef enum //# setType_e
 	SET_SABER2BLADEON,//## %d="0.0" # Activate a specific blade of Saber 2 (0 - (MAX_BLADES - 1)).
 	SET_SABER2BLADEOFF,//## %d="0.0" # Deactivate a specific blade of Saber 2 (0 - (MAX_BLADES - 1)).
 	SET_DAMAGEENTITY,	//## %d="5" # Damage this entity with set amount.
+	SET_SABERLOCKING, //## %d="1" # Allow Saber Locking. 0 = Turn it off, 1 = Turn it on.
+	SET_FORCE_REGEN, //## %d="10" # Change force regen rate. 10 = default, 1 = Fastest
 
 	//# #sep booleans
 	SET_IGNOREPAIN,//## %t="BOOL_TYPES" # Do not react to pain
@@ -247,6 +257,7 @@ typedef enum //# setType_e
 	SET_USE_SUBTITLES,//## %t="BOOL_TYPES" # When true NPC will always display subtitle regardless of subtitle setting
 	SET_CLEAN_DAMAGING_ENTS,//## %t="BOOL_TYPES" # Removes entities that could muck up cinematics, explosives, turrets, seekers.
 	SET_HUD,//## %t="BOOL_TYPES" # Turns on/off HUD
+	SET_FORCE_CHOKING,//## %t="BOOL_TYPES" # Sets ent into force choking state, unable to act
 	//JKA
 	SET_NO_PVS_CULL,//## %t="BOOL_TYPES" # This entity will *always* be drawn - use only for special case cinematic NPCs that have anims that cover multiple rooms!!!
 	SET_CLOAK,		//## %t="BOOL_TYPES" # Set a Saboteur to cloak (true) or un-cloak (false).
@@ -263,9 +274,15 @@ typedef enum //# setType_e
 	SET_FORCE_PROTECT,//## %t="BOOL_TYPES" # Causes this ent to start a force protect at whatever level of force protect they have
 	SET_FORCE_ABSORB,//## %t="BOOL_TYPES" # Causes this ent to do start a force absorb at whatever level of force absorb they have
 	SET_FORCE_DRAIN,//## %t="BOOL_TYPES" # Causes this ent to start force draining their enemy at whatever level of force drain they have (will drain until scripted to stop)
+	SET_FORCE_STASIS,//## %t="BOOL_TYPES" # Causes this ent to do Force Stasis at whatever level of Force Stasis they have.
+	SET_FORCE_BLAST,//## %t="BOOL_TYPES" # Causes this ent to do Force Blast at whatever level of Force Blast they have.
+	SET_FORCE_GRASP,//## %t="BOOL_TYPES" # Causes this ent to do Force Grasp at whatever level of Force Grasp they have (will grasp until scripted to stop).
+	SET_FORCE_DESTRUCTION,//## %t="BOOL_TYPES" # Causes this ent to fire Force Destruction at whatever level of Force Destruction they have.
+	SET_FORCE_LIGHTNING_STRIKE,//## %t="BOOL_TYPES" # Causes this ent to fire Lightning Strike at whatever level of Lightning Strike they have.
+	SET_FORCE_FEAR,//## %t="BOOL_TYPES" # Causes this ent to fire Force Fear at whatever level of Force Fear they have.
 	SET_WINTER_GEAR, //## %t="BOOL_TYPES" # Set the player to wear his/her winter gear (skins torso_g1 and lower_e1), or restore the default skins.
 	SET_NO_ANGLES, //## %t="BOOL_TYPES" # This NPC/player will not have any bone angle overrides or pitch or roll (should only be used in cinematics)
-
+				   
 	//# #sep calls
 	SET_SKILL,//## %r%d="0" # Cannot set this, only get it - valid values are 0 through 3
 
@@ -299,6 +316,12 @@ typedef enum //# setType_e
 	SET_FORCE_ABSORB_LEVEL,//## %t="FORCE_LEVELS" # Change force power level
 	SET_FORCE_DRAIN_LEVEL,//## %t="FORCE_LEVELS" # Change force power level
 	SET_FORCE_SIGHT_LEVEL,//## %t="FORCE_LEVELS" # Change force power level
+	SET_FORCE_STASIS_LEVEL,
+	SET_FORCE_BLAST_LEVEL,
+	SET_FORCE_GRASP_LEVEL,
+	SET_FORCE_DESTRUCTION_LEVEL,
+	SET_FORCE_LIGHTNING_STRIKE_LEVEL,
+	SET_FORCE_FEAR_LEVEL,
 	SET_SABER1_COLOR1,		//## %t="SABER_COLORS" # Set color of first blade of first saber
 	SET_SABER1_COLOR2,		//## %t="SABER_COLORS" # Set color of second blade of first saber
 	SET_SABER2_COLOR1,		//## %t="SABER_COLORS" # Set color of first blade of first saber

@@ -169,6 +169,8 @@ cvar_t	*broadsword_smallbbox;
 cvar_t	*broadsword_extra1;
 cvar_t	*broadsword_extra2;
 
+cvar_t* r_ratioFix;
+
 cvar_t	*broadsword_effcorr;
 cvar_t	*broadsword_ragtobase;
 cvar_t	*broadsword_dircap;
@@ -237,7 +239,32 @@ void RE_SetLightStyle(int style, int color);
 
 void R_Splash()
 {
-	image_t *pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+
+	image_t *pImage;
+	// Using Q_irand(0, 4) always kept giving us 2.
+	// Idk why, so I guess we will use rand().
+	int splashPick = rand() % 5;
+	switch (splashPick)
+	{
+	case 0:
+		pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 1:
+		pImage = R_FindImageFile("menu/splash2", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 2:
+		pImage = R_FindImageFile("menu/splash3", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 3:
+		pImage = R_FindImageFile("menu/splash4", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 4:
+		pImage = R_FindImageFile("menu/splash5", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	default:
+		pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	}
 
 	if ( !pImage )
 	{
@@ -397,10 +424,13 @@ static void GLimp_InitExtensions( void )
 {
 	if ( !r_allowExtensions->integer )
 	{
-		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
+		// Force extensions to turn on
+		ri.Cvar_Set("r_allowExtensions", "1");
+
+		/*Com_Printf("*** IGNORING OPENGL EXTENSIONS ***\n");
 		g_bDynamicGlowSupported = false;
 		ri.Cvar_Set( "r_DynamicGlow","0" );
-		return;
+		return;*/
 	}
 
 	Com_Printf ("Initializing OpenGL extensions\n" );
@@ -1662,6 +1692,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+	r_ratioFix = ri.Cvar_Get("r_ratioFix", "1", CVAR_ARCHIVE);
 
 	sv_mapname = ri.Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
 	sv_mapChecksum = ri.Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );

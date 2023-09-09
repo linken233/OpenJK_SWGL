@@ -40,12 +40,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "menudef.h"
 
 #include "qcommon/stringed_ingame.h"
+#include <string>
 
 void		UI_LoadMenus(const char *menuFile, qboolean reset);
 
 extern vmCvar_t	ui_char_color_red;
 extern vmCvar_t	ui_char_color_green;
 extern vmCvar_t	ui_char_color_blue;
+
+extern vmCvar_t ui_char_model_angle;
+
+bool initialLoad = true;
 
 void *UI_Alloc( int size );
 
@@ -93,9 +98,9 @@ static void *captureData = NULL;
 
 //const char defaultString[10] = {"default"};
 #ifdef CGAME
-#define MEM_POOL_SIZE  (128 * 1024)
+#define MEM_POOL_SIZE  (256 * 1024)
 #else
-#define MEM_POOL_SIZE  (4 * 1024 * 1024)
+#define MEM_POOL_SIZE  (8 * 1024 * 1024)
 #endif
 
 #define SCROLL_TIME_START				500
@@ -176,6 +181,8 @@ const char *types [] = {
 "ITEM_TYPE_MULTI",
 "ITEM_TYPE_BIND",
 "ITEM_TYPE_TEXTSCROLL",
+"ITEM_TYPE_SLIDER_INTEGER",
+"ITEM_TYPE_SLIDER_ROTATE",
 NULL
 };
 
@@ -1772,13 +1779,14 @@ void Menu_SetItemBackground(const menuDef_t *menu,const char *itemName, const ch
 	}
 }
 
+
 // Set all the items within a given menu, with the given itemName, to the given text
 void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *text)
 {
 	itemDef_t	*item;
 	int			j, count;
 
-	if (!menu)	// No menu???
+	if (!menu || !text)	// No menu???
 	{
 		return;
 	}
@@ -2680,6 +2688,9 @@ int GetCurrentFeederIndex(itemDef_t * item)
 	{
 		return uiInfo.playerSpeciesIndex;
 	}
+
+	
+
 	if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
 		name = Cvar_VariableString("ui_char_skin_head");
@@ -2695,6 +2706,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		}
 		return -1;
 	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
 	{
 		name = Cvar_VariableString("ui_char_skin_torso");
@@ -2710,6 +2722,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		return -1;
 
 	}
+
 	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
 	{
 		name = Cvar_VariableString("ui_char_skin_legs");
@@ -2731,6 +2744,30 @@ int GetCurrentFeederIndex(itemDef_t * item)
 	//	}
 	}
 
+
+	else if (feederID == FEEDER_MODEL_SKINS)
+	{
+		std::string newSkin;
+
+		newSkin.append(Cvar_VariableString("ui_char_skin_head"));
+		newSkin.append("|");
+		newSkin.append(Cvar_VariableString("ui_char_skin_torso"));
+		newSkin.append("|");
+		newSkin.append(Cvar_VariableString("ui_char_skin_legs"));
+
+		name = newSkin.c_str();
+
+		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinCount;
+		for (i = 0; i < max; i++)
+		{
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Skin[i].name))
+			{
+				return i;
+			}
+			//	Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+		return -1;
+	}
 
 	else if (feederID == FEEDER_COLORCHOICES)
 	{
@@ -2842,11 +2879,12 @@ Script_Exec
 qboolean Script_Exec ( itemDef_t *item, const char **args)
 {
 	const char *val;
+	
 	if (String_Parse(args, &val))
 	{
-		DC->executeText(EXEC_APPEND, va("%s ; ", val));
+		DC->executeText(EXEC_APPEND, va("%s; ", val));
 	}
-
+		
 	return qtrue;
 }
 
@@ -4340,7 +4378,6 @@ qboolean ItemParse_action( itemDef_t *item)
 	return qtrue;
 }
 
-
 /*
 ===============
 ItemParse_special
@@ -4393,6 +4430,7 @@ qboolean ItemParse_cvar( itemDef_t *item)
 			case ITEM_TYPE_YESNO:
 			case ITEM_TYPE_BIND:
 			case ITEM_TYPE_SLIDER:
+			case ITEM_TYPE_SLIDER_INTEGER:
 			case ITEM_TYPE_TEXT:
 			case ITEM_TYPE_TEXTSCROLL:
 				editPtr = (editFieldDef_t*)item->typeData;
@@ -4400,9 +4438,40 @@ qboolean ItemParse_cvar( itemDef_t *item)
 				editPtr->maxVal = -1;
 				editPtr->defVal = -1;
 				break;
+			case ITEM_TYPE_SLIDER_ROTATE:
+				editPtr = (editFieldDef_t*)item->typeData;
+				editPtr->range = 720;
+				editPtr->minVal = -1;
+				editPtr->maxVal = -1;
+				editPtr->defVal = -1;
+				break;
 		}
 	}
 	return qtrue;
+}
+
+/*
+ ===============
+ ItemParse_cvarRotateScale
+ ===============
+ */
+qboolean ItemParse_cvarRotateScale(itemDef_t* item)
+{
+	editFieldDef_t* editPtr;
+
+	Item_ValidateTypeData(item);
+	if (!item->typeData)
+	{
+		return qfalse;
+	}
+	editPtr = (editFieldDef_t*)item->typeData;
+	if (PC_ParseStringMem((const char**)&item->cvar) &&
+		!PC_ParseFloat(&editPtr->range))
+	{
+		return qtrue;
+	}
+
+	return qfalse;
 }
 
 /*
@@ -4792,8 +4861,8 @@ void Item_ValidateTypeData(itemDef_t *item)
 	{
 		item->typeData = UI_Alloc(sizeof(listBoxDef_t));
 		memset(item->typeData, 0, sizeof(listBoxDef_t));
-	}
-	else if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_BIND || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_TEXT)
+	} 
+	else if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_BIND || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER || item->type == ITEM_TYPE_TEXT || item->type == ITEM_TYPE_SLIDER_ROTATE)
 	{
 		item->typeData = UI_Alloc(sizeof(editFieldDef_t));
 		memset(item->typeData, 0, sizeof(editFieldDef_t));
@@ -4832,6 +4901,24 @@ qboolean ItemParse_isCharacter( itemDef_t *item )
 		else
 		{
 			item->flags &= ~ITF_ISCHARACTER;
+		}
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean ItemParse_isNPC(itemDef_t *item)
+{
+	int i;
+	if (!PC_ParseInt(&i))
+	{
+		if (i)
+		{
+			item->flags |= ITF_ISNPC;
+		}
+		else
+		{
+			item->flags &= ~ITF_ISNPC;
 		}
 		return qtrue;
 	}
@@ -4903,6 +4990,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"isCharacter",		ItemParse_isCharacter,		},
 	{"isSaber",			ItemParse_isSaber,			},
 	{"isSaber2",		ItemParse_isSaber2,			},
+	{"isNPC",			ItemParse_isNPC,			}, 
 	{"autowrapped",		ItemParse_autowrapped,		},
 	{"backcolor",		ItemParse_backcolor,		},
 	{"background",		ItemParse_background,		},
@@ -4913,6 +5001,7 @@ keywordHash_t itemParseKeywords[] = {
 	{"columns",			ItemParse_columns,			},
 	{"cvar",			ItemParse_cvar,				},
 	{"cvarFloat",		ItemParse_cvarFloat,		},
+	{"cvarRotateScale", ItemParse_cvarRotateScale,  },
 	{"cvarFloatList",	ItemParse_cvarFloatList,	},
 	{"cvarSubString",	ItemParse_cvarsubstring		},
 	{"cvarStrList",		ItemParse_cvarStrList,		},
@@ -5471,6 +5560,7 @@ static const char *g_bindCommands[] = {
 #ifndef JK2_MODE
 	"+force_drain",
 #endif
+	"+force_grasp",
 	"+force_grip",
 	"+force_lightning",
 	"+forward",
@@ -5490,11 +5580,15 @@ static const char *g_bindCommands[] = {
 	"centerview",
 	"cg_thirdperson !",
 	"datapad",
+	"dualwield",
 	"exitview",
 #ifndef JK2_MODE
 	"force_absorb",
 #endif
+	"force_blast",
+	"force_destruction",
 	"force_distract",
+	"force_fear",
 	"force_heal",
 #ifndef JK2_MODE
 	"force_protect",
@@ -5505,6 +5599,8 @@ static const char *g_bindCommands[] = {
 	"force_sight",
 #endif
 	"force_speed",
+	"force_stasis",
+	"force_strike",
 	"force_throw",
 	"forcenext",
 	"forceprev",
@@ -5523,6 +5619,9 @@ static const char *g_bindCommands[] = {
 #else
 	"save quick",
 #endif
+	"spawnnpc",
+	"swglspawner",
+	"swglsystem",
 	"taunt",
 	"uimenu ingameloadmenu",
 	"uimenu ingamesavemenu",
@@ -6601,11 +6700,11 @@ void Item_TextScroll_Paint(itemDef_t *item)
 Item_ListBox_Paint
 =================
 */
-
+extern qboolean TopicHasMission(int index);
 void Item_ListBox_Paint(itemDef_t *item)
 {
-	float x, y, size;
-	int count, i, thumb;
+	float x, y, size, sizeWidth, i2, sizeHeight;
+	int count, i, thumb, startPos;
 	qhandle_t image;
 	qhandle_t optionalImage;
 	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
@@ -6705,6 +6804,316 @@ void Item_ListBox_Paint(itemDef_t *item)
 		else
 		{
 			//
+		}
+	}
+	else if (item->special == FEEDER_MODEL_SKINS)
+	{
+		float x = 0.0f, y = 0.0f;
+		int count = 0, i = 0, thumb = 0;
+		qhandle_t image = NULL_HANDLE;
+		qhandle_t optionalImage = NULL_HANDLE;
+		listBoxDef_t* listPtr = (listBoxDef_t*)item->typeData;
+
+		// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
+		// elements are enumerated from the DC and either text or image handles are acquired from the DC as well
+		// textscale is used to size the text, textalignx and textaligny are used to size image elements
+		// there is no clipping available so only the last completely visible item is painted
+		count = DC->feederCount(item->special);
+
+		if (listPtr->startPos > (count ? count - 1 : count))
+		{//probably changed feeders, so reset
+			listPtr->startPos = 0;
+		}
+
+		if (item->cursorPos > (count ? count - 1 : count))
+		{//probably changed feeders, so reset
+			item->cursorPos = 0;
+		}
+		//JLF new variable (code idented with if)
+		if (!listPtr->scrollhidden)
+		{
+
+			// draw scrollbar to right side of the window
+			x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE - 1;
+
+			if ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS)
+				x -= 2;
+
+			y = item->window.rect.y + 1;
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowUp);
+			y += SCROLLBAR_SIZE - 1;
+
+			listPtr->endPos = listPtr->startPos;
+			sizeHeight = item->window.rect.h - (SCROLLBAR_SIZE * 2);
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, sizeHeight + 1, DC->Assets.scrollBar);
+			y += sizeHeight - 1;
+			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowDown);
+			// thumb
+			thumb = Item_ListBox_ThumbDrawPosition(item);//Item_ListBox_ThumbPosition(item);
+			if (thumb > y - SCROLLBAR_SIZE - 1) {
+				thumb = y - SCROLLBAR_SIZE - 1;
+			}
+			DC->drawHandlePic(x, thumb, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarThumb);
+		}
+		//JLF end
+
+				// adjust size for item painting
+		sizeWidth = item->window.rect.w - 2;
+		sizeHeight = item->window.rect.h - 2;
+
+		if (listPtr->elementStyle == LISTBOX_IMAGE)
+		{
+			if ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS)
+			{
+				// Multiple rows and columns (since it's more than twice as wide as an element)
+				if (item->window.rect.w > (listPtr->elementWidth * 2))
+				{
+					startPos = listPtr->startPos;
+					x = item->window.rect.x + 1;
+					y = item->window.rect.y + 1;
+
+					// Next row
+					for (i2 = startPos; i2 < count; i2++)
+					{
+						x = item->window.rect.x + 1;
+						sizeWidth = item->window.rect.w - 2;
+
+						// print a row
+						for (i = startPos; i < count; i++)
+						{
+
+							// always draw at least one
+							// which may overdraw the box if it is too small for the element
+							image = DC->feederItemImage(item->special, i);
+							if (image)
+							{
+								if (item->window.flags & WINDOW_PLAYERCOLOR)
+								{
+									vec4_t	color;
+
+									color[0] = ui_char_color_red.integer / 255.0f;
+									color[1] = ui_char_color_green.integer / 255.0f;
+									color[2] = ui_char_color_blue.integer / 255.0f;
+									color[3] = 1.0f;
+									ui.R_SetColor(color);
+								}
+								DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+							}
+							else
+							{
+								continue;
+							}
+
+							if (i == item->cursorPos)
+							{
+								DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+							}
+
+							sizeWidth -= listPtr->elementWidth;
+							if (sizeWidth < listPtr->elementWidth)
+							{
+								listPtr->drawPadding = sizeWidth; //listPtr->elementWidth - size;
+								break;
+							}
+							x += listPtr->elementWidth;
+							listPtr->endPos++;
+						}
+
+						sizeHeight -= listPtr->elementHeight;
+						if (sizeHeight < listPtr->elementHeight)
+						{
+							listPtr->drawPadding = sizeHeight; //listPtr->elementWidth - size;
+							break;
+						}
+						// NOTE : Is endPos supposed to be valid or not? It was being used as a valid entry but I changed those
+						// few spots that were causing bugs
+						listPtr->endPos++;
+						startPos = listPtr->endPos;
+						y += listPtr->elementHeight;
+
+					}
+				}
+				else
+				{
+					// Multiple rows and columns (since it's more than twice as wide as an element)
+					if (item->window.rect.w > (listPtr->elementWidth * 2))
+					{
+						startPos = listPtr->startPos;
+						x = item->window.rect.x + 1;
+						y = item->window.rect.y + 1;
+
+						// Next row
+						for (i2 = startPos; i2 < count; i2++)
+						{
+							x = item->window.rect.x + 1;
+							sizeWidth = item->window.rect.w - 2;
+
+							// print a row
+							for (i = startPos; i < count; i++)
+							{
+
+								// always draw at least one
+								// which may overdraw the box if it is too small for the element
+								image = DC->feederItemImage(item->special, i);
+								if (image)
+								{
+									if (item->window.flags & WINDOW_PLAYERCOLOR)
+									{
+										vec4_t	color;
+
+										color[0] = ui_char_color_red.integer / 255.0f;
+										color[1] = ui_char_color_green.integer / 255.0f;
+										color[2] = ui_char_color_blue.integer / 255.0f;
+										color[3] = 1.0f;
+										ui.R_SetColor(color);
+									}
+									DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+								}
+
+								if (i == item->cursorPos)
+								{
+									DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+								}
+
+								sizeWidth -= listPtr->elementWidth;
+								if (sizeWidth < listPtr->elementWidth)
+								{
+									listPtr->drawPadding = sizeWidth; //listPtr->elementWidth - size;
+									break;
+								}
+								x += listPtr->elementWidth;
+								listPtr->endPos++;
+							}
+
+							sizeHeight -= listPtr->elementHeight;
+							if (sizeHeight < listPtr->elementHeight)
+							{
+								listPtr->drawPadding = sizeHeight; //listPtr->elementWidth - size;
+								break;
+							}
+							// NOTE : Is endPos supposed to be valid or not? It was being used as a valid entry but I changed those
+							// few spots that were causing bugs
+							listPtr->endPos++;
+							startPos = listPtr->endPos;
+							y += listPtr->elementHeight;
+						}
+					}
+					// single column
+					else
+					{
+						x = item->window.rect.x + 1;
+						y = item->window.rect.y + 1;
+						for (i = listPtr->startPos; i < count; i++)
+						{
+
+							// always draw at least one
+							// which may overdraw the box if it is too small for the element
+							image = DC->feederItemImage(item->special, i);
+							if (image)
+							{
+								DC->drawHandlePic(x + 1, y + 1, listPtr->elementWidth - 2, listPtr->elementHeight - 2, image);
+							}
+
+							if (i == item->cursorPos)
+							{
+								DC->drawRect(x, y, listPtr->elementWidth - 1, listPtr->elementHeight - 1, item->window.borderSize, item->window.borderColor);
+							}
+
+							listPtr->endPos++;
+							sizeHeight -= listPtr->elementHeight;
+							if (sizeHeight < listPtr->elementHeight)
+							{
+								listPtr->drawPadding = listPtr->elementHeight - sizeHeight;
+								break;
+							}
+							y += listPtr->elementHeight;
+							// fit++;
+						}
+					}
+				}
+			}
+
+			else
+			{
+				x = item->window.rect.x + 1;
+				y = item->window.rect.y + 1;
+				//JLF MPMOVED
+				y = item->window.rect.y + 1 - listPtr->elementHeight;
+				i = listPtr->startPos;
+
+				for (; i < count; i++)
+					//JLF END
+				{
+					const char* text;
+					// always draw at least one
+					// which may overdraw the box if it is too small for the element
+					if (listPtr->numColumns > 0) {
+						int j;//, subX = listPtr->elementHeight;
+
+						for (j = 0; j < listPtr->numColumns; j++)
+						{
+							text = DC->feederItemText(item->special, i, j, &optionalImage);
+							if (text[0] == '@')
+							{
+								text = SE_GetString(&text[1]);
+							}
+
+
+							if (optionalImage >= 0) {
+								DC->drawHandlePic(x + 4 + listPtr->columnInfo[j].pos, y - 1 + listPtr->elementHeight / 2, listPtr->columnInfo[j].width, listPtr->columnInfo[j].width, optionalImage);
+							}
+							else if (text)
+							{
+								vec4_t* color;
+								menuDef_t* parent = (menuDef_t*)item->parent;
+
+								// Use focus color is it has focus.
+								if (i == item->cursorPos)
+								{
+									color = &parent->focusColor;
+								}
+								else
+								{
+									color = &item->window.foreColor;
+								}
+
+
+								int textyOffset;
+								textyOffset = 0;
+
+								DC->drawText(x + 4 + listPtr->columnInfo[j].pos, y + listPtr->elementHeight + textyOffset, item->textscale, *color, text, listPtr->columnInfo[j].maxChars, item->textStyle, item->font);
+							}
+						}
+					}
+					else
+					{
+						text = DC->feederItemText(item->special, i, 0, &optionalImage);
+						if (optionalImage >= 0)
+						{
+							//DC->drawHandlePic(x + 4 + listPtr->elementHeight, y, listPtr->columnInfo[j].width, listPtr->columnInfo[j].width, optionalImage);
+						}
+						else if (text)
+						{
+							DC->drawText(x + 4, y + listPtr->elementHeight, item->textscale, item->window.foreColor, text, 0, item->textStyle, item->font);
+						}
+					}
+
+					if (i == item->cursorPos)
+					{
+						DC->fillRect(x + 2, y + listPtr->elementHeight + 2, item->window.rect.w - SCROLLBAR_SIZE - 4, listPtr->elementHeight, item->window.outlineColor);
+					}
+
+					sizeHeight -= listPtr->elementHeight;
+					if (sizeHeight < listPtr->elementHeight)
+					{
+						listPtr->drawPadding = listPtr->elementHeight - sizeHeight;
+						break;
+					}
+					listPtr->endPos++;
+					y += listPtr->elementHeight;
+					// fit++;
+				}
+			}
 		}
 	}
 	else
@@ -6826,6 +7235,11 @@ void Item_ListBox_Paint(itemDef_t *item)
 					}
 					else if (text)
 					{
+						if (text[0] == '@')
+						{
+							text = SE_GetString(&text[1]);
+						}
+
 						DC->drawText(x + 4, y + listPtr->elementHeight, item->textscale, item->window.foreColor, text, 0, item->textStyle, item->font);
 					}
 
@@ -7323,6 +7737,10 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// use item storage to track
 	float curYaw = modelPtr->angle;
+	if (item->cvar)
+	{
+		curYaw = DC->getCVarValue(item->cvar);
+	}
 	if (modelPtr->rotationSpeed)
 	{
 		curYaw += (float)refdef.time/modelPtr->rotationSpeed;
@@ -7352,6 +7770,13 @@ void Item_Model_Paint(itemDef_t *item)
 			ent.shaderRGBA[2] = ui_char_color_blue.integer;
 			ent.shaderRGBA[3] = 255;
 			UI_TalkingHead(item);
+		}
+		if ((item->flags&ITF_ISNPC))
+		{
+			ent.shaderRGBA[0] = ui_char_color_red.integer;
+			ent.shaderRGBA[1] = ui_char_color_green.integer;
+			ent.shaderRGBA[2] = ui_char_color_blue.integer;
+			ent.shaderRGBA[3] = 255;
 		}
 		if ( item->flags&ITF_ISANYSABER )
 		{//UGH, draw the saber blade!
@@ -7781,6 +8206,29 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 	}
 
 	parent = (menuDef_t*)item->parent;
+
+	// Have to manually set the visibility and functionality for the random Jedi and Sith character and npc spawner entries.
+	if (!Q_stricmp("JediSith", item->window.name) && !Q_stricmp("IngameSWGLChars", parent->window.name))
+	{
+		if(Cvar_VariableIntegerValue("ui_npc_menu"))
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+			return qfalse;
+		}
+		else
+			item->window.flags &= ~WINDOW_INACTIVE;
+	}
+	
+	if (!Q_stricmp("RandomSpawner", item->window.name) && !Q_stricmp("IngameSWGLChars", parent->window.name))
+	{
+		if (!Cvar_VariableIntegerValue("ui_npc_menu"))
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+			return qfalse;
+		}
+		else
+			item->window.flags &= ~WINDOW_INACTIVE;
+	}
 
 	if (item->window.flags & WINDOW_SCRIPTWAITING)
 	{
@@ -8363,7 +8811,11 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 			Item_Bind_Paint(item);
 			break;
 		case ITEM_TYPE_SLIDER:
+		case ITEM_TYPE_SLIDER_INTEGER:
 			Item_Slider_Paint(item);
+			break;
+		case ITEM_TYPE_SLIDER_ROTATE:
+			//Don't bother drawing anything at all for now!
 			break;
 		default:
 			break;
@@ -8954,6 +9406,8 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 {
 	rectDef_t r;
 	int thumbstart;
+	listBoxDef_t* listPtr;
+	listPtr = (listBoxDef_t*)item->typeData;
 
 	if (item->window.flags & WINDOW_HORIZONTAL)
 	{
@@ -8989,6 +9443,72 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 		if (Rect_ContainsPoint(&r, x, y))
 		{
 			return WINDOW_LB_PGDN;
+		}
+	}
+	// Vertical Scroll
+	else if (item->special == FEEDER_MODEL_SKINS)
+	{
+		// Multiple rows and columns (since it's more than twice as wide as an element)
+		if ((item->window.rect.w > (listPtr->elementWidth * 2)) && (listPtr->elementStyle == LISTBOX_IMAGE))
+		{
+			r.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+			r.y = item->window.rect.y;
+			r.h = r.w = SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGUP;
+			}
+
+			r.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGDN;
+			}
+
+			thumbstart = Item_ListBox_ThumbPosition(item);
+			r.y = thumbstart;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_THUMB;
+			}
+
+		}
+		else
+		{
+			r.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+			r.y = item->window.rect.y;
+			r.h = r.w = SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_LEFTARROW;
+			}
+
+			r.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_RIGHTARROW;
+			}
+
+			thumbstart = Item_ListBox_ThumbPosition(item);
+			r.y = thumbstart;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_THUMB;
+			}
+
+			r.y = item->window.rect.y + SCROLLBAR_SIZE;
+			r.h = thumbstart - r.y;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGUP;
+			}
+
+			r.y = thumbstart + SCROLLBAR_SIZE;
+			r.h = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+			if (Rect_ContainsPoint(&r, x, y))
+			{
+				return WINDOW_LB_PGDN;
+			}
 		}
 	}
 	else
@@ -9074,10 +9594,29 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
 		r.h = item->window.rect.h - listPtr->drawPadding;
 		if (Rect_ContainsPoint(&r, x, y))
 		{
-			listPtr->cursorPos =  (int)((y - 2 - r.y) / listPtr->elementHeight)  + listPtr->startPos;
-			if (listPtr->cursorPos > listPtr->endPos)
+			// Multiple rows and columns (since it's more than twice as wide as an element)
+			if ((item->window.rect.w > (listPtr->elementWidth * 2)) && (listPtr->elementStyle == LISTBOX_IMAGE))
 			{
-				listPtr->cursorPos = listPtr->endPos;
+				int row, column, rowLength;
+
+				row = (int)((y - 2 - r.y) / listPtr->elementHeight);
+				rowLength = (int)r.w / listPtr->elementWidth;
+				column = (int)((x - r.x) / listPtr->elementWidth);
+
+				listPtr->cursorPos = (row * rowLength) + column + listPtr->startPos;
+				if (listPtr->cursorPos >= listPtr->endPos)
+				{
+					listPtr->cursorPos = listPtr->endPos;
+				}
+			}
+			// single column
+			else
+			{
+				listPtr->cursorPos = (int)((y - 2 - r.y) / listPtr->elementHeight) + listPtr->startPos;
+				if (listPtr->cursorPos > listPtr->endPos)
+				{
+					listPtr->cursorPos = listPtr->endPos;
+				}
 			}
 		}
 	}
@@ -10321,7 +10860,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			//Raz: Added
 			if ( key == A_MWHEELUP )
 			{
-				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS) ? viewmax : 1;
 				if (listPtr->startPos < 0)
 				{
 					listPtr->startPos = 0;
@@ -10333,7 +10872,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			}
 			if ( key == A_MWHEELDOWN )
 			{
-				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS || (int)item->special == FEEDER_MODEL_SKINS) ? viewmax : 1;
 				if (listPtr->startPos > max)
 				{
 					listPtr->startPos = max;
@@ -10603,6 +11142,45 @@ int Item_Slider_OverSlider(itemDef_t *item, float x, float y)
 }
 
 /*
+ =================
+ Scroll_Slider_Integer_ThumbFunc
+ =================
+ */
+static void Scroll_Slider_Integer_ThumbFunc(void *p)
+{
+	float x, value, cursorx;
+	int intValue;
+	scrollInfo_t *si = (scrollInfo_t*)p;
+	editFieldDef_t *editDef = (struct editFieldDef_s *) si->item->typeData;
+	
+	if (si->item->text)
+	{
+		x = si->item->textRect.x + si->item->textRect.w + 8;
+	}
+	else
+	{
+		x = si->item->window.rect.x;
+	}
+	
+	cursorx = DC->cursorx;
+	
+	if (cursorx < x)
+	{
+		cursorx = x;
+	}
+	else if (cursorx > x + SLIDER_WIDTH)
+	{
+		cursorx = x + SLIDER_WIDTH;
+	}
+	value = cursorx - x;
+	value /= SLIDER_WIDTH;
+	value *= (editDef->maxVal - editDef->minVal);
+	value += editDef->minVal;
+	intValue = (int) value;
+	DC->setCVar(si->item->cvar, va("%d", intValue));
+}
+
+/*
 =================
 Scroll_Slider_ThumbFunc
 =================
@@ -10638,6 +11216,55 @@ static void Scroll_Slider_ThumbFunc(void *p)
 	value += editDef->minVal;
 	DC->setCVar(si->item->cvar, va("%f", value));
 }
+
+/*
+ =================
+ Scroll_Rotate
+ =================
+ */
+static void Scroll_Rotate(void* p)
+{
+	//This maps a scroll to a rotation. That rotation is then added to the current cvar value.
+	//It reads off editDef->range to give the correct angle range for the item area.
+	float start, size, cursorpos, cursorpos_old;
+	int intValue;
+	float angleDiff;
+	scrollInfo_t* si = (scrollInfo_t*)p;
+	editFieldDef_t* editDef = (struct editFieldDef_s*)si->item->typeData;
+
+	qboolean useYAxis = (qboolean)(si->item->flags & ITF_ISANYSABER && !(si->item->flags & ITF_ISCHARACTER));
+
+	if (useYAxis)
+	{
+		start = si->item->window.rect.y;
+		size = si->item->window.rect.h;
+
+		cursorpos = DC->cursory;
+		cursorpos_old = si->yStart;
+	}
+	else
+	{
+		start = si->item->window.rect.x;
+		size = si->item->window.rect.w;
+
+		cursorpos = DC->cursorx;
+		cursorpos_old = si->xStart;
+	}
+
+	if (cursorpos < start)
+	{
+		cursorpos = start;
+	}
+	else if (cursorpos > start + size)
+	{
+		cursorpos = start + size;
+	}
+	//moving across the whole model area should allow for 720 degree rotation
+	angleDiff = (editDef->range) * (cursorpos - cursorpos_old) / size;
+	intValue = (int)(si->adjustValue + angleDiff) % 360;
+	DC->setCVar(si->item->cvar, va("%d", intValue));
+}
+
 /*
 =================
 Item_StartCapture
@@ -10716,6 +11343,36 @@ void Item_StartCapture(itemDef_t *item, int key)
 				scrollInfo.yStart = DC->cursory;
 				captureData = &scrollInfo;
 				captureFunc = &Scroll_Slider_ThumbFunc;
+				itemCapture = item;
+			}
+			break;
+		}
+		case ITEM_TYPE_SLIDER_INTEGER:
+		{
+			flags = Item_Slider_OverSlider(item, DC->cursorx, DC->cursory);
+			if (flags & WINDOW_LB_THUMB)
+			{
+				scrollInfo.scrollKey = key;
+				scrollInfo.item = item;
+				scrollInfo.xStart = DC->cursorx;
+				scrollInfo.yStart = DC->cursory;
+				captureData = &scrollInfo;
+				captureFunc = &Scroll_Slider_Integer_ThumbFunc;
+				itemCapture = item;
+			}
+			break;
+		}
+		case ITEM_TYPE_SLIDER_ROTATE:
+		{
+			if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory))
+			{
+				scrollInfo.scrollKey = key;
+				scrollInfo.item = item;
+				scrollInfo.xStart = DC->cursorx;
+				scrollInfo.yStart = DC->cursory;
+				scrollInfo.adjustValue = (int)DC->getCVarValue(item->cvar);
+				captureData = &scrollInfo;
+				captureFunc = &Scroll_Rotate;
 				itemCapture = item;
 			}
 			break;
@@ -11003,6 +11660,91 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 }
 
 /*
+ =================
+ Item_Slider_HandleKey
+ =================
+ */
+qboolean Item_Slider_Integer_HandleKey(itemDef_t *item, int key, qboolean down)
+{
+	//DC->Print("slider handle key\n");
+	//JLF MPMOVED
+	
+	float x, value, width, work;
+	
+	if (item->window.flags & WINDOW_HASFOCUS && item->cvar && Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory))
+	{
+		
+		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3)
+		{
+			editFieldDef_t *editDef = (editFieldDef_s *) item->typeData;
+			if (editDef)
+			{
+				rectDef_t testRect;
+				width = SLIDER_WIDTH;
+				if (item->text)
+				{
+					x = item->textRect.x + item->textRect.w + 8;
+				}
+				else
+				{
+					x = item->window.rect.x;
+				}
+				
+				testRect = item->window.rect;
+				testRect.x = x;
+				value = (float)SLIDER_THUMB_WIDTH / 2;
+				testRect.x -= value;
+				//DC->Print("slider x: %f\n", testRect.x);
+				testRect.w = (SLIDER_WIDTH + (float)SLIDER_THUMB_WIDTH / 2);
+				//DC->Print("slider w: %f\n", testRect.w);
+				if (Rect_ContainsPoint(&testRect, DC->cursorx, DC->cursory))
+				{
+					work = DC->cursorx - x;
+					value = work / width;
+					value *= (editDef->maxVal - editDef->minVal);
+					// vm fuckage
+					// value = (((float)(DC->cursorx - x)/ SLIDER_WIDTH) * (editDef->maxVal - editDef->minVal));
+					value += editDef->minVal;
+					int intValue = (int) value;
+					DC->setCVar(item->cvar, va("%d", intValue));
+					return qtrue;
+				}
+			}
+		}
+	}
+	
+	//DC->Print("slider handle key exit\n");
+	return qfalse;
+}
+
+/*
+=================
+Item_Slider_HandleKey_Rotate
+=================
+*/
+qboolean Item_Slider_HandleKey_Rotate(itemDef_t* item, int key, qboolean down) {
+
+	if (item->window.flags & WINDOW_HASFOCUS && item->cvar && Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory)) {
+		if (key == A_MWHEELUP || key == A_MWHEELDOWN) {
+			editFieldDef_t* editDef = (editFieldDef_t*)item->typeData;
+			if (editDef) {
+				int intValue = 0;
+				float angleDiff = 0.0f;
+				float curAngle = DC->getCVarValue(item->cvar);
+				if (key == A_MWHEELDOWN)
+					angleDiff = -editDef->range / 18.0f; //seems a decent step?
+				else if (key == A_MWHEELUP)
+					angleDiff = editDef->range / 18.0f;
+				intValue = (int)(angleDiff + curAngle) % 360;
+				DC->setCVar(item->cvar, va("%d", intValue));
+				return qtrue;
+			}
+		}
+	}
+	return qfalse;
+}
+
+/*
 =================
 Item_HandleKey
 =================
@@ -11069,6 +11811,12 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 			break;
 		case ITEM_TYPE_SLIDER:
 			return Item_Slider_HandleKey(item, key, down);
+			break;
+		case ITEM_TYPE_SLIDER_INTEGER:
+			return Item_Slider_Integer_HandleKey(item, key, down);
+			break;
+		case ITEM_TYPE_SLIDER_ROTATE:
+			return Item_Slider_HandleKey_Rotate(item, key, down);
 			break;
 //JLF MPMOVED
 		case ITEM_TYPE_TEXT:
@@ -11270,6 +12018,36 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 			}
 		}
 	}
+
+	// Special SwglSystem key handling
+	if (!(key & K_CHAR_FLAG))
+	{	//only check keys not chars
+		char	b[256];
+		DC->getBindingBuf(key, b, 256);
+		if (Q_stricmp(b, "swglsystem") == 0)	// They hit the datapad key again.
+		{
+			if ((Q_stricmp(menu->window.name, "ingameSWGLChars") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMaps") == 0) ||
+				(Q_stricmp(menu->window.name, "SWGLMissions") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSpawner") == 0) ||
+				(Q_stricmp(menu->window.name, "IngameSWGLNpcSaber") == 0) ||
+				(Q_stricmp(menu->window.name, "bhModels") == 0) ||
+				(Q_stricmp(menu->window.name, "cisModels") == 0) ||
+				(Q_stricmp(menu->window.name, "civiliansModels") == 0) ||
+				(Q_stricmp(menu->window.name, "first_orderModels") == 0) ||
+				(Q_stricmp(menu->window.name, "infinitiesModels") == 0) ||
+				(Q_stricmp(menu->window.name, "mandalorianModels") == 0) ||
+				(Q_stricmp(menu->window.name, "rebellionModels") == 0) ||
+				(Q_stricmp(menu->window.name, "republicModels") == 0) ||
+				(Q_stricmp(menu->window.name, "resistanceModels") == 0) ||
+				(Q_stricmp(menu->window.name, "torModels") == 0) ||
+				(Q_stricmp(menu->window.name, "tseModels") == 0))
+			{
+				key = A_ESCAPE;	//pop on outta here
+			}
+		}
+	}
+
 	// default handling
 	switch ( key )
 	{
@@ -11307,7 +12085,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 			Menu_SetPrevCursorItem(menu);
 			break;
 
-
+		case A_PAD0_START:
 		case A_ESCAPE:
 			if (!g_waitingForKey && menu->onESC)
 			{
@@ -11363,7 +12141,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	should just process the action and not support the accept functionality.
 */
 //JLFACCEPT
-				else if ( item->type == ITEM_TYPE_MULTI || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_SLIDER)
+				else if ( item->type == ITEM_TYPE_MULTI || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_SLIDER_INTEGER || item->type == ITEM_TYPE_SLIDER_ROTATE)
 				{
 
 					if (Item_HandleAccept(item))

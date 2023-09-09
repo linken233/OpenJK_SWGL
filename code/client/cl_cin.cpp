@@ -1898,6 +1898,25 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 #endif
 			bits |= CIN_hold;
 		}
+		if (!Q_stricmp(arg, "video/jk0101_swjo.roq"))
+		{
+			psAudioFile = "music/cinematic_1";
+#ifdef JK2_MODE
+			hCrawl = re.RegisterShaderNoMip(va("menu/video/tc_%d", sp_language->integer));
+			if (!hCrawl)
+			{
+				// failed, so go back to english
+				hCrawl = re.RegisterShaderNoMip("menu/video/tc_0");
+			}
+#else
+			hCrawl = re.RegisterShaderNoMip(va("menu/video/jotc_%s", se_language->string));
+			if (!hCrawl)
+			{
+				hCrawl = re.RegisterShaderNoMip("menu/video/jotc_engl");//failed, so go back to english
+			}
+#endif
+			bits |= CIN_hold;
+		}
 		else
 		if (bIsForeign)
 		{
@@ -1916,7 +1935,18 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		//
 		////////////////////////////////////////////////////////////////////
 
-		CL_handle = CIN_PlayCinematic( arg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bits, psAudioFile );
+		float new_height = SCREEN_HEIGHT;
+		float offset = 0;
+
+		if (Cvar_VariableIntegerValue("r_ratioFix"))
+		{
+			float ratio = (float)(SCREEN_WIDTH * cls.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cls.glconfig.vidWidth);
+			ratio = Com_Clamp(0.75f, 1.0f, ratio);
+			new_height = SCREEN_HEIGHT / ratio;
+			offset = (SCREEN_HEIGHT - (SCREEN_HEIGHT / ratio)) / 2.0f;
+		}
+
+		CL_handle = CIN_PlayCinematic(arg, 0, offset, SCREEN_WIDTH, new_height, bits, psAudioFile);
 		if (CL_handle >= 0)
 		{
 			cinTable[CL_handle].hCRAWLTEXT = hCrawl;

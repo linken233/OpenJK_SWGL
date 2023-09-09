@@ -133,7 +133,8 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	if ( activator->client ) {
+	if (activator 
+		&& activator->client ) {
 		gi.SendServerCommand( activator-g_entities, "cp \"%s\"", ent->message );
 	}
 }
@@ -962,7 +963,10 @@ void set_mission_stats_cvars( void )
 	if ( wpn )
 	{
 		gitem_t	*wItem= FindItemForWeapon( (weapon_t)wpn);
-		cgi_SP_GetStringTextString( va("SP_INGAME_%s",wItem->classname ), text, sizeof( text ));
+		if (!cgi_SP_GetStringTextString( va("SP_INGAME_%s",wItem->classname ), text, sizeof( text )))
+		{
+			cgi_SP_GetStringTextString( va("SPMOD_INGAME_%s",wItem->classname ), text, sizeof( text ));
+		}
 		gi.cvar_set("ui_stats_fave", va("%s",text));	//pass this on to the menu
 	}
 
@@ -998,6 +1002,13 @@ void set_mission_stats_cvars( void )
 	gi.cvar_set("ui_stats_grip", va("%d",client->sess.missionStats.forceUsed[FP_GRIP]));
 	gi.cvar_set("ui_stats_lightning", va("%d",client->sess.missionStats.forceUsed[FP_LIGHTNING]));
 	gi.cvar_set("ui_stats_rage", va("%d",client->sess.missionStats.forceUsed[FP_RAGE]));
+
+	gi.cvar_set("ui_stats_stasis", va("%d", client->sess.missionStats.forceUsed[FP_STASIS]));
+	gi.cvar_set("ui_stats_blast", va("%d", client->sess.missionStats.forceUsed[FP_BLAST]));
+	gi.cvar_set("ui_stats_grasp", va("%d", client->sess.missionStats.forceUsed[FP_GRASP]));
+	gi.cvar_set("ui_stats_destruction", va("%d", client->sess.missionStats.forceUsed[FP_DESTRUCTION]));
+	gi.cvar_set("ui_stats_fear", va("%d", client->sess.missionStats.forceUsed[FP_FEAR]));
+	gi.cvar_set("ui_stats_lightning_strike", va("%d", client->sess.missionStats.forceUsed[FP_LIGHTNING_STRIKE]));
 
 }
 

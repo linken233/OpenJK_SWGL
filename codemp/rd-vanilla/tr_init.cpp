@@ -283,8 +283,32 @@ void R_Splash()
 	{
 		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	}
-*/
-	pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+*/	
+	// Using Q_irand(0, 4) always kept giving us 2.
+	// Idk why, so I guess we will use rand().
+	int splashPick = rand() % 5;
+	switch (splashPick)
+	{
+	case 0:
+		pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 1:
+		pImage = R_FindImageFile("menu/splash2", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 2:
+		pImage = R_FindImageFile("menu/splash3", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 3:
+		pImage = R_FindImageFile("menu/splash4", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	case 4:
+		pImage = R_FindImageFile("menu/splash5", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	default:
+		pImage = R_FindImageFile("menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
+		break;
+	}
+	//pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 	extern void	RB_SetGL2D (void);
 	RB_SetGL2D();
 	if (pImage )

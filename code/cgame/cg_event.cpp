@@ -31,7 +31,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/anims.h"
 
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
-extern void FX_KothosBeam( vec3_t start, vec3_t end );
+extern void FX_KothosBeam(vec3_t start, vec3_t end);
+extern void FX_GuardsBeam(vec3_t start, vec3_t end);
 
 //==========================================================================
 
@@ -103,6 +104,11 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 			if ( cgi_SP_GetStringTextString( va("SP_INGAME_%s",bg_itemlist[itemNum].classname ), data, sizeof( data )))
 			{
 //				Com_Printf("%s %s\n", text, data );
+				cgi_Cvar_Set( "cg_WeaponPickupText", va("%s %s\n", text, data));
+				cg.weaponPickupTextTime	= cg.time + 5000;
+			}
+			else if ( cgi_SP_GetStringTextString( va("SPMOD_INGAME_%s",bg_itemlist[itemNum].classname ), data, sizeof( data )))
+			{
 				cgi_Cvar_Set( "cg_WeaponPickupText", va("%s %s\n", text, data));
 				cg.weaponPickupTextTime	= cg.time + 5000;
 			}
@@ -539,6 +545,39 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin );
 		break;
 
+	case EV_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_LightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_RED_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_RedLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_ORANGE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_OrangeLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_YELLOW_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_YellowLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_GREEN_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_GreenLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_PURPLE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_PurpleLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_WHITE_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_WhiteLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+	case EV_BLACK_LIGHTNING_STRIKE:
+		DEBUGNAME("EV_LIGHTNING_STRIKE");
+		FX_BlackLightningStrike(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+
 	case EV_DISRUPTOR_SNIPER_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_SNIPER_SHOT");
 		FX_DisruptorAltShot( cent->currentState.origin2, cent->lerpOrigin, cent->gent->alt_fire );
@@ -561,6 +600,16 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_CONC_ALT_MISS:
 		DEBUGNAME("EV_CONC_ALT_MISS");
 		FX_ConcAltMiss( cent->lerpOrigin, cent->gent->pos1 );
+		break;
+
+	case EV_CLONECOMMANDO_SNIPER_SHOT:
+		DEBUGNAME("EV_CLONECOMMANDO_SNIPER_SHOT");
+		FX_CloneCommandoSniperShot(cent->currentState.origin2, cent->lerpOrigin);
+		break;
+
+	case EV_CLONECOMMANDO_SNIPER_MISS:
+		DEBUGNAME("EV_CLONECOMMANDO_SNIPER_MISS");
+		FX_CloneCommandoSniperMiss(cent->lerpOrigin, cent->gent->pos1);
 		break;
 
 //	case EV_POWERUP_SEEKER_FIRE:
@@ -586,6 +635,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		else
 		{
 			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin );
+		}
+		break;
+	case EV_GUARDS_BEAM:
+		DEBUGNAME("EV_GUARDS_BEAM");
+		if (Q_irand(0, 1))
+		{
+			FX_GuardsBeam(cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handRPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin);
+		}
+		else
+		{
+			FX_GuardsBeam(cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin);
 		}
 		break;
 	//=================================================================

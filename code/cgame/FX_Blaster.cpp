@@ -114,3 +114,4 @@ void FX_BlasterWeaponHitPlayer( gentity_t *hit, vec3_t origin, vec3_t normal, qb
 
 	theFxScheduler.PlayEffect( cgs.effects.blasterFleshImpactEffect, origin, normal );
 }
+

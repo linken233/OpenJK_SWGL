@@ -19,29 +19,31 @@
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
-set(InOpenJK ON)
+# For checks in subdirectories
+set(InOpenJK TRUE)
 
-set(ProjectName "OpenJK" CACHE STRING "Project Name")
+
+
+# Project name
+set(ProjectName "SWGL" CACHE STRING "Project Name")
 project(${ProjectName})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-#=============================================================================
-#
+
+
 # Customizable options
-#
-#=============================================================================
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
 
-option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
-option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-vanilla_x86.dll)" ON)
-option(BuildMPDed "Whether to create projects for the MP dedicated server (openjkded.exe)" ON)
-option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" ON)
-option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
-option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
-option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" ON)
-option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
-option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp-vanilla_x86.dll)" ON)
+option(BuildMPEngine "Whether to create projects for the MP client (SWGL_MP.exe)" ON)
+option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rdmp_swgl_x86.dll)" ON)
+option(BuildMPDed "Whether to create projects for the MP dedicated server (SWGLDed.exe)" ON)
+option(BuildMPGame "Whether to create projects for the MP server-side gamecode (swglmpgamex86.dll)" ON)
+option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (swglcgamex86.dll)" ON)
+option(BuildMPUI "Whether to create projects for the MP UI code (swgluix86.dll)" ON)
+option(BuildSPEngine "Whether to create projects for the SP engine (SWGL_SP.exe)" ON)
+option(BuildSPGame "Whether to create projects for the SP gamecode (swglgamex86.dll)" ON)
+option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp_swgl_x86.dll)" ON)
 
 option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openjo_sp.exe)" OFF)
 option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" OFF)
@@ -49,8 +51,8 @@ option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
 
-include(CMakeDependentOption)
-cmake_dependent_option(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
+Include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
 
 # Configure the use of bundled libraries.  By default, we assume the user is on
 # a platform that does not require any bundling.
@@ -76,6 +78,10 @@ if(APPLE)
   set(UseInternalJPEGDefault ON)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "BSD")
+  add_definitions(-DIOAPI_NO_64)
+endif()
+
 option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
 option(UseInternalZlib   "If set, use bundled zlib."    ${UseInternalZlibDefault})
 option(UseInternalPNG    "If set, use bundled libpng."  ${UseInternalPNGDefault})
@@ -87,18 +93,14 @@ if(APPLE)
   option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
-#=============================================================================
-#
 # Custom CMake Modules needed
-#
-#=============================================================================
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-#=============================================================================
-#
-# Architecture/OS defines
-#
-#=============================================================================
+Include(CheckTypeSize)
+check_type_size("void*" CMAKE_SIZEOF_VOID_P)
+
+
+
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
 if(WIN32)
@@ -137,23 +139,26 @@ endif()
 message(STATUS "Architecture is ${Architecture}")
 
 if(WIN32 AND CMAKE_VERSION VERSION_LESS "3.4")
-	message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
+message(WARNING "Building on Windows platform with CMake version less than 3.4 is deprecated. Manifest file will fail to be included.")
 endif()
 
-#=============================================================================
-#
+# Current Git SHA1 hash
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+message(STATUS "Git revision is ${GIT_SHA1}")
+
+
+
 # Binary names
-#
-#=============================================================================
-set(SPEngine "openjk_sp.${Architecture}")
-set(SPGame "jagame${Architecture}")
-set(SPRDVanillaRenderer "rdsp-vanilla_${Architecture}")
-set(MPEngine "openjk.${Architecture}")
-set(MPVanillaRenderer "rd-vanilla_${Architecture}")
-set(MPDed "openjkded.${Architecture}")
-set(MPGame "jampgame${Architecture}")
-set(MPCGame "cgame${Architecture}")
-set(MPUI "ui${Architecture}")
+set(SPEngine "SWGL_SP.${Architecture}")
+set(SPGame "swglgame${Architecture}")
+set(SPRDVanillaRenderer "rdsp_swgl_${Architecture}")
+set(MPEngine "SWGL_MP.${Architecture}")
+set(MPVanillaRenderer "rdmp_swgl_${Architecture}")
+set(MPDed "SWGLDed.${Architecture}")
+set(MPGame "swglmpgame${Architecture}")
+set(MPCGame "swglcgame${Architecture}")
+set(MPUI "swglui${Architecture}")
 set(JK2SPEngine "openjo_sp.${Architecture}")
 set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
@@ -162,11 +167,9 @@ set(AssetsPk3 "openjk-${Architecture}.pk3")
 set(MPBotLib "botlib")
 set(SharedLib "shared")
 
-#=============================================================================
-#
+
+
 # Paths
-#
-#=============================================================================
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
@@ -176,13 +179,9 @@ set(GSLIncludeDirectory "${OpenJKLibDir}/gsl-lite/include")
 
 include(InstallConfig)
 
-#=============================================================================
-#
-# Compiler definitions/flags
-#
-#=============================================================================
 
-# Operating system settings
+
+# Operating settings
 if(WIN64)
 	set(SharedDefines ${SharedDefines} "WIN64")
 endif()
@@ -195,12 +194,11 @@ if (NOT WIN32 AND NOT APPLE)
 	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "BSD")
-  add_definitions(-DIOAPI_NO_64)
-endif()
+
 
 # Compiler settings
 if(MSVC)
+
 	set(SharedDefines ${SharedDefines} "NOMINMAX")
 	set(SharedDefines ${SharedDefines} "_CRT_SECURE_NO_WARNINGS")
 	set(SharedDefines ${SharedDefines} "_SCL_SECURE_NO_WARNINGS")
@@ -214,6 +212,7 @@ if(MSVC)
 
 	# We don't try to control symbol visibility under MSVC.
 	set(OPENJK_VISIBILITY_FLAGS "")
+
 elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang"))
 	# I hope this doesn't come back to bite me in the butt later on.
 	# Realistically though, can the C and CXX compilers be different?
@@ -266,7 +265,6 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 	elseif("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsigned-char")
 	endif()
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -285,50 +283,46 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" M
 		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsigned-char")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-c-typedef-for-linkage")
 	endif()
 else()
 	message(ERROR "Unsupported compiler")
 endif()
 
-set(SharedDefines ${SharedDefines} "$<$<CONFIG:Debug>:_DEBUG>")
-set(SharedDefines ${SharedDefines} "$<$<NOT:$<CONFIG:Debug>>:FINAL_BUILD>")
-
-if(BuildPortableVersion)
-	set(BUILD_PORTABLE ON)
+if (NOT CMAKE_BUILD_TYPE)
+	message(STATUS "No build type selected, default to RELEASE")
+	set(CMAKE_BUILD_TYPE "RELEASE")
 endif()
 
-#=============================================================================
-#
-# Generate version file
-#
-#=============================================================================
-
-# Reproducible builds
-# https://reproducible-builds.org/specs/source-date-epoch/
-if ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL "")
-	message(STATUS "SOURCE_DATE_EPOCH is not set: SOURCE_DATE will be set to the compile-time date")
+if(CMAKE_BUILD_TYPE MATCHES "DEBUG" OR CMAKE_BUILD_TYPE MATCHES "Debug")
+	# CMake already defines _DEBUG for MSVC.
+	if (NOT MSVC)
+		set(SharedDefines ${SharedDefines} "_DEBUG")
+	endif()
 else()
-	execute_process(
-		COMMAND "date" "--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
-		OUTPUT_VARIABLE SOURCE_DATE
+	set(SharedDefines ${SharedDefines} "FINAL_BUILD")
+endif()
+
+
+
+# Settings
+if(BuildPortableVersion)
+	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
+endif()
+
+# https://reproducible-builds.org/specs/source-date-epoch/
+if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
+	execute_process(COMMAND "date"
+		"--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
+		OUTPUT_VARIABLE source_date
 		ERROR_QUIET
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
-	message(STATUS "SOURCE_DATE_EPOCH is set ($ENV{SOURCE_DATE_EPOCH}): SOURCE_DATE set to \"${SOURCE_DATE}\"")
+	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
 endif()
 
-# Current Git SHA1 hash
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_HASH)
-message(STATUS "Git revision is ${GIT_HASH}")
 
-configure_file(shared/qcommon/q_version.h.in shared/qcommon/q_version.h @ONLY)
-
-#=============================================================================
 
 # Files shared across all projects
-#
-#=============================================================================
 set(SharedCommonFiles
 	"${SharedDir}/qcommon/q_color.h"
 	"${SharedDir}/qcommon/q_color.c"
@@ -337,7 +331,6 @@ set(SharedCommonFiles
 	"${SharedDir}/qcommon/q_string.h"
 	"${SharedDir}/qcommon/q_string.c"
 	"${SharedDir}/qcommon/q_platform.h"
-	"${CMAKE_BINARY_DIR}/shared/qcommon/q_version.h"
 	)
 set(SharedCommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"
@@ -347,11 +340,7 @@ set(SharedCommonSafeFiles
 	"${SharedDir}/qcommon/safe/limited_vector.h"
 	)
 
-#=============================================================================
-#
-# Adding all of the projects
-#
-#=============================================================================
+
 if(UseInternalJPEG)
   add_subdirectory(lib/jpeg-9a)
 else()
@@ -378,13 +367,11 @@ add_subdirectory(${SPDir})
 if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif()
-
 add_subdirectory(${MPDir})
-
+# Windows Symbol Server tools
 if(BuildSymbolServer)
 	add_subdirectory("tools/WinSymbol")
 endif()
-
 if(BuildTests)
 	enable_testing()
 	add_subdirectory("tests")

@@ -134,5 +134,11 @@ XCVAR_DEF( ui_singlePlayerActive,			"0",					NULL,				CVAR_INTERNAL )
 XCVAR_DEF( ui_team_fraglimit,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_team_friendly,				"1",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_team_timelimit,				"20",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF(ui_sab1_r, "255", NULL, CVAR_INTERNAL)
+XCVAR_DEF(ui_sab1_g, "255", NULL, CVAR_INTERNAL)
+XCVAR_DEF(ui_sab1_b, "255", NULL, CVAR_INTERNAL)
+XCVAR_DEF(ui_sab2_r, "255", NULL, CVAR_INTERNAL)
+XCVAR_DEF(ui_sab2_g, "255", NULL, CVAR_INTERNAL)
+XCVAR_DEF(ui_sab2_b, "255", NULL, CVAR_INTERNAL)
 
 #undef XCVAR_DEF

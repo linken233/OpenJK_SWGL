@@ -107,6 +107,8 @@ extern qboolean PM_LockedAnim( int anim );
 extern qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *defender, sabersLockMode_t lockMode );
 extern qboolean G_JediInNormalAI( gentity_t *ent );
 
+extern qboolean PlayerAffectedByStasis(void);
+
 extern bool		in_camera;
 extern qboolean	player_locked;
 extern qboolean	stop_icarus;
@@ -121,6 +123,8 @@ extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_debugMelee;
 extern vmCvar_t	cg_thirdPersonAlpha;
 extern vmCvar_t	cg_thirdPersonAutoAlpha;
+
+extern cvar_t* g_char_model;
 
 void ClientEndPowerUps( gentity_t *ent );
 
@@ -218,7 +222,7 @@ qboolean G_ClearViewEntity( gentity_t *ent )
 
 	if ( ent->client->ps.viewEntity > 0 && ent->client->ps.viewEntity < ENTITYNUM_NONE )
 	{
-		if ( g_entities[ent->client->ps.viewEntity].inuse )
+		if ( &g_entities[ent->client->ps.viewEntity] )
 		{
 			g_entities[ent->client->ps.viewEntity].svFlags &= ~SVF_BROADCAST;
 			if ( g_entities[ent->client->ps.viewEntity].NPC )
@@ -741,6 +745,8 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 	float magnitude, my_mass;
 	bool	thrown = false;
 	vec3_t	velocity;
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
 
 	Vehicle_t *pSelfVeh = NULL;
 	Vehicle_t *pOtherVeh = NULL;
@@ -1217,85 +1223,123 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 			}
 		}
 
-		if ( damageSelf && self->takedamage && !(self->flags&FL_NO_IMPACT_DMG))
+		if (damageSelf && self->takedamage && !(self->flags & FL_NO_IMPACT_DMG))
 		{
 			//Now damage me
 			//FIXME: more lenient falling damage, especially for when driving a vehicle
-			if ( pSelfVeh && self->client->ps.forceJumpZStart )
+			if (pSelfVeh && self->client->ps.forceJumpZStart)
 			{//we were force-jumping
-				if ( self->currentOrigin[2] >= self->client->ps.forceJumpZStart )
+				if (self->currentOrigin[2] >= self->client->ps.forceJumpZStart)
 				{//we landed at same height or higher than we landed
 					magnitude = 0;
 				}
 				else
 				{//FIXME: take off some of it, at least?
-					magnitude = (self->client->ps.forceJumpZStart-self->currentOrigin[2])/3;
+					magnitude = (self->client->ps.forceJumpZStart - self->currentOrigin[2]) / 3;
 				}
 			}
 
-			if( ( magnitude >= 100 + self->health
-					&& self->s.number >= MAX_CLIENTS
-					&& self->s.weapon != WP_SABER )
-				|| self->client->NPC_class == CLASS_VEHICLE
-				|| ( magnitude >= 700 ) )//health here is used to simulate structural integrity
+			if (!strcmp(s, "doom_shields")) //playing outcast
 			{
-				if ( (self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client&&(self->client->NPC_class==CLASS_BOBAFETT||self->client->NPC_class==CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
-				{//players and jedi take less impact damage
-					//allow for some lenience on high falls
-					magnitude /= 2;
-				}
-				//drop it some (magic number... sigh)
-				magnitude /= 40;
-				//If damage other, subtract half of that damage off of own injury
-				if ( other->bmodel && other->material != MAT_GLASS )
-				{//take off only a little because we broke architecture (not including glass), that should hurt
-					magnitude = magnitude - force/8;
-				}
-				else
-				{//take off half damage we did to it
-					magnitude = magnitude - force/2;
-				}
-
-				if ( pSelfVeh )
+				if ((magnitude >= 100 + self->health && self->s.number != 0 && self->s.weapon != WP_SABER) || (magnitude >= 700))
 				{
-					//FIXME: if hit another vehicle, take their toughness into
-					//			account, too?  Or should their toughness only matter
-					//			when they hit me?
-					magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 1000.0f;
-					if ( other->bmodel && other->material != MAT_GLASS )
-					{//broke through some architecture, take a good amount of damage
+					if ((self->s.weapon == WP_SABER || self->s.number == 0) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
+					{
+						//players and jedi take less impact damage
+						magnitude /= 2;
 					}
-					else if ( pOtherVeh )
-					{//they're tougher
-						//magnitude /= 4.0f;//FIXME: get the toughness of other from vehicles.cfg
+					magnitude /= 40;
+
+					if (other->bmodel && other->material != MAT_GLASS)
+					{//take off only a little because we broke architecture (not including glass), that should hurt
+						magnitude = magnitude - force / 8;
 					}
 					else
-					{//take some off because of give
-						//NOTE: this covers all other entities and impact with world...
-						//FIXME: certain NPCs/entities should be TOUGH - like Ion Cannons, AT-STs, Mark1 droids, etc.
-						magnitude /= 10.0f;
-					}
-					if ( magnitude < 1.0f )
-					{
-						magnitude = 0;
-					}
-				}
-				if ( magnitude >= 1 )
-				{
-	//FIXME: Put in a thingtype impact sound function
-	/*
-					dprint("Damage self (");
-					dprint(self.classname);
-					dprint("): ");
-					dprint(ftos(magnitude));
-					dprint("\n");
-	*/
-					if ( self->NPC && self->s.weapon == WP_SABER )
-					{//FIXME: for now Jedi take no falling damage, but really they should if pushed off?
-						magnitude = 0;
+					{//take off half damage we did to it
+						magnitude = magnitude - force / 2;
 					}
 
-					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					if (magnitude >= 1)
+					{
+						if (self->NPC && self->s.weapon == WP_SABER)
+						{
+							magnitude = 0;
+						}
+
+						else
+						{
+							G_Damage(self, NULL, NULL, NULL, self->currentOrigin, magnitude / 2, DAMAGE_NO_ARMOR, MOD_FALLING);
+						}
+					}
+				}
+			}
+			else
+			{
+
+				if ((magnitude >= 100 + self->health
+					&& self->s.number >= MAX_CLIENTS
+					&& self->s.weapon != WP_SABER)
+					|| self->client->NPC_class == CLASS_VEHICLE
+					|| (magnitude >= 700))//health here is used to simulate structural integrity
+				{
+					if ((self->s.weapon == WP_SABER || self->s.number < MAX_CLIENTS || (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO || self->client->NPC_class == CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
+					{//players and jedi take less impact damage
+						//allow for some lenience on high falls
+						magnitude /= 2;
+					}
+					//drop it some (magic number... sigh)
+					magnitude /= 40;
+					//If damage other, subtract half of that damage off of own injury
+					if (other->bmodel && other->material != MAT_GLASS)
+					{//take off only a little because we broke architecture (not including glass), that should hurt
+						magnitude = magnitude - force / 8;
+					}
+					else
+					{//take off half damage we did to it
+						magnitude = magnitude - force / 2;
+					}
+
+					if (pSelfVeh)
+					{
+						//FIXME: if hit another vehicle, take their toughness into
+						//			account, too?  Or should their toughness only matter
+						//			when they hit me?
+						magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 1000.0f;
+						if (other->bmodel && other->material != MAT_GLASS)
+						{//broke through some architecture, take a good amount of damage
+						}
+						else if (pOtherVeh)
+						{//they're tougher
+							//magnitude /= 4.0f;//FIXME: get the toughness of other from vehicles.cfg
+						}
+						else
+						{//take some off because of give
+							//NOTE: this covers all other entities and impact with world...
+							//FIXME: certain NPCs/entities should be TOUGH - like Ion Cannons, AT-STs, Mark1 droids, etc.
+							magnitude /= 10.0f;
+						}
+						if (magnitude < 1.0f)
+						{
+							magnitude = 0;
+						}
+					}
+					if (magnitude >= 1)
+					{
+						//FIXME: Put in a thingtype impact sound function
+						/*
+										dprint("Damage self (");
+										dprint(self.classname);
+										dprint("): ");
+										dprint(ftos(magnitude));
+										dprint("\n");
+						*/
+						if (self->NPC && self->s.weapon == WP_SABER)
+						{//FIXME: for now Jedi take no falling damage, but really they should if pushed off?
+							magnitude = 0;
+						}
+
+						G_Damage(self, NULL, NULL, NULL, self->currentOrigin, magnitude / 2, DAMAGE_NO_ARMOR, MOD_FALLING);//FIXME: MOD_IMPACT
+					}
 				}
 			}
 		}
@@ -1634,7 +1678,11 @@ void G_MatchPlayerWeapon( gentity_t *ent )
 		if ( newWeap != WP_NONE && ent->client->ps.weapon != newWeap )
 		{
 			G_RemoveWeaponModels( ent );
-			ent->client->ps.stats[STAT_WEAPONS] = ( 1 << newWeap );
+			for ( int i = 0; i < MAX_WEAPONS; i++ )
+			{
+				ent->client->ps.weapons[i] = 0;
+			}
+			ent->client->ps.weapons[newWeap] = 1;
 			ent->client->ps.ammo[weaponData[newWeap].ammoIndex] = 999;
 			ChangeWeapon( ent, newWeap );
 			ent->client->ps.weapon = newWeap;
@@ -1714,6 +1762,19 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				tent->s.eventParm = ent->s.number;
 			}
 		}*/
+
+		// Passive health regen for player
+		if ((player->client->ps.stats[STAT_HEALTH] < player->client->ps.stats[STAT_MAX_HEALTH]))
+		{
+			// Player gets the first 25 points for free, only on Padawan difficulty mode though
+			if ((player->health < 25 && !Q_irand(0, 1)) && !g_spskill->integer && player->health >= 1)
+			{
+				player->health++;
+				player->client->ps.stats[STAT_HEALTH] = player->health;
+			}
+		}
+		
+		
 		if ( (ent->flags&FL_OVERCHARGED_HEALTH) )
 		{//need to gradually reduce health back to max
 			if ( ent->health > ent->client->ps.stats[STAT_MAX_HEALTH] )
@@ -2546,7 +2607,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 	if ( ent->client->ps.saberMove == LS_A_LUNGE )
 	{//can't move during lunge
 		ucmd->rightmove = ucmd->upmove = 0;
-		if ( ent->client->ps.legsAnimTimer > 500 && (ent->s.number || !player_locked) )
+		if ( ent->client->ps.legsAnimTimer > 500 && (ent->s.number || (!player_locked && !PlayerAffectedByStasis())) )
 		{
 			ucmd->forwardmove = 127;
 		}
@@ -2577,7 +2638,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 
 	if ( ent->client->ps.saberMove == LS_A_JUMP_T__B_ )
 	{//can't move during leap
-		if ( ent->client->ps.groundEntityNum != ENTITYNUM_NONE || (!ent->s.number && player_locked) )
+		if ( ent->client->ps.groundEntityNum != ENTITYNUM_NONE || (!ent->s.number && (player_locked || PlayerAffectedByStasis())) )
 		{//hit the ground
 			ucmd->forwardmove = 0;
 		}
@@ -2904,8 +2965,8 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 							damage = Q_irand( 3, 5 );
 						}
 					}
-					if ( ent->client->ps.legsAnimTimer <= 1150
-						&& ent->client->ps.legsAnimTimer > 1050 )
+					if (ent->client->ps.legsAnimTimer <= 1150
+                        && ent->client->ps.legsAnimTimer > 1050)
 					{
 						TIMER_Set( ent, "grappleDamageDebounce", 150 );
 						if ( ent->s.number < MAX_CLIENTS )
@@ -3887,6 +3948,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			|| (ucmd->buttons&BUTTON_FORCEGRIP)
 			|| (ucmd->buttons&BUTTON_FORCE_LIGHTNING)
 			|| (ucmd->buttons&BUTTON_FORCE_DRAIN)
+			|| (ucmd->buttons&BUTTON_FORCEGRASP)
 			|| ucmd->upmove )
 		{//stop the anim
 			if ( ent->client->ps.legsAnim == BOTH_MEDITATE
@@ -3963,7 +4025,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 
 	if ( PM_InRoll( &ent->client->ps ) )
 	{
-		if ( ent->s.number >= MAX_CLIENTS || !player_locked )
+		if ( ent->s.number >= MAX_CLIENTS || (!player_locked && !PlayerAffectedByStasis()) )
 		{
 			//FIXME: NPCs should try to face us during this roll, so they roll around us...?
 			PM_CmdForRoll( &ent->client->ps, ucmd );
@@ -3991,7 +4053,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			{//invalid now
 				VectorClear( ent->client->ps.moveDir );
 			}
-			if ( ent->s.number || !player_locked )
+			if ( ent->s.number || (!player_locked && !PlayerAffectedByStasis()) )
 			{
 				switch ( ent->client->ps.legsAnim )
 				{
@@ -4023,7 +4085,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			{//invalid now
 				VectorClear( ent->client->ps.moveDir );
 			}
-			if ( ent->s.number || !player_locked )
+			if ( ent->s.number || (!player_locked && !PlayerAffectedByStasis()) )
 			{
 				if ( ent->client->ps.legsAnimTimer > 450 )
 				{
@@ -4286,6 +4348,10 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 	{
 		return;
 	}
+	if ( !ent->s.number && ((cg_trueguns.integer || CG_PlayerIsDualWielding(ent->client->ps.weapon)) || (!cg.renderingThirdPerson && (ent->client->ps.weapon == WP_SABER || ent->client->ps.weapon == WP_MELEE)) ) )
+	{
+		return;
+	}
 	if ( !ent->s.number && ( !cg.renderingThirdPerson || cg.zoomMode ) )
 	{
 		if ( ent->client->idleTime < level.time )
@@ -4293,6 +4359,49 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 			ent->client->idleTime = level.time;
 		}
 		return;
+	}
+	if((!Q_stricmp("am_vader", g_char_model->string)
+		|| !Q_stricmp("vader_infinities", g_char_model->string)
+		|| !Q_stricmp("cyber_recon", g_char_model->string)
+		|| !Q_stricmp("lord_stk", g_char_model->string)
+		|| !Q_stricmp("lord_stk_tat", g_char_model->string)
+		|| !Q_stricmp("sithstalker", g_char_model->string)) && !in_camera)
+	{
+		if (!TIMER_Exists(player, "breathing"))
+		{
+			TIMER_Set(player, "breathing", -level.time);
+		}
+		else if (TIMER_Done(player, "breathing"))
+		{
+			if (!Q_stricmp("am_vader", g_char_model->string)
+				|| !Q_stricmp("vader_infinities", g_char_model->string))
+			{
+				if (player->health > (player->max_health * .33))
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+					TIMER_Set(player, "breathing", Q_irand(7300, 10000));
+				}
+				else
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+					TIMER_Set(player, "breathing", Q_irand(1500, 3000));
+				}
+			}
+			else
+			{
+				if (player->health > (player->max_health * .33))
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+					TIMER_Set(player, "breathing", Q_irand(3500, 5000));
+				}
+				else
+				{
+					G_SoundOnEnt(player, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+					TIMER_Set(player, "breathing", Q_irand(2120, 4000));
+				}
+			}
+			
+		}
 	}
 	if ( !VectorCompare( vec3_origin, ent->client->ps.velocity )
 		|| ucmd->buttons || ucmd->forwardmove || ucmd->rightmove || ucmd->upmove
@@ -4694,6 +4803,12 @@ extern void ForceSeeing(gentity_t *ent);
 extern void ForceTelepathy(gentity_t *ent);
 extern void ForceAbsorb(gentity_t *ent);
 extern void ForceHeal(gentity_t *ent);
+extern void ForceStasis(gentity_t *ent);
+extern void ForceBlast(gentity_t *ent);
+extern void ForceDestruction(gentity_t *ent);
+extern void ForceGrasp(gentity_t *ent);
+extern void ForceLightningStrike(gentity_t *ent);
+extern void ForceFear(gentity_t *ent);
 static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 {
 	switch(cmd) {
@@ -4734,6 +4849,24 @@ static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 		break;
 	case GENCMD_FORCE_SEEING:
 		ForceSeeing(ent);
+		break;
+	case GENCMD_FORCE_STASIS:
+		ForceStasis(ent);
+		break;
+	case GENCMD_FORCE_BLAST:
+		ForceBlast(ent);
+		break;
+	case GENCMD_FORCE_GRASP:
+		ForceGrasp(ent);
+		break;
+	case GENCMD_FORCE_DESTRUCTION:
+		ForceDestruction(ent);
+		break;
+	case GENCMD_FORCE_LIGHTNING_STRIKE:
+		ForceLightningStrike(ent);
+		break;
+	case GENCMD_FORCE_FEAR:
+		ForceFear(ent);
 		break;
 	}
 }
@@ -4891,6 +5024,7 @@ extern cvar_t	*g_skippingcin;
 		}
 
 		if ( (player_locked
+			|| PlayerAffectedByStasis()
 				|| (ent->client->ps.eFlags&EF_FORCE_GRIPPED)
 				|| (ent->client->ps.eFlags&EF_FORCE_DRAINED)
 				|| (ent->client->ps.legsAnim==BOTH_PLAYER_PA_1)
@@ -4898,7 +5032,7 @@ extern cvar_t	*g_skippingcin;
 				|| (ent->client->ps.legsAnim==BOTH_PLAYER_PA_3))
 			&& ent->client->ps.pm_type < PM_DEAD ) // unless dead
 		{//lock out player control
-			if ( !player_locked )
+			if ((!player_locked && !PlayerAffectedByStasis()))
 			{
 				VectorClearM( ucmd->angles );
 			}

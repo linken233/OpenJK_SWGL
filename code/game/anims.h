@@ -1809,6 +1809,177 @@ typedef enum //# animNumber_e
 	BOTH_CIN_48,		//# Level specific cinematic
 	BOTH_CIN_49,		//# Level specific cinematic
 	BOTH_CIN_50,		//# Level specific cinematic
+	BOTH_CIN_51, 		//# Level specific cinematic
+	BOTH_CIN_52, 		//# Level specific cinematic
+	BOTH_CIN_53, 		//# Level specific cinematic
+	BOTH_CIN_54, 		//# Level specific cinematic
+	BOTH_CIN_55, 		//# Level specific cinematic
+	BOTH_CIN_56, 		//# Level specific cinematic
+	BOTH_CIN_57, 		//# Level specific cinematic
+	BOTH_CIN_58, 		//# Level specific cinematic
+	BOTH_CIN_59, 		//# Level specific cinematic
+	BOTH_CIN_60, 		//# Level specific cinematic
+	BOTH_CIN_61, 		//# Level specific cinematic
+	BOTH_CIN_62, 		//# Level specific cinematic
+	BOTH_CIN_63, 		//# Level specific cinematic
+	BOTH_CIN_64, 		//# Level specific cinematic
+	BOTH_CIN_65, 		//# Level specific cinematic
+	BOTH_CIN_66, 		//# Level specific cinematic
+	BOTH_CIN_67, 		//# Level specific cinematic
+	BOTH_CIN_68, 		//# Level specific cinematic
+	BOTH_CIN_69, 		//# Level specific cinematic
+	BOTH_CIN_70, 		//# Level specific cinematic
+	BOTH_CIN_71, 		//# Level specific cinematic
+	BOTH_CIN_72, 		//# Level specific cinematic
+	BOTH_CIN_73, 		//# Level specific cinematic
+	BOTH_CIN_74, 		//# Level specific cinematic
+	BOTH_CIN_75, 		//# Level specific cinematic
+	BOTH_CIN_76, 		//# Level specific cinematic
+	BOTH_CIN_77, 		//# Level specific cinematic
+	BOTH_CIN_78, 		//# Level specific cinematic
+	BOTH_CIN_79, 		//# Level specific cinematic
+	BOTH_CIN_80, 		//# Level specific cinematic
+	BOTH_CIN_81, 		//# Level specific cinematic
+	BOTH_CIN_82, 		//# Level specific cinematic
+	BOTH_CIN_83, 		//# Level specific cinematic
+	BOTH_CIN_84, 		//# Level specific cinematic
+	BOTH_CIN_85, 		//# Level specific cinematic
+	BOTH_CIN_86, 		//# Level specific cinematic
+	BOTH_CIN_87, 		//# Level specific cinematic
+	BOTH_CIN_88, 		//# Level specific cinematic
+	BOTH_CIN_89, 		//# Level specific cinematic
+	BOTH_CIN_90, 		//# Level specific cinematic
+	BOTH_CIN_91, 		//# Level specific cinematic
+	BOTH_CIN_92, 		//# Level specific cinematic
+	BOTH_CIN_93, 		//# Level specific cinematic
+	BOTH_CIN_94, 		//# Level specific cinematic
+	BOTH_CIN_95, 		//# Level specific cinematic
+	BOTH_CIN_96, 		//# Level specific cinematic
+	BOTH_CIN_97, 		//# Level specific cinematic
+	BOTH_CIN_98, 		//# Level specific cinematic
+	BOTH_CIN_99, 		//# Level specific cinematic
+	BOTH_CIN_100, 		//# Level specific cinematic
+
+	BOTH_SWGL_CIN_1, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_2, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_3, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_4, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_5, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_6, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_7, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_8, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_9, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_10, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_11, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_12, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_13, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_14, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_15, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_16, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_17, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_18, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_19, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_20, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_21, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_22, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_23, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_24, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_25, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_26, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_27, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_28, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_29, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_30, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_31, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_32, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_33, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_34, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_35, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_36, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_37, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_38, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_39, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_40, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_41, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_42, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_43, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_44, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_45, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_46, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_47, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_48, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_49, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_50, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_51, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_52, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_53, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_54, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_55, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_56, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_57, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_58, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_59, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_60, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_61, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_62, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_63, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_64, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_65, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_66, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_67, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_68, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_69, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_70, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_71, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_72, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_73, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_74, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_75, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_76, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_77, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_78, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_79, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_80, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_81, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_82, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_83, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_84, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_85, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_86, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_87, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_88, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_89, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_90, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_91, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_92, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_93, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_94, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_95, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_96, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_97, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_98, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_99, 		//# Level specific cinematic
+	BOTH_SWGL_CIN_100, 		//# Level specific cinematic
+
+
+	//galak_mech
+	BOTH_ALERT1,
+	TORSO_WEAPONIDLE1,
+	TORSO_WEAPONREADY5,
+	TORSO_WEAPONIDLE5,
+	TORSO_WEAPONREADY6,
+	TORSO_WEAPONIDLE6,
+	TORSO_WEAPONREADY7,
+	TORSO_WEAPONIDLE7,
+	BOTH_RADIO_ONOFF,
+	BOTH_TRIUMPHANT1START,
+	BOTH_TRIUMPHANT1STOP,
+	BOTH_TRIUMPHANT1STARTGESTURE,
+
+	TORSO_DROPWEAP2,
+	TORSO_DROPWEAP3,
+	TORSO_RAISEWEAP2,
+	TORSO_RAISEWEAP3,
 
 	//# #eol
 	MAX_ANIMATIONS,

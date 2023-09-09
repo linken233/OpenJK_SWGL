@@ -63,9 +63,9 @@ Debugging command to print the current position
 =============
 */
 static void CG_Viewpos_f (void) {
-	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
-		(int)cg.refdefViewAngles[YAW]);
+	CG_Printf ("%s (%i %i %i) : %i %i %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[PITCH],
+		(int)cg.refdefViewAngles[YAW], (int)cg.refdefViewAngles[ROLL]);
 }
 
 void CG_WriteCam_f (void)
@@ -146,7 +146,7 @@ void CG_ToggleBinoculars( void )
 		cg.zoomTime = cg.time;
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomEnd );
 
-		if( cg.weaponSelect == WP_NONE && cg.snap->ps.stats[STAT_WEAPONS] & ( 1 << WP_SABER ) )
+		if( cg.weaponSelect == WP_NONE && cg.snap->ps.weapons[WP_SABER] )
 		{
 			// FIXME: this is pretty damn ugly but whatever
 			cg.weaponSelect = WP_SABER;
@@ -202,8 +202,6 @@ void CG_LoadHud_f( void ) {
 		hudSet = "ui/jahud.txt";
 	}
 
-	//cgi_UI_String_Init();
-	//cgi_UI_Menu_Reset();
 	CG_LoadMenus( hudSet );
 }
 
@@ -226,6 +224,7 @@ static consoleCommand_t	commands[] = {
 	{ "dpinvprev",			CG_DPPrevInventory_f },
 	{ "dpweapnext",			CG_DPNextWeapon_f },
 	{ "dpweapprev",			CG_DPPrevWeapon_f },
+	{ "dualwield",			CG_Dualwield_f},
 	{ "forcenext",			CG_NextForcePower_f },
 	{ "forceprev",			CG_PrevForcePower_f },
 	{ "invnext",			CG_NextInventory_f },
@@ -278,11 +277,17 @@ qboolean CG_ConsoleCommand( void ) {
 
 static const char *gcmds[] = {
 	"bow",
+	"camerastatic",
 	"entitylist",
 	"difficulty",
+	"dualwield",
 	"flourish",
 	"force_absorb",
+	"force_blast",
+	"force_destruction",
 	"force_distract",
+	"force_fear",
+	"force_grasp",
 	"force_grip",
 	"force_heal",
 	"force_protect",
@@ -290,12 +295,15 @@ static const char *gcmds[] = {
 	"force_rage",
 	"force_sight",
 	"force_speed",
+	"force_stasis",
+	"force_strike",
 	"force_throw",
 	"give",
 	"gloat",
 	"god",
 	"invuse",
 	"kill",
+	"lightningColor",
 	"meditate",
 	"nav",
 	"noclip",
@@ -309,8 +317,10 @@ static const char *gcmds[] = {
 	"saberAttackCycle",
 	"saberColor",
 	"saberblade",
+	"scale",
 	"secrets",
 	"setForceAll",
+	"setForceRegen",
 	"setSaberAll",
 	"setobjective",
 	"setviewpos",

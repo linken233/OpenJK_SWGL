@@ -339,6 +339,10 @@ void SandCreature_Attack( qboolean miss )
 
 float SandCreature_EntScore( gentity_t *ent )
 {
+	if (ent->s.weapon == WP_THERMAL && g_spskill->integer > 1)
+	{
+		return 0;
+	}
 	float moveSpeed, dist;
 
 	if ( ent->client )
@@ -355,6 +359,10 @@ float SandCreature_EntScore( gentity_t *ent )
 
 void SandCreature_SeekEnt( gentity_t *bestEnt, float score )
 {
+	if (bestEnt->s.weapon == WP_THERMAL && g_spskill->integer > 1)
+	{
+		return;
+	}
 	NPCInfo->enemyLastSeenTime = level.time;
 	VectorCopy( bestEnt->currentOrigin, NPCInfo->enemyLastSeenLocation );
 	NPC_SetMoveGoal( NPC, NPCInfo->enemyLastSeenLocation, 0, qfalse );
@@ -402,7 +410,12 @@ void SandCreature_CheckMovingEnts( void )
 			{//not a thermal detonator
 				continue;
 			}
+			if (radiusEnts[i]->s.weapon == WP_THERMAL && g_spskill->integer > 1)
+			{
+				continue;
+			}
 		}
+
 		else
 		{
 			if ( (radiusEnts[i]->client->ps.eFlags&EF_HELD_BY_RANCOR) )

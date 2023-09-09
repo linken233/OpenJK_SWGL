@@ -173,6 +173,9 @@ void Pmove( pmove_t *pmove );
 #define SETANIM_FLAG_RESTART	4//Allow restarting the anim if playing the same one (weapon fires)
 #define SETANIM_FLAG_HOLDLESS	8//Set the new timer
 
+//Switch to this animation and keep repeating this animation while updating its timers
+#define	SETANIM_AFLAG_PACE (SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD | SETANIM_FLAG_RESTART)
+
 #define SETANIM_BLEND_DEFAULT	100
 
 void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime=SETANIM_BLEND_DEFAULT);
@@ -245,7 +248,6 @@ typedef enum {
 	PW_NONE,
 	PW_QUAD,// This can go away
 	PW_BATTLESUIT,
-	PW_HASTE,// This can go away
 	PW_CLOAKED,
 	PW_UNCLOAKING,
 	PW_DISRUPTION,
@@ -259,10 +261,14 @@ typedef enum {
 	PW_FORCE_PUSH,
 	PW_FORCE_PUSH_RHAND,
 
+	PW_FORCE_PROJECTILE,
+
+	PW_FORCE_SHOCKED,
+
 	PW_NUM_POWERUPS
 } powerup_t;
 
-#define PW_REMOVE_AT_DEATH ((1<<PW_QUAD)|(1<<PW_BATTLESUIT)|(1<<PW_HASTE)|(1<<PW_CLOAKED)|(1<<PW_UNCLOAKING)|(1<<PW_UNCLOAKING)|(1<<PW_GALAK_SHIELD)|(1<<PW_DISINT_2)|(1<<PW_INVINCIBLE)|(1<<PW_SEEKER))
+#define PW_REMOVE_AT_DEATH ((1<<PW_QUAD)|(1<<PW_BATTLESUIT)|(1<<PW_CLOAKED)|(1<<PW_UNCLOAKING)|(1<<PW_UNCLOAKING)|(1<<PW_GALAK_SHIELD)|(1<<PW_DISINT_2)|(1<<PW_INVINCIBLE)|(1<<PW_SEEKER))
 // entityState_t->event values
 // entity events are for effects that take place relative
 // to an existing entities origin.  Very network efficient.
@@ -343,6 +349,10 @@ typedef enum {
 	EV_CONC_ALT_SHOT,
 	EV_CONC_ALT_MISS,
 //END JKA weapons
+
+	EV_CLONECOMMANDO_SNIPER_SHOT,
+	EV_CLONECOMMANDO_SNIPER_MISS,
+
 	EV_PAIN,
 	EV_DEATH1,
 	EV_DEATH2,
@@ -451,6 +461,16 @@ typedef enum {
 	EV_DEBUG_LINE,
 	EV_KOTHOS_BEAM,
 
+	EV_LIGHTNING_STRIKE,
+	EV_RED_LIGHTNING_STRIKE,
+	EV_ORANGE_LIGHTNING_STRIKE,
+	EV_YELLOW_LIGHTNING_STRIKE,
+	EV_GREEN_LIGHTNING_STRIKE,
+	EV_PURPLE_LIGHTNING_STRIKE,
+	EV_WHITE_LIGHTNING_STRIKE,
+	EV_BLACK_LIGHTNING_STRIKE,
+	EV_GUARDS_BEAM,
+
 	EV_NUM_ENTITY_EVENTS
 } entity_event_t;
 
@@ -486,7 +506,7 @@ public:
 	}
 }; // animation_t
 
-#define MAX_ANIM_FILES	16
+#define MAX_ANIM_FILES	32
 #define MAX_ANIM_EVENTS 300
 
 //size of Anim eventData array...
@@ -618,6 +638,23 @@ typedef enum {
 	MOD_FORCE_DRAIN,
 	MOD_EMPLACED,
 
+	MOD_CLONERIFLE,
+	MOD_CLONERIFLE_ALT,
+	MOD_REBELBLASTER,
+	MOD_REBELBLASTER_ALT,
+	MOD_CLONECOMMANDO,
+	MOD_CLONECOMMANDO_ALT,
+	MOD_REBELRIFLE,
+	MOD_REBELRIFLE_ALT,
+	MOD_REY,
+	MOD_REY_ALT,
+	MOD_JANGO,
+	MOD_JANGO_ALT,
+	MOD_BOBA,
+	MOD_BOBA_ALT,
+	MOD_CLONEPISTOL,
+	MOD_CLONEPISTOL_ALT,
+
 // world / generic
 	MOD_ELECTROCUTE,
 	MOD_EXPLOSIVE,
@@ -634,6 +671,11 @@ typedef enum {
 	MOD_SUICIDE,
 	MOD_TRIGGER_HURT,
 	MOD_GAS,
+	MOD_HIGH_POWERED_SHOT,
+
+	MOD_DESTRUCTION,
+	MOD_BLAST,
+	MOD_STRIKE,
 
 	NUM_MODS,
 

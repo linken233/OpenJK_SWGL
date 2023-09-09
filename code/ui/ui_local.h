@@ -69,6 +69,8 @@ extern void UI_MainMenu(void);
 extern void UI_InGameMenu(const char*holoFlag);
 extern void AssetCache(void);
 extern void UI_DataPadMenu(void);
+extern void UI_SystemMenu(void);
+extern void UI_SpawnerMenu(void);
 
 //
 // ui_connect.c
@@ -122,7 +124,7 @@ typedef struct {
 	const char *modDescr;
 } modInfo_t;
 
-#define SKIN_LENGTH			16
+#define SKIN_LENGTH			32
 #define ACTION_BUFFER_SIZE	128
 
 typedef struct {
@@ -145,6 +147,9 @@ typedef struct {
 	int			SkinLegCount;
 	int			SkinLegMax;
 	skinName_t	*SkinLeg;
+	int			SkinCount;
+	int			SkinMax;
+	skinName_t	*Skin;
 	int			ColorMax;
 	int			ColorCount;
 	playerColor_t	*Color;

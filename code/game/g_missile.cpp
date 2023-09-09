@@ -537,6 +537,20 @@ void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3
 				}
 			}
 
+			/*
+			if (other->NPC_type != 0)
+			{
+				if (!(strcmp("stormtrooper", other->NPC_type)))
+				{
+					damage += a_lot_of_extra_damage;
+				}
+				else
+				{
+					damage = defaultDamageCopy[ent->s.weapon];
+				}
+			}
+			*/
+			
 			G_Damage( other, ent, ent->owner, velocity,
 					impactPos, damage,
 					ent->dflags, ent->methodOfDeath, hitLoc);

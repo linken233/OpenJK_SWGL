@@ -286,7 +286,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 
 		//FIXME: do we care about the sniper rifle or not?
 
-		if( other->s.number == 0 && ( other->client->ps.weapon > MAX_PLAYER_WEAPONS || other->client->ps.weapon <= WP_NONE ) )
+		if( other->s.number == 0 && ( other->client->ps.weapon >= WP_NUM_WEAPONS || other->client->ps.weapon <= WP_NONE || !playerUsableWeapons[other->client->ps.weapon]) )
 		{//don't care about non-player weapons if this is the player
 			return;
 		}
@@ -1222,7 +1222,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 		if ( self->spawnflags & 32 )
 		{//falling death
 			if ( other->NPC && other->client &&
-				(other->client->NPC_class == CLASS_BOBAFETT	|| other->client->NPC_class == CLASS_ROCKETTROOPER ))
+				(other->client->NPC_class == CLASS_BOBAFETT || other->client->NPC_class == CLASS_MANDALORIAN || other->client->NPC_class == CLASS_JANGO || other->client->NPC_class == CLASS_ROCKETTROOPER))
 			{//boba never falls to his death!
 				//FIXME:  fall through if jetpack broken?
 				JET_FlyStart(other);
@@ -1292,6 +1292,19 @@ void SP_trigger_hurt( gentity_t *self )
 
 	if ( !self->damage ) {
 		self->damage = 5;
+	}
+	else if (self->damage < 0)
+	{
+		 // Assuming a damage of -1 or lower is intended as a deathdrop (popular in Multiplayer maps)
+		self->damage = 9999999;
+		if (!(self->spawnflags & 32))
+		{
+			self->spawnflags |= 32;
+		}
+		if (!(self->spawnflags & 16))
+		{
+			self->spawnflags |= 16;
+		}
 	}
 
 	self->delay *= 1000;

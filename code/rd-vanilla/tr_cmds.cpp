@@ -89,6 +89,9 @@ void R_PerformanceCounters( void ) {
 R_IssueRenderCommands
 ====================
 */
+int	c_blockedOnRender;
+int	c_blockedOnMain;
+
 void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 	renderCommandList_t	*cmdList;
 
@@ -136,16 +139,18 @@ R_GetCommandBufferReserved
 make sure there is enough command space
 ============
 */
-static void *R_GetCommandBufferReserved( int bytes, int reservedBytes ) {
+void *R_GetCommandBufferReserved( unsigned int bytes, int reservedBytes ) {
 	renderCommandList_t	*cmdList;
 
 	cmdList = &backEndData->commands;
-	bytes = PAD(bytes, sizeof(void *));
+	bytes = PAD(bytes, sizeof (void *));
+
+	assert(cmdList);
 
 	// always leave room for the end of list command
-	if ( cmdList->used + bytes + sizeof( int ) + reservedBytes > MAX_RENDER_COMMANDS ) {
-		if ( bytes > MAX_RENDER_COMMANDS - (int)sizeof( int ) ) {
-			ri.Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
+	if (cmdList->used + bytes + sizeof(int) + reservedBytes > MAX_RENDER_COMMANDS) {
+		if (bytes > MAX_RENDER_COMMANDS - (int)sizeof(int)) {
+			ri.Error(ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes);
 		}
 		// if we run out of room, just start dropping commands
 		return NULL;
@@ -159,12 +164,11 @@ static void *R_GetCommandBufferReserved( int bytes, int reservedBytes ) {
 /*
 ============
 R_GetCommandBuffer
-
-make sure there is enough command space
+returns NULL if there is not enough space for important commands
 ============
 */
-static void *R_GetCommandBuffer( int bytes ) {
-	return R_GetCommandBufferReserved( bytes, PAD( sizeof( swapBuffersCommand_t ), sizeof(void *) ) );
+static void* R_GetCommandBuffer(int bytes) {
+	return R_GetCommandBufferReserved(bytes, PAD(sizeof(swapBuffersCommand_t), sizeof(void*)));
 }
 
 
@@ -209,14 +213,14 @@ void	RE_SetColor( const float *rgba ) {
 		return;
 	}
 	cmd->commandId = RC_SET_COLOR;
-	if ( !rgba ) {
+	if (!rgba) 
+	{
 		rgba = colorWhite;
 	}
 	cmd->color[0] = rgba[0];
 	cmd->color[1] = rgba[1];
 	cmd->color[2] = rgba[2];
 	cmd->color[3] = rgba[3];
-
 }
 
 
@@ -229,7 +233,7 @@ void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	stretchPicCommand_t	*cmd;
 
-	if ( !tr.registered ) {
+	if (!tr.registered) {
 		return;
 	}
 	cmd = (stretchPicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
@@ -254,7 +258,7 @@ RE_RotatePic
 =============
 */
 void RE_RotatePic ( float x, float y, float w, float h,
-					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
+					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader, float aspectCorrection) {
 	rotatePicCommand_t	*cmd;
 
 	if (!tr.registered) {
@@ -275,6 +279,7 @@ void RE_RotatePic ( float x, float y, float w, float h,
 	cmd->s2 = s2;
 	cmd->t2 = t2;
 	cmd->a = a;
+	cmd->ratio = aspectCorrection;
 }
 
 /*
@@ -283,13 +288,12 @@ RE_RotatePic2
 =============
 */
 void RE_RotatePic2 ( float x, float y, float w, float h,
-					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
+					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader, float aspectCorrection) {
 	rotatePicCommand_t	*cmd;
 
 	if (!tr.registered) {
 		return;
 	}
-
 	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -305,6 +309,7 @@ void RE_RotatePic2 ( float x, float y, float w, float h,
 	cmd->s2 = s2;
 	cmd->t2 = t2;
 	cmd->a = a;
+	cmd->ratio = aspectCorrection;
 }
 
 void RE_LAGoggles( void )
@@ -492,7 +497,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	if ( !tr.registered ) {
 		return;
 	}
-	cmd = (swapBuffersCommand_t *) R_GetCommandBufferReserved( sizeof( *cmd ), 0 );
+	cmd = (swapBuffersCommand_t*)R_GetCommandBufferReserved(sizeof(*cmd), 0);
 	if ( !cmd ) {
 		return;
 	}

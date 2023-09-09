@@ -28,6 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_navigator.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
+#include "../game/NPC_SWGL.h"
 
 //Externs
 extern qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy );
@@ -47,6 +48,13 @@ extern void ForceHeal( gentity_t *self );
 extern void ForceRage( gentity_t *self );
 extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
+extern void ForceStasis(gentity_t *self);
+extern void ForceDestruction(gentity_t *self);
+extern void ForceFear(gentity_t *self);
+extern void ForceLightningStrike(gentity_t *self);
+extern void ForceDestruction(gentity_t *self);
+extern void ForceBlast(gentity_t *self);
+extern void ForceGrasp(gentity_t *self);
 extern qboolean ForceDrain2( gentity_t *self );
 extern int WP_MissileBlockForBlock( int saberBlock );
 extern qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -93,6 +101,8 @@ extern qboolean G_EntIsBreakable( int entityNum, gentity_t *breaker );
 extern qboolean PM_LockedAnim( int anim );
 extern qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore, int clipmask);
 
+extern void WP_SetSaber(gentity_t* ent, int saberNum, const char* saberName);
+
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_saberNewControlScheme;
@@ -120,10 +130,46 @@ void NPC_ShadowTrooper_Precache( void )
 	G_SoundIndex( "sound/chars/shadowtrooper/decloak.wav" );
 }
 
+void NPC_Vader_Precache(void)
+{
+	// Regular Vader breathing
+	G_SoundIndex(va("sound/chars/am_darth_vader/vader_breathe.wav"));
+
+	// Strained Vader breathing
+	G_SoundIndex("sound/chars/am_darth_vader/vader_breathe_strained.wav");
+
+	// Regular Starkiller breathing
+	G_SoundIndex("sound/chars/lord_starkiller/starkiller_breathe.wav");
+
+	// Strained Starkiller breathing
+	G_SoundIndex("sound/chars/lord_starkiller/starkiller_breathe_strained.wav");
+}
+
+void NPC_Vader_ClearTimers(gentity_t* ent)
+{
+	TIMER_Set(NPC, "breathing", -level.time);
+}
+
+void NPC_Kestis_ClearTimers(gentity_t* ent)
+{
+	TIMER_Set(NPC, "saber_switch", -level.time);
+}
+
+void NPC_Inquisitor_ClearTimers(gentity_t* ent)
+{
+	TIMER_Set(NPC, "saber_switch", -level.time);
+}
+
 void NPC_Rosh_Dark_Precache( void )
 {
 	G_EffectIndex( "force/kothos_recharge.efx" );
 	G_EffectIndex( "force/kothos_beam.efx" );
+}
+
+void NPC_Shakkra_Precache(void)
+{
+	G_EffectIndex("force/guards_recharge.efx");
+	G_EffectIndex("force/guards_beam.efx");
 }
 
 void Jedi_ClearTimers( gentity_t *ent )
@@ -185,6 +231,12 @@ void Jedi_PlayBlockedPushSound( gentity_t *self )
 
 void Jedi_PlayDeflectSound( gentity_t *self )
 {
+
+
+	if (self->client->ps.stasisTime > level.time)
+	{
+		return;
+	}
 	if ( !self->s.number )
 	{
 		G_AddVoiceEvent( self, Q_irand( EV_DEFLECT1, EV_DEFLECT3 ), 3000 );
@@ -1197,11 +1249,12 @@ static void Jedi_AdjustSaberAnimLevel( gentity_t *self, int newLevel )
 	}
 	if ( newLevel < SS_FAST )
 	{
-		newLevel = SS_FAST;
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_TAVION));
+
 	}
 	else if ( newLevel > SS_STAFF )
 	{
-		newLevel = SS_STAFF;
+		Jedi_AdjustSaberAnimLevel(NPC, Q_irand(SS_FAST, SS_TAVION));
 	}
 	//use the different attacks, how often they switch and under what circumstances
 	if ( !(self->client->ps.saberStylesKnown&(1<<newLevel)) )
@@ -1226,6 +1279,12 @@ static void Jedi_AdjustSaberAnimLevel( gentity_t *self, int newLevel )
 		case SS_STRONG:
 			gi.Printf( S_COLOR_RED"%s Saber Attack Set: strong\n", self->NPC_type );
 			break;
+		case SS_DESANN:
+			gi.Printf(S_COLOR_RED"%s Saber Attack Set: desann\n", self->NPC_type);
+			break;
+		case SS_TAVION:
+			gi.Printf(S_COLOR_RED"%s Saber Attack Set: tavion\n", self->NPC_type);
+			break;
 		}
 	}
 }
@@ -1237,7 +1296,7 @@ static void Jedi_CheckDecreaseSaberAnimLevel( void )
 		if ( TIMER_Done( NPC, "saberLevelDebounce" ) && !Q_irand( 0, 10 ) )
 		{
 			//Jedi_AdjustSaberAnimLevel( NPC, (NPC->client->ps.saberAnimLevel-1) );//drop
-			Jedi_AdjustSaberAnimLevel( NPC, Q_irand( SS_FAST, SS_STRONG ));//random
+			Jedi_AdjustSaberAnimLevel( NPC, Q_irand( SS_FAST, SS_TAVION ));//random
 			TIMER_Set( NPC, "saberLevelDebounce", Q_irand( 3000, 10000 ) );
 		}
 	}
@@ -1375,6 +1434,11 @@ static void Jedi_CombatDistance( int enemy_dist )
 	{//when gripping, don't move
 		return;
 	}
+	if (NPC->client->ps.forcePowersActive&(1 << FP_GRASP) &&
+		NPC->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+	{//when grasping, don't move
+		return;
+	}
 	else if ( !TIMER_Done( NPC, "gripping" ) )
 	{//stopped gripping, clear timers just in case
 		TIMER_Set( NPC, "gripping", -level.time );
@@ -1392,7 +1456,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 		TIMER_Set( NPC, "attackDelay", Q_irand( 0, 1000 ) );
 	}
 
-	if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+	if (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 	{
 		if ( !TIMER_Done( NPC, "flameTime" ) )
 		{
@@ -1585,7 +1649,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			Kyle_TryGrab();
 			return;
 		}
-		else if ( NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER)
+		else if ( NPC->client->ps.weapons[WP_SCEPTER]
 			&& !Q_irand( 0, 20 ) )
 		{
 			Tavion_StartScepterSlam();
@@ -1613,7 +1677,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 				Kyle_TryGrab();
 				return;
 			}
-			else if ( NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER)
+			else if ( NPC->client->ps.weapons[WP_SCEPTER]
 				&& !Q_irand( 0, 20 ) )
 			{
 				Tavion_StartScepterSlam();
@@ -1746,6 +1810,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			NPC->enemy->client->ps.saberInFlight && NPC->enemy->client->ps.saber[0].Active() && //enemy throwing saber
 			!NPC->client->ps.weaponTime && //I'm not busy
 			WP_ForcePowerAvailable( NPC, FP_GRIP, 0 ) && //I can use the power
+			WP_ForcePowerAvailable(NPC, FP_GRASP, 0) && //I can use the power
 			!Q_irand( 0, 10 ) && //don't do it all the time, averages to 1 check a second
 			Q_irand( 0, 6 ) < g_spskill->integer && //more likely on harder diff
 			Q_irand( RANK_CIVILIAN, RANK_CAPTAIN ) < NPCInfo->rank //more likely against harder enemies
@@ -1772,7 +1837,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 		}
 		else
 		{
-			if ( NPC->enemy && NPC->enemy->client && (NPC->enemy->client->ps.forcePowersActive&(1<<FP_GRIP)) )
+			if ( NPC->enemy && NPC->enemy->client && ((NPC->enemy->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->enemy->client->ps.forcePowersActive&(1 << FP_GRASP)))
 			{//They're choking someone, probably an ally, run at them and do some sort of attack
 				if ( NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE )
 				{//they're on the ground, so advance
@@ -1793,7 +1858,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			{
 				ForceThrow( NPC, qtrue );
 			}
-			else if ( NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER)
+			else if ( NPC->client->ps.weapons[WP_SCEPTER]
 				&& !Q_irand( 0, 20 ) )
 			{
 				Tavion_StartScepterBeam();
@@ -1846,7 +1911,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						)
 						&& (!Q_irand( 0, 1 ) || NPC->s.weapon != WP_SABER) )
 					{
-						if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) )
+						if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							//force pull the guy to me!
 							//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
@@ -1859,7 +1924,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							}
 						}
 						else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 )
-							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceLightning( NPC );
 							if ( NPC->client->ps.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1872,15 +1937,46 @@ static void Jedi_CombatDistance( int enemy_dist )
 						else if ( NPC->health < NPC->max_health * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
 							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 )
-							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							ForceDrain2( NPC );
 							NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_spskill->integer*500) );
 							TIMER_Set( NPC, "draining", NPC->client->ps.weaponTime );
 							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
+
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_STASIS, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
+						{
+							ForceStasis(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_FEAR, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
+						{
+							ForceFear(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_LIGHTNING_STRIKE, 0) && Q_irand(0, 1) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							ForceLightningStrike(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_DESTRUCTION, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
+						{
+							ForceDestruction(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_BLAST, 0) && Q_irand(0, 2) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time && TIMER_Done(NPC, "holdLightning"))
+						{
+							ForceBlast(NPC);
+							TIMER_Set(NPC, "attackDelay", NPC->client->ps.weaponTime);
+						}
+
 						else if ( WP_ForcePowerUsable( NPC, FP_GRIP, 0 )
-							&& NPC->enemy && InFOV( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30 ) )
+							&& NPC->enemy && InFOV( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30 ) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
 						{
 							//taunt
 							if ( TIMER_Done( NPC, "chatter" ) && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time )
@@ -1900,6 +1996,28 @@ static void Jedi_CombatDistance( int enemy_dist )
 							//grip
 							TIMER_Set( NPC, "gripping", 3000 );
 							TIMER_Set( NPC, "attackDelay", 3000 );
+						}
+						else if (g_newforcepowers->integer && WP_ForcePowerUsable(NPC, FP_GRASP, 0)
+							&& NPC->enemy && InFOV(NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, 20, 30) && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.stasisTime < level.time)
+						{
+							//taunt
+							if (TIMER_Done(NPC, "chatter") && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time)
+							{
+								G_AddVoiceEvent(NPC, Q_irand(EV_TAUNT1, EV_TAUNT3), 3000);
+								jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
+								if ((NPCInfo->aiFlags&NPCAI_ROSH))
+								{
+									TIMER_Set(NPC, "chatter", 6000);
+								}
+								else
+								{
+									TIMER_Set(NPC, "chatter", 3000);
+								}
+							}
+
+							//grip
+							TIMER_Set(NPC, "gripping", 3000);
+							TIMER_Set(NPC, "attackDelay", 3000);
 						}
 						else
 						{
@@ -2195,13 +2313,13 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			{//no fancy dodges when raging or recovering
 				return qfalse;
 			}
-			if ( self->client->NPC_class == CLASS_BOBAFETT && !Q_irand(0,1))
+			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO) && !Q_irand(0, 1))
 			{
 				return qfalse; // half the time he dodges
 			}
 
 
-			if ( self->client->NPC_class == CLASS_BOBAFETT
+			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 				|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER)
 				|| self->client->NPC_class == CLASS_ROCKETTROOPER )
 			{
@@ -2211,6 +2329,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			{
 				self->client->ps.forceJumpCharge = 320;//FIXME: calc this intelligently?
 				WP_ForcePowerStop( self, FP_GRIP );
+				WP_ForcePowerStop(self, FP_GRASP);
 			}
 			return qtrue;
 		}
@@ -2297,6 +2416,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		}
 
 		WP_ForcePowerStop( self, FP_GRIP );
+		WP_ForcePowerStop(self, FP_GRASP);
 		if ( !self->enemy && G_ValidEnemy( self, shooter) )
 		{
 			G_SetEnemy( self, shooter );
@@ -2318,7 +2438,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 	}
 	if ( self->client )
 	{
-		if ( self->client->NPC_class == CLASS_BOBAFETT )
+		if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 		{//boba can't flip
 			return EVASION_NONE;
 		}
@@ -2471,7 +2591,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 			self->client->ps.velocity[2] = 200;
 			self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 			self->client->ps.pm_flags |= PMF_JUMPING;
-			if ( self->client->NPC_class == CLASS_BOBAFETT
+			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 				 || (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) )
 			{
 				G_AddEvent( self, EV_JUMP, 0 );
@@ -2546,7 +2666,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 								NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 								self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-								if ( self->client->NPC_class == CLASS_BOBAFETT
+								if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 									|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
 								{
 									G_AddEvent( self, EV_JUMP, 0 );
@@ -2623,7 +2743,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 						self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-						if ( self->client->NPC_class == CLASS_BOBAFETT
+						if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 							|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
 						{
 							G_AddEvent( self, EV_JUMP, 0 );
@@ -3023,7 +3143,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 
 	qboolean doDodge = qfalse;
 	qboolean alwaysDodgeOrRoll = qfalse;
-	if ( self->client->NPC_class == CLASS_BOBAFETT )
+	if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 	{
 		saberBusy = qtrue;
 		doDodge = qtrue;
@@ -3064,7 +3184,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	}
 
 	qboolean doRoll = qfalse;
-	if (	( self->client->NPC_class == CLASS_BOBAFETT //boba fett
+	if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)//boba fett
 				|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) //non-saber reborn (cultist)
 			)
 			&& !Q_irand( 0, 2 )
@@ -3376,7 +3496,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						&& self->client->ps.forceRageRecoveryTime < level.time
 						&& !(self->client->ps.forcePowersActive&(1<<FP_RAGE)) )
 					{
-						if ( (self->client->NPC_class == CLASS_BOBAFETT
+						if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO)
 								|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER)
 							)
 							&& !Q_irand( 0, 1 ) )
@@ -3590,6 +3710,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	//stop gripping
 	TIMER_Set( self, "gripping", -level.time );
 	WP_ForcePowerStop( self, FP_GRIP );
+	WP_ForcePowerStop(self, FP_GRASP);
 	//stop draining
 	TIMER_Set( self, "draining", -level.time );
 	WP_ForcePowerStop( self, FP_DRAIN );
@@ -4234,7 +4355,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 			}
 			else */if ( NPC->client->ps.weaponTime
 				|| NPC->client->ps.saberInFlight
-				|| NPC->client->NPC_class == CLASS_BOBAFETT
+				|| (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 				|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 				|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 			{//I'm attacking or recovering from a parry, can only try to strafe/jump right now
@@ -4425,7 +4546,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 						&& !Q_irand( 0, 5 ) )
 					{//FIXME: make this a function call?
 						//FIXME: check for clearance, safety of landing spot?
-						if ( NPC->client->NPC_class == CLASS_BOBAFETT
+						if ((NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 							|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 							|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 						{
@@ -4653,11 +4774,18 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 		NPCInfo->desiredYaw = NPC->client->ps.viewangles[YAW];
 		return;
 	}
+	if (NPC->client->ps.forcePowersActive & (1 << FP_GRASP) &&
+		NPC->client->ps.forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+	{//don't update?
+		NPCInfo->desiredPitch = NPC->client->ps.viewangles[PITCH];
+		NPCInfo->desiredYaw = NPC->client->ps.viewangles[YAW];
+		return;
+	}
 	CalcEntitySpot( NPC, SPOT_HEAD, eyes );
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_eyes );
 
-	if ( NPC->client->NPC_class == CLASS_BOBAFETT
+	if ((NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 		&& TIMER_Done( NPC, "flameTime" )
 		&& NPC->s.weapon != WP_NONE
 		&& NPC->s.weapon != WP_DISRUPTOR
@@ -5188,7 +5316,7 @@ static void Jedi_CombatIdle( int enemy_dist )
 	{//never taunt while raging or recovering from rage
 		return;
 	}
-	if ( NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER) )
+	if ( NPC->client->ps.weapons[WP_SCEPTER] )
 	{//never taunt when holding scepter
 		return;
 	}
@@ -5212,7 +5340,7 @@ static void Jedi_CombatIdle( int enemy_dist )
 			{//FIXME: add more taunt behaviors
 				//FIXME: sometimes he turns it off, then turns it right back on again???
 				if ( enemy_dist > 200
-					&& NPC->client->NPC_class != CLASS_BOBAFETT
+					&& (NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 					&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 					&& NPC->client->NPC_class != CLASS_ROCKETTROOPER
 					&& NPC->client->ps.SaberActive()
@@ -5812,7 +5940,8 @@ static void Jedi_Combat( void )
 
 	if ( TIMER_Done( NPC, "allyJediDelay" ) )
 	{
-		if ( !(NPC->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
+		if ( (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP)) || NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2 )
+			&& (!(NPC->client->ps.forcePowersActive&(1 << FP_GRASP)) || NPC->client->ps.forcePowerLevel[FP_GRASP] < FORCE_LEVEL_2))
 		{//not gripping
 			//If we can't get straight at him
 			if ( !Jedi_ClearPathToSpot( enemy_dest, NPC->enemy->s.number ) )
@@ -5850,7 +5979,7 @@ static void Jedi_Combat( void )
 					//for gravity with my size, see if it makes it...
 					//this will also catch misacalculations that send you off ledges!
 					//gi.Printf( "Considering Jump\n" );
-					if (NPC->client && NPC->client->NPC_class==CLASS_BOBAFETT)
+					if (NPC->client && (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO))
 					{
 						Boba_FireDecide();
 					}
@@ -5876,7 +6005,7 @@ static void Jedi_Combat( void )
 						G_AddVoiceEvent( NPC, Q_irand( EV_JLOST1, EV_JLOST3 ), 3000 );
 						jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
 					}
-					if (NPC->client && NPC->client->NPC_class==CLASS_BOBAFETT)
+					if (NPC->client && (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO))
 					{
 						Boba_FireDecide();
 					}
@@ -5917,7 +6046,7 @@ static void Jedi_Combat( void )
 	}
 
 	//if ( !enemy_lost )
- 	if (NPC->client->NPC_class != CLASS_BOBAFETT)
+	if (NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 	{
 		//Update our seen enemy position
 		if ( !NPC->enemy->client || ( NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE && NPC->client->ps.groundEntityNum != ENTITYNUM_NONE ) )
@@ -5957,7 +6086,8 @@ static void Jedi_Combat( void )
 	if ( TIMER_Done( NPC, "allyJediDelay" ) )
 	{
 		if ( ( !NPC->client->ps.saberInFlight || (NPC->client->ps.saberAnimLevel == SS_DUAL && NPC->client->ps.saber[1].Active()) )
-			&& (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP))||NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2) )
+			&& (!(NPC->client->ps.forcePowersActive&(1<<FP_GRIP))||NPC->client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_2) 
+			&& (!(NPC->client->ps.forcePowersActive&(1 << FP_GRASP)) || NPC->client->ps.forcePowerLevel[FP_GRASP] < FORCE_LEVEL_2))
 		{//not throwing saber or using force grip
 			//see if we can attack
 			if ( !Jedi_AttackDecide( enemy_dist ) )
@@ -5974,7 +6104,7 @@ static void Jedi_Combat( void )
 		else
 		{
 		}
-		if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+		if (NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 		{
 			Boba_FireDecide();
 		}
@@ -6043,7 +6173,7 @@ void NPC_Jedi_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, con
 		}
 		if ( !Q_irand( 0, 3 ) )
 		{//ouch... maybe switch up which saber power level we're using
-			Jedi_AdjustSaberAnimLevel( self, Q_irand( SS_FAST, SS_STRONG ) );
+			Jedi_AdjustSaberAnimLevel( self, Q_irand( SS_FAST, SS_TAVION ) );
 		}
 		if ( !Q_irand( 0, 1 ) )//damage > 20 || self->health < 40 ||
 		{
@@ -6079,6 +6209,7 @@ void NPC_Jedi_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, con
 	self->NPC->enemyCheckDebounceTime = 0;
 
 	WP_ForcePowerStop( self, FP_GRIP );
+	WP_ForcePowerStop(self, FP_GRASP);
 
 	NPC_Pain( self, inflictor, other, point, damage, mod );
 
@@ -6250,7 +6381,7 @@ void Jedi_Ambush( gentity_t *self )
 	self->client->ps.pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 	NPC_SetAnim( self, SETANIM_BOTH, BOTH_CEILING_DROP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	self->client->ps.weaponTime = NPC->client->ps.torsoAnimTimer;
-	if ( self->client->NPC_class != CLASS_BOBAFETT
+	if (self->client->NPC_class != CLASS_BOBAFETT && self->client->NPC_class != CLASS_MANDALORIAN && self->client->NPC_class != CLASS_JANGO
 		&& self->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
 		self->client->ps.SaberActivate();
@@ -6367,7 +6498,7 @@ static void Jedi_Patrol( void )
 						G_SetEnemy( NPC, best_enemy );
 						NPCInfo->stats.aggression = 3;
 					}
-					else if ( NPC->client->NPC_class != CLASS_BOBAFETT )
+					else if (NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 					{//the player, toy with him
 						//get progressively more interested over time
 						if ( TIMER_Done( NPC, "watchTime" ) )
@@ -6471,6 +6602,43 @@ void NPC_BSJedi_FollowLeader( void )
 	{
 		//Com_Printf( "(%d) drop agg - no enemy (follow)\n", level.time );
 		Jedi_AggressionErosion(-1);
+	}
+
+	if (TIMER_Done(NPC, "breathing")
+		&& (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
+			|| !Q_stricmp(STALKER, NPC->NPC_type)
+			|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK, NPC->NPC_type)
+			|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
+	{
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+			}
+		}
+		else
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(3131, 5000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
+			}
+		}
 	}
 
 	//did we drop our saber?  If so, go after it!
@@ -6718,7 +6886,7 @@ static void Jedi_Attack( void )
 		{//my enemy is dead and I killed him
 			NPCInfo->enemyCheckDebounceTime = 0;//keep looking for others
 
-			if ( NPC->client->NPC_class == CLASS_BOBAFETT
+			if ((NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 				|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 				|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 			{
@@ -6894,7 +7062,7 @@ static void Jedi_Attack( void )
 		ucmd.upmove = -127;
 	}
 
-	if ( NPC->client->NPC_class != CLASS_BOBAFETT
+	if ((NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 		&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 		&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
@@ -6917,7 +7085,7 @@ static void Jedi_Attack( void )
 		NPC->client->ps.forceJumpCharge = 0;
 	}
 
-	if ( NPC->client->NPC_class != CLASS_BOBAFETT
+	if ((NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 		&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 		&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
@@ -6941,7 +7109,7 @@ static void Jedi_Attack( void )
 	}
 	else
 	{//check other special combat behavior
-		if ( NPC->client->NPC_class != CLASS_BOBAFETT
+		if ((NPC->client->NPC_class != CLASS_BOBAFETT && NPC->client->NPC_class != CLASS_MANDALORIAN && NPC->client->NPC_class != CLASS_JANGO)
 			&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 			&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 		{
@@ -7053,44 +7221,94 @@ qboolean Rosh_BeingHealed( gentity_t *self )
 
 qboolean Rosh_TwinPresent( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		// We only want Shakkra to be healed by Sarek or Loomis, not the reborns
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		return qtrue;
 	}
-	return qtrue;
+	return qfalse;
 }
 
 qboolean Rosh_TwinNearBy( gentity_t *self )
 {
-	gentity_t *foundTwin = G_Find( NULL, FOFS(NPC_type), "DKothos" );
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
+	if (!Q_stricmp("rosh_dark", self->NPC_type))
 	{
-		foundTwin = G_Find( NULL, FOFS(NPC_type), "VKothos" );
-	}
-	if ( !foundTwin
-		|| foundTwin->health < 0 )
-	{//oh well, both twins are dead...
-		return qfalse;
-	}
-	if ( self->client
-		&& foundTwin->client )
-	{
-		if ( Distance( self->currentOrigin, foundTwin->currentOrigin ) <= 512.0f
-			&& G_ClearLineOfSight( self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE ) )
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), "DKothos");
+		if (!foundTwin
+			|| foundTwin->health < 0)
 		{
-			//make them look charge me for a bit while I do this
-			TIMER_Set( self, "chargeMeUp", Q_irand( 2000, 4000 ) );
-			return qtrue;
+			foundTwin = G_Find(NULL, FOFS(NPC_type), "VKothos");
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
 		}
 	}
+
+	else if (!Q_stricmp(SHAKKRA_KIEN, self->NPC_type))
+	{
+		gentity_t* foundTwin = G_Find(NULL, FOFS(NPC_type), SAREK);
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{
+			foundTwin = G_Find(NULL, FOFS(NPC_type), LOOMIS);
+		}
+		if (!foundTwin
+			|| foundTwin->health < 0)
+		{//oh well, both twins are dead...
+			return qfalse;
+		}
+		if (self->client
+			&& foundTwin->client)
+		{
+			if (Distance(self->currentOrigin, foundTwin->currentOrigin) <= 512.0f
+				&& G_ClearLineOfSight(self->client->renderInfo.eyePoint, foundTwin->client->renderInfo.eyePoint, foundTwin->s.number, MASK_OPAQUE))
+			{
+				//make them look charge me for a bit while I do this
+				TIMER_Set(self, "chargeMeUp", Q_irand(2000, 4000));
+				return qtrue;
+			}
+		}
+	}
+	
 	return qfalse;
 }
 
@@ -7105,6 +7323,7 @@ qboolean Kothos_HealRosh( void )
 		{
 			//NPC_FaceEntity( NPC->client->leader, qtrue );
 			NPC_SetAnim( NPC, SETANIM_TORSO, BOTH_FORCE_2HANDEDLIGHTNING_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			WP_DeactivateSaber(NPC);
 			NPC->client->ps.torsoAnimTimer = 1000;
 
 			//FIXME: unique effect and sound
@@ -7121,10 +7340,18 @@ qboolean Kothos_HealRosh( void )
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, fxOrg );
 				VectorSubtract( NPC->client->leader->currentOrigin, fxOrg, fxDir );
 				VectorNormalize( fxDir );
-				G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
+
+				if(!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), fxOrg, fxDir);
+				else
+					G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), fxOrg, fxDir );
 			}
 			//BEG HACK LINE
-			gentity_t *tent = G_TempEntity( NPC->currentOrigin, EV_KOTHOS_BEAM );
+			gentity_t* tent;
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+				tent = G_TempEntity(NPC->currentOrigin, EV_GUARDS_BEAM);
+			else
+				tent = G_TempEntity(NPC->currentOrigin, EV_KOTHOS_BEAM);
 			tent->svFlags |= SVF_BROADCAST;
 			tent->s.otherEntityNum = NPC->s.number;
 			tent->s.otherEntityNum2 = NPC->client->leader->s.number;
@@ -7138,7 +7365,12 @@ qboolean Kothos_HealRosh( void )
 				{//let him get up now
 					NPC_SetAnim( NPC->client->leader, SETANIM_BOTH, BOTH_FORCEHEAL_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 					//FIXME: temp effect
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse );
+
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, NPC->client->leader->client->ps.torsoAnimTimer, qfalse);
+
 					//make him invincible while we recharge him
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + NPC->client->leader->client->ps.torsoAnimTimer;
 					NPC->client->leader->NPC->ignorePain = qfalse;
@@ -7146,7 +7378,11 @@ qboolean Kothos_HealRosh( void )
 				}
 				else
 				{
-					G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse );
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+					else
+						G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->client->leader->playerModel, 0, NPC->client->leader->s.number, NPC->client->leader->currentOrigin, 500, qfalse);
+
 					NPC->client->leader->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 				}
 			}
@@ -7157,10 +7393,18 @@ qboolean Kothos_HealRosh( void )
 				TIMER_Set( NPC, "healRoshDebounce", Q_irand( 5000, 10000 ) );
 				NPC->count = 100;
 			}
+			
+			if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+			{
+				// Sarek and Loomis lose their shields when Shakkra is being healed.
+				G_StopEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number);
+				NPC->client->ps.powerups[PW_INVINCIBLE] = 0;
+				NPC->NPC->scriptFlags &= ~SCF_NO_FORCE;
+			}
 			//now protect me, too
-			if ( g_spskill->integer )
+			else if ( g_spskill->integer )
 			{//not on easy
-				G_PlayEffect( G_EffectIndex( "force/kothos_recharge.efx" ), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+				G_PlayEffect(G_EffectIndex("force/kothos_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 				NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
 			}
 			return qtrue;
@@ -7182,7 +7426,8 @@ void Kothos_PowerRosh( void )
 			NPC->client->ps.torsoAnimTimer = 500;
 			//FIXME: unique effect and sound
 			//NPC->client->ps.eFlags |= EF_POWERING_ROSH;
-			G_PlayEffect( G_EffectIndex( "force/kothos_beam.efx" ), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse );
+			//G_PlayEffect(G_EffectIndex("force/kothos_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+			G_PlayEffect(G_EffectIndex("force/guards_beam.efx"), NPC->playerModel, NPC->handLBolt, NPC->s.number, NPC->currentOrigin, 500, qfalse);
 			if ( NPC->client->leader->client )
 			{//hmm, give him some force?
 				NPC->client->leader->client->ps.forcePower++;
@@ -7387,9 +7632,19 @@ qboolean Jedi_InSpecialMove( void )
 	{
 		if ( (NPCInfo->aiFlags&NPCAI_HEAL_ROSH) )
 		{
+			// Kothos Twins and Sarek and Loomis have different leaders, they don't care about the other
 			if ( !NPC->client->leader )
-			{//find Rosh
-				NPC->client->leader = G_Find( NULL, FOFS(NPC_type), "rosh_dark" );
+			{
+				if (!Q_stricmp("dkothos", NPC->NPC_type) || !Q_stricmp("vkothos", NPC->NPC_type))
+				{	
+					//find Rosh
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), "rosh_dark");
+				}
+				else if (!NPC->client->leader && (!Q_stricmp(SAREK, NPC->NPC_type) || !Q_stricmp(LOOMIS, NPC->NPC_type)))
+				{
+					// Find Shakkra Kien
+					NPC->client->leader = G_Find(NULL, FOFS(NPC_type), SHAKKRA_KIEN);
+				}
 			}
 			//NPC->client->ps.eFlags &= ~EF_POWERING_ROSH;
 			if ( NPC->client->leader )
@@ -7399,7 +7654,14 @@ qboolean Jedi_InSpecialMove( void )
 				NPC->client->leader->flags |= FL_UNDYING;
 				if ( NPC->client->leader->client )
 				{
-					NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_SHAKKRA_GUARDS;
+					}
+					else
+					{
+						NPC->client->leader->client->ps.forcePowersKnown |= FORCE_POWERS_ROSH_FROM_TWINS;
+					}
 				}
 				if ( NPC->client->leader->client->ps.legsAnim == BOTH_FORCEHEAL_START
 					&& TIMER_Done( NPC, "healRoshDebounce" ) )
@@ -7426,16 +7688,30 @@ qboolean Jedi_InSpecialMove( void )
 				}
 				*/
 
+				if (!helpingRosh)
+				{
+					// Sarek and Loomis are invulnerable until Shakkra goes down
+					if (!Q_stricmp(LOOMIS, NPC->NPC_type) || !Q_stricmp(SAREK, NPC->NPC_type))
+					{
+						G_PlayEffect(G_EffectIndex("force/guards_recharge.efx"), NPC->playerModel, 0, NPC->s.number, NPC->currentOrigin, 500, qfalse);
+						NPC->client->ps.powerups[PW_INVINCIBLE] = level.time + 500;
+						NPC->NPC->scriptFlags |= SCF_NO_FORCE;
+					}
+				}
+
 				if ( helpingRosh )
 				{
 					WP_ForcePowerStop( NPC, FP_LIGHTNING );
 					WP_ForcePowerStop( NPC, FP_DRAIN );
 					WP_ForcePowerStop( NPC, FP_GRIP );
+					WP_ForcePowerStop(NPC, FP_GRASP);
 					NPC_FaceEntity( NPC->client->leader, qtrue );
 					return qtrue;
 				}
 				else if ( NPC->enemy && DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin ) < Twins_DangerDist() )
 				{
+					NPC->client->ps.SaberActivate();
+					
 					if ( NPC->enemy && Kothos_Retreat() )
 					{
 						NPC_FaceEnemy( qtrue );
@@ -7599,6 +7875,7 @@ qboolean Jedi_InSpecialMove( void )
 extern void NPC_BSST_Patrol( void );
 extern void NPC_BSSniper_Default( void );
 extern void G_UcmdMoveForDir( gentity_t *self, usercmd_t *cmd, vec3_t dir );
+extern saber_colors_t TranslateSaberColor(const char* name);
 void NPC_BSJedi_Default( void )
 {
 	if ( Jedi_InSpecialMove() )
@@ -7606,11 +7883,148 @@ void NPC_BSJedi_Default( void )
 		return;
 	}
 
+	if (TIMER_Done(NPC, "breathing")
+		&&(!Q_stricmp(VADER, NPC->NPC_type)
+		|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type)
+		|| !Q_stricmp(STALKER, NPC->NPC_type)
+		|| !Q_stricmp(CYBER_RECON, NPC->NPC_type)
+		|| !Q_stricmp(LORD_STK, NPC->NPC_type)
+		|| !Q_stricmp(LORD_STK_TAT, NPC->NPC_type)))
+	{
+		if (!Q_stricmp(VADER, NPC->NPC_type)
+			|| !Q_stricmp(VADER_INFINITIES, NPC->NPC_type))
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(7300, 10000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/am_darth_vader/vader_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(1500, 3000));
+			}
+		}
+		else
+		{
+			if (NPC->health > (NPC->max_health * .33))
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(3131, 5000));
+			}
+			else
+			{
+				G_SoundOnEnt(NPC, CHAN_VOICE, va("sound/chars/lord_starkiller/starkiller_breathe_strained.wav"));
+				TIMER_Set(NPC, "breathing", Q_irand(2120, 4000));
+			}
+		}
+	}
+
+	if (TIMER_Done(NPC, "saber_switch") &&
+		(!Q_stricmp(CAL_KESTIS, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_SURVIVOR, NPC->NPC_type)
+			|| !Q_stricmp(CAL_KESTIS_INQUISITOR, NPC->NPC_type)))
+	{
+		if (!Q_stricmp("cal_kestis_staff", NPC->client->ps.saber[0].name))
+		{
+
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
+			WP_SetSaber(NPC, 0, "cal_kestis_single");
+			
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+		}
+		else if (!Q_stricmp("cal_kestis_single", NPC->client->ps.saber[0].name))
+		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+			WP_SetSaber(NPC, 0, "cal_kestis_staff");
+
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
+			
+		}
+		TIMER_Set(NPC, "saber_switch", Q_irand(5000, 20000));
+	}
+
+	if (!Q_stricmp(GRAND_INQ, NPC->NPC_type)
+		|| !Q_stricmp(SECOND_SIS, NPC->NPC_type)
+		|| !Q_stricmp(THIRD_SIS, NPC->NPC_type)
+		|| !Q_stricmp(FIFTH_BRO, NPC->NPC_type)
+		|| !Q_stricmp(SEVENTH_SIS, NPC->NPC_type)
+		|| !Q_stricmp(EIGHTH_BRO, NPC->NPC_type)
+		|| !Q_stricmp(NINTH_SIS, NPC->NPC_type)
+		|| !Q_stricmp(INQ_STK, NPC->NPC_type))
+		{
+			saber_colors_t currentColor = NPC->client->ps.saber[0].blade[0].color;
+
+			if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inquisitor", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "inquisitor_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("inquisitor_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "inquisitor");
+			}
+			else if ((NPC->health <= (NPC->max_health * .75) && !Q_stricmp("2nd_sister", NPC->client->ps.saber[0].name)) || (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("inq_starkiller", NPC->client->ps.saber[0].name)))
+			{
+				WP_SetSaber(NPC, 0, "2nd_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("2nd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				if (!Q_stricmp(INQ_STK, NPC->NPC_type))
+					WP_SetSaber(NPC, 0, "inq_starkiller");
+				else
+					WP_SetSaber(NPC, 0, "2nd_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("3rd_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "3rd_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("3rd_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "3rd_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("4th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "4th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("4th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "4th_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("5th_brother", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "5th_brother_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("5th_brother_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "5th_brother");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("7th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "7th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("7th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "7th_sister");
+			}
+			else if (NPC->health <= (NPC->max_health * .75) && !Q_stricmp("9th_sister", NPC->client->ps.saber[0].name))
+			{
+				WP_SetSaber(NPC, 0, "9th_sister_staff");
+			}
+			else if (NPC->health > (NPC->max_health * .75) && !Q_stricmp("9th_sister_staff", NPC->client->ps.saber[0].name) && TIMER_Done(NPC, "saber_switch"))
+			{
+				WP_SetSaber(NPC, 0, "9th_sister");
+			}
+			NPC->client->ps.saber[0].blade[0].color = currentColor;
+			NPC->client->ps.saber[0].blade[1].color = currentColor;
+		}
+
 	Jedi_CheckCloak();
 
 	if( !NPC->enemy )
 	{//don't have an enemy, look for one
-		if ( NPC->client->NPC_class == CLASS_BOBAFETT
+		if ((NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDALORIAN || NPC->client->NPC_class == CLASS_JANGO)
 			|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 			|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 		{

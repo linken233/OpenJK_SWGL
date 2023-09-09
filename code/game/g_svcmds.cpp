@@ -35,6 +35,9 @@ extern void Q3_SetViewEntity(int entID, const char *name);
 extern qboolean G_ClearViewEntity( gentity_t *ent );
 extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 
+extern void SP_NPC_Jedi(gentity_t *self);
+extern void SP_NPC_SWGL_Jedi(gentity_t *self);
+
 extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern saber_colors_t TranslateSaberColor( const char *name );
@@ -44,6 +47,8 @@ extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel 
 extern void G_SetWeapon( gentity_t *self, int wp );
 extern stringID_table_t WPTable[];
 
+extern void SP_NPC_spawner(gentity_t *self);
+
 extern cvar_t	*g_char_model;
 extern cvar_t	*g_char_skin_head;
 extern cvar_t	*g_char_skin_torso;
@@ -51,10 +56,30 @@ extern cvar_t	*g_char_skin_legs;
 extern cvar_t	*g_char_color_red;
 extern cvar_t	*g_char_color_green;
 extern cvar_t	*g_char_color_blue;
+extern cvar_t	*g_npc_color_red;
+extern cvar_t	*g_npc_color_green;
+extern cvar_t	*g_npc_color_blue;
 extern cvar_t	*g_saber;
 extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
 extern cvar_t	*g_saber2_color;
+extern cvar_t	*g_NPChead;
+extern cvar_t	*g_NPCtorso;
+extern cvar_t	*g_NPClegs;
+
+// NPC attributes
+extern cvar_t *g_NPCtype;
+extern cvar_t *g_NPCteam;
+extern cvar_t *g_NPCweapon;
+extern cvar_t *g_NPCsaber;
+extern cvar_t *g_NPCsabercolor;
+extern cvar_t* g_NPCLightningColor;
+extern cvar_t *g_NPCsabertwo;
+extern cvar_t *g_NPCsabertwocolor;
+extern cvar_t *g_NPChealth;
+extern cvar_t *g_NPCspawnscript;
+extern cvar_t *g_NPCfleescript;
+extern cvar_t *g_NPCdeathscript;
 
 /*
 ===================
@@ -185,6 +210,9 @@ static void Svcmd_Saber_f()
 	const char *saber2 = gi.argv(2);
 	char name[MAX_CVAR_VALUE_STRING] = {0};
 
+	if (gi.Cvar_VariableIntegerValue("ui_npc_saber"))
+		return;
+
 	if ( gi.argc() < 2 )
 	{
 		gi.Printf( "Usage: saber <saber1> <saber2>\n" );
@@ -254,6 +282,24 @@ static void Svcmd_SaberBlade_f()
 	g_entities[0].client->ps.SaberBladeActivate( sabernum, bladenum, turnOn );
 }
 
+static void Svcmd_LightningColor_f()
+{//FIXME: just list the colors, each additional listing sets that blade
+	char* color = gi.argv(1);
+	if (gi.argc() < 2)
+	{
+		gi.Printf("Usage:  lightningColor <color>\n");
+		gi.Printf("valid colors:  red, orange, yellow, green, blue, purple, white, and black\n");
+
+		return;
+	}
+
+	gentity_t* self = G_GetSelfForPlayerCmd();
+
+	gi.cvar_set("g_forcelightningcolor", color);
+
+	self->NPC_LightningColor = color;
+}
+
 static void Svcmd_SaberColor_f()
 {//FIXME: just list the colors, each additional listing sets that blade
 	int saberNum = atoi(gi.argv(1));
@@ -269,7 +315,7 @@ static void Svcmd_SaberColor_f()
 	{
 		gi.Printf( "Usage:  saberColor <saberNum> <blade1 color> <blade2 color> ... <blade8 color>\n" );
 		gi.Printf( "valid saberNums:  1 or 2\n" );
-		gi.Printf( "valid colors:  red, orange, yellow, green, blue, and purple\n" );
+		gi.Printf( "valid colors:  red, orange, yellow, green, blue, purple, unstable_red, black, and darksaber\n" );
 
 		return;
 	}
@@ -322,6 +368,12 @@ SetForceCmd SetForceTable[NUM_FORCE_POWERS] = {
 	{ "forceAbsorb",		"setForceAbsorb",		FORCE_LEVEL_3			},
 	{ "forceDrain",			"setForceDrain",		FORCE_LEVEL_3			},
 	{ "forceSight",			"setForceSight",		FORCE_LEVEL_3			},
+	{ "forceStasis",		"setForceStasis",		FORCE_LEVEL_3			},
+	{ "forceBlast",			"setForceBlast",		FORCE_LEVEL_3			},
+	{ "forceGrasp",			"setForceGrasp",		FORCE_LEVEL_3			},
+	{ "forceDestruction",	"setForceDestruction",	FORCE_LEVEL_3			},
+	{ "forceFear",			"setForceFear",			FORCE_LEVEL_3			},
+	{ "forceLightningStrike","setForceLightningStrike",	FORCE_LEVEL_3			},
 };
 
 static void Svcmd_ForceSetLevel_f( int forcePower )
@@ -369,10 +421,33 @@ void Svcmd_SaberAttackCycle_f( void )
 	}
 
 	gentity_t *self = G_GetSelfForPlayerCmd();
+	/*
 	if ( self->s.weapon != WP_SABER )
 	{// saberAttackCycle button also switches to saber
 		gi.SendConsoleCommand("weapon 1" );
 		return;
+	}
+	*/
+
+	// If you have a tertiary option and you are not firing.
+	if (weaponData[self->s.weapon].tertiaryFireOpt[FIRING_TYPE] >= FT_AUTOMATIC && self->client->ps.weaponTime == 0)
+	{
+		if (self->client->ps.tertiaryMode)
+		{
+			self->client->ps.tertiaryMode = qfalse;
+		}
+		else
+		{
+			self->client->ps.tertiaryMode = qtrue;
+		}
+
+		G_Sound(self, G_SoundIndex("sound/vehicles/common/linkweaps.wav"));
+	}
+
+	// If you are scoped and switched to tertiaryMode, you should be no longer scoped.
+	if (self->s.weapon == WP_CLONECOMMANDO && self->client->ps.tertiaryMode && cg.zoomMode >= ST_A280)
+	{
+		cg.zoomMode = 0;
 	}
 
 	if ( self->client->ps.dualSabers )
@@ -402,7 +477,10 @@ void Svcmd_SaberAttackCycle_f( void )
 					if ( !skipThisBlade )
 					{
 						self->client->ps.saber[1].BladeActivate( bladeNum, qfalse );
-						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[1].soundOff );
+						if ( self->s.weapon == WP_SABER )
+						{
+							G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[1].soundOff );
+						}
 					}
 				}
 			}
@@ -470,7 +548,10 @@ void Svcmd_SaberAttackCycle_f( void )
 					self->client->ps.saber[0].BladeActivate( bladeNum, qfalse );
 					if ( !playedSound )
 					{
-						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
+						if ( self->s.weapon == WP_SABER )
+						{
+							G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
+						}
 						playedSound = qtrue;
 					}
 				}
@@ -783,6 +864,175 @@ static void Svcmd_PlayerModel_f(void)
 	}
 }
 
+extern qboolean NPC_ParseParms(const char *NPCName, gentity_t *NPC);
+extern void NPC_PrecacheByClassName(const char*);
+static void Svcmd_Spawn_f(void)
+{
+	gentity_t		*NPCspawner = G_Spawn();
+
+	vec3_t			forward, end;
+	trace_t			trace;
+	
+
+	if (!NPCspawner)
+	{
+		gi.Printf(S_COLOR_RED"NPC_Spawn Error: Out of entities!\n");
+		return;
+	}
+
+	NPCspawner->e_ThinkFunc = thinkF_G_FreeEntity;
+	NPCspawner->nextthink = level.time + FRAMETIME;
+	
+	
+
+	//Spawn it at spot of first player
+	//FIXME: will gib them!
+	AngleVectors(g_entities[0].client->ps.viewangles, forward, NULL, NULL);
+	VectorNormalize(forward);
+	VectorMA(g_entities[0].currentOrigin, 64, forward, end);
+	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
+	VectorCopy(trace.endpos, end);
+	end[2] -= 24;
+	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
+	VectorCopy(trace.endpos, end);
+	end[2] += 24;
+	G_SetOrigin(NPCspawner, end);
+	VectorCopy(NPCspawner->currentOrigin, NPCspawner->s.origin);
+	NPCspawner->s.angles[1] = g_entities[0].client->ps.viewangles[1];
+
+	gi.linkentity(NPCspawner);
+
+	NPCspawner->NPC_type = g_NPCtype->string;
+	NPCspawner->NPC_skin = "default";
+
+	std::string newSkin;
+
+	newSkin.append(g_NPChead->string);
+	newSkin.append("|");
+	newSkin.append(g_NPCtorso->string);
+	newSkin.append("|");
+	newSkin.append(g_NPClegs->string);
+
+	NPCspawner->NPC_skin = G_NewString(newSkin.c_str());
+
+	NPCspawner->NPC_team = g_NPCteam->string;
+
+	NPCspawner->NPC_Weapon = g_NPCweapon->string;
+
+	NPCspawner->NPC_SaberOne = g_NPCsaber->string;
+
+	if (Q_stricmp("", g_NPCsabertwo->string) 
+	&& Q_stricmp("empty", g_NPCsabertwo->string) 
+	&& Q_stricmp("null", g_NPCsabertwo->string))
+		NPCspawner->NPC_SaberTwo = g_NPCsabertwo->string;
+
+	NPCspawner->NPC_SaberOneColor = g_NPCsabercolor->string;
+
+	NPCspawner->NPC_LightningColor = g_NPCLightningColor->string;
+	
+	NPCspawner->NPC_SaberTwoColor = g_NPCsabertwocolor->string;
+
+	NPCspawner->health = g_NPChealth->integer;
+
+	NPCspawner->behaviorSet[BSET_SPAWN] = g_NPCspawnscript->string;
+
+	NPCspawner->behaviorSet[BSET_FLEE] = g_NPCfleescript->string;
+
+	NPCspawner->behaviorSet[BSET_DEATH] = g_NPCdeathscript->string;
+
+	NPCspawner->count = 1;
+
+	NPCspawner->delay = 0;
+
+	NPCspawner->wait = 500;	
+
+	if (!NPCspawner->NPC_targetname)
+	{
+		NPCspawner->NPC_targetname = G_NewString(va("%s%i", NPCspawner->NPC_type, Q_irand(0, 100)));
+		gi.Printf(va(S_COLOR_GREEN"Spawning NPC %s, assigning targetname %s\n", NPCspawner->NPC_type, NPCspawner->NPC_targetname));
+	}
+
+	NPC_PrecacheByClassName(NPCspawner->NPC_type);
+
+	if (!Q_stricmp("jedi_random", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 4;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_Jedi(NPCspawner);
+	}
+	else if (!Q_stricmp("kotor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 0;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else if (!Q_stricmp("prequel_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 1;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else if (!Q_stricmp("swtor_jedi", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 2;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else if (!Q_stricmp("swtor_sith", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 4;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else if (!Q_stricmp("jedi_youngling", NPCspawner->NPC_type))
+	{//special case, for testing
+		NPCspawner->NPC_type = NULL;
+		NPCspawner->spawnflags |= 8;
+		NPCspawner->NPC_skin = NULL;
+		SP_NPC_SWGL_Jedi(NPCspawner);
+	}
+	else
+	{
+		NPC_Spawn(NPCspawner, NPCspawner, NPCspawner);
+	}
+	
+}
+
+static void Svcmd_Scale_f(void)
+{
+	if (gi.argc() == 1)
+	{
+		gi.Printf(S_COLOR_RED "USAGE: scale <30-150>" S_COLOR_WHITE "\n");
+	}
+	else if (gi.argc() == 2)
+	{
+		try
+		{
+			int value = std::stoi(gi.argv(1));
+
+			if (value < 30 || value > 150)
+			{
+				gi.Printf(S_COLOR_RED "ERROR: Scale must be between 30 and 150. You put %i." S_COLOR_WHITE "\n", value);
+			}
+			else
+			{
+				player->s.modelScale[0] = player->s.modelScale[1] = player->s.modelScale[2] = value / 100.0f;
+			}
+		}
+		catch (...)
+		{
+			gi.Printf(S_COLOR_RED "ERROR: You just tried to crash the game! Shame on you!" S_COLOR_WHITE "\n");
+		}
+
+		
+	}
+}
+
 static void Svcmd_PlayerTint_f(void)
 {
 	if ( gi.argc() == 4 )
@@ -907,6 +1157,7 @@ static svcmd_t svcmds[] = {
 	{ "saberColor",					Svcmd_SaberColor_f,							CMD_CHEAT },
 	{ "saber",						Svcmd_Saber_f,								CMD_CHEAT },
 	{ "saberBlade",					Svcmd_SaberBlade_f,							CMD_CHEAT },
+	{ "lightningColor",				Svcmd_LightningColor_f,						CMD_NONE  },
 	
 	{ "setForceJump",				Svcmd_ForceSetLevel_f<FP_LEVITATION>,		CMD_CHEAT },
 	{ "setSaberThrow",				Svcmd_ForceSetLevel_f<FP_SABERTHROW>,		CMD_CHEAT },
@@ -924,6 +1175,12 @@ static svcmd_t svcmds[] = {
 	{ "setForceProtect",			Svcmd_ForceSetLevel_f<FP_PROTECT>,			CMD_CHEAT },
 	{ "setForceAbsorb",				Svcmd_ForceSetLevel_f<FP_ABSORB>,			CMD_CHEAT },
 	{ "setForceSight",				Svcmd_ForceSetLevel_f<FP_SEE>,				CMD_CHEAT },
+	{ "setForceStasis",				Svcmd_ForceSetLevel_f<FP_STASIS>,			CMD_CHEAT },
+	{ "setForceBlast",				Svcmd_ForceSetLevel_f<FP_BLAST>,			CMD_CHEAT },
+	{ "setForceGrasp",				Svcmd_ForceSetLevel_f<FP_GRASP>,			CMD_CHEAT },
+	{ "setForceDestruction",		Svcmd_ForceSetLevel_f<FP_DESTRUCTION>,		CMD_CHEAT },
+	{ "setForceFear",				Svcmd_ForceSetLevel_f<FP_FEAR>,				CMD_CHEAT },
+	{ "setForceLightningStrike",	Svcmd_ForceSetLevel_f<FP_LIGHTNING_STRIKE>,	CMD_CHEAT },
 	{ "setForceAll",				Svcmd_SetForceAll_f,						CMD_CHEAT },
 	{ "setSaberAll",				Svcmd_SetSaberAll_f,						CMD_CHEAT },
 	
@@ -948,6 +1205,8 @@ static svcmd_t svcmds[] = {
 	
 	{ "secrets",					Svcmd_Secrets_f,							CMD_NONE },
 	{ "difficulty",					Svcmd_Difficulty_f,							CMD_NONE },
+	{ "scale",						Svcmd_Scale_f,							CMD_NONE },
+	{ "spawnNPC",					Svcmd_Spawn_f,							CMD_NONE},
 	
 	//{ "say",						Svcmd_Say_f,						qtrue },
 	//{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },

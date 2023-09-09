@@ -37,6 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 
 extern pmove_t	*pm;
 extern pml_t	pml;
@@ -51,6 +52,9 @@ extern cvar_t	*g_saberAnimSpeed;
 extern cvar_t	*g_saberAutoAim;
 extern cvar_t	*g_speederControlScheme;
 extern cvar_t	*g_saberNewControlScheme;
+extern cvar_t	*g_char_model;
+extern cvar_t	*g_allowSaberTwirling;
+
 
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
 extern void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -107,6 +111,8 @@ saberMoveName_t PM_SaberDualJumpAttackMove( void );
 qboolean PM_CheckDualJumpAttackMove( void );
 saberMoveName_t PM_SaberLungeAttackMove( qboolean fallbackToNormalLunge );
 qboolean PM_CheckLungeAttackMove( void );
+qboolean NoSaberTwirlCharacter(gentity_t* ent);
+
 // Okay, here lies the much-dreaded Pat-created FSM movement chart...  Heretic II strikes again!
 // Why am I inflicting this on you?  Well, it's better than hardcoded states.
 // Ideally this will be replaced with an external file or more sophisticated move-picker
@@ -2363,7 +2369,7 @@ saberMoveName_t PM_AttackForEnemyPos( qboolean allowFB, qboolean allowStabDown )
 			}
 			//this is the default only if they're *right* in front...
 			if ( (pm->ps->clientNum&&!PM_ControlledByPlayer())
-				|| ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )
+				|| ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode) )
 			{//NPC or player not in 1st person
 				if ( PM_CheckFlipOverAttackMove( qtrue ) )
 				{//enemy must be close and in front
@@ -2444,7 +2450,7 @@ saberMoveName_t PM_AttackForEnemyPos( qboolean allowFB, qboolean allowStabDown )
 					else if ( pm->ps->saberAnimLevel != SS_FAST
 						&& pm->ps->saberAnimLevel != SS_STAFF )
 					{//higher level back spin-attacks
-						if ( (pm->ps->clientNum&&!PM_ControlledByPlayer()) || ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )
+						if ( (pm->ps->clientNum&&!PM_ControlledByPlayer()) || ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode) )
 						{
 							if ( (pm->ps->pm_flags&PMF_DUCKED) || pm->cmd.upmove < 0 )
 							{
@@ -3648,7 +3654,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 			{
 				return stabDownMove;
 			}
-			if ( ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )//player in third person, not zoomed in
+			if ( ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm-> ps ) && !cg.zoomMode) )//player in third person, not zoomed in
 			{//player in thirdperson, not zoomed in
 				//flip-over attack logic
 				if ( !noSpecials && PM_CheckFlipOverAttackMove( qfalse ) )
@@ -3754,7 +3760,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 				}
 			}
 			else if ( (pm->ps->clientNum&&!PM_ControlledByPlayer()) //NPC
-				|| ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )//player in third person, not zooomed
+				|| ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode) )//player in third person, not zooomed
 			{//NPC or player in third person, not zoomed
 				if ( PM_CheckBackflipAttackMove() )
 				{
@@ -4470,7 +4476,7 @@ void PM_SaberStartTransAnim( int saberAnimLevel, int anim, float *animSpeed, gen
 	}
 	if ( gent
 		&& gent->client
-		&& gent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SCEPTER)
+		&& gent->client->ps.weapons[WP_SCEPTER]
 		&& gent->client->ps.dualSabers
 		&& saberAnimLevel == SS_DUAL
 		&& gent->weaponModel[1] )
@@ -4576,6 +4582,7 @@ void PM_SaberStartTransAnim( int anim, int entNum, int saberOffenseLevel, float 
 }
 */
 extern qboolean		player_locked;
+extern qboolean PlayerAffectedByStasis(void);
 extern qboolean		MatrixMode;
 float PM_GetTimeScaleMod( gentity_t *gent )
 {
@@ -4586,7 +4593,7 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 			&& gent->client->ps.legsAnim != BOTH_FORCELONGLEAP_ATTACK
 			&& gent->client->ps.legsAnim != BOTH_FORCELONGLEAP_LAND )
 		{
-			if ( gent && gent->s.clientNum == 0 && !player_locked && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
+			if ( gent && gent->s.clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
 				return (1.0 / g_timescale->value);
 			}
@@ -4597,20 +4604,6 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 		}
 	}
 	return 1.0f;
-}
-
-static inline qboolean PM_IsHumanoid( CGhoul2Info *ghlInfo )
-{
-	char	*GLAName;
-	GLAName = gi.G2API_GetGLAName( ghlInfo );
-	assert(GLAName);
-
-	if ( !Q_stricmp( "models/players/_humanoid/_humanoid", GLAName ) )
-	{
-		return qtrue;
-	}
-
-	return qfalse;
 }
 
 /*
@@ -5066,6 +5059,11 @@ void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blen
 		return;
 	}
 
+	if (pm->ps->stasisTime > level.time)
+	{
+		return;
+	}
+
 	if ( !pm->gent || pm->gent->health > 0 )
 	{//don't lock anims if the guy is dead
 		if ( pm->ps->torsoAnimTimer
@@ -5167,6 +5165,11 @@ void PM_TorsoAnimLightsaber()
 		return;
 	}
 
+	if (pm->ps->forcePowersActive&(1 << FP_GRASP) && pm->ps->forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+	{//holding an enemy aloft with force-grasp
+		return;
+	}
+
 	if ( pm->ps->forcePowersActive&(1<<FP_LIGHTNING) && pm->ps->forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
 	{//lightning
 		return;
@@ -5184,7 +5187,10 @@ void PM_TorsoAnimLightsaber()
 	{
 		if (!G_IsRidingVehicle(pm->gent))
 		{
-			PM_SetSaberMove(LS_DRAW);
+			if (!NoSaberTwirlCharacter(pm->gent))
+				PM_SetSaberMove(LS_DRAW);
+			else
+				PM_SetSaberMove(LS_READY);
 		}
 		return;
 	}
@@ -5192,7 +5198,10 @@ void PM_TorsoAnimLightsaber()
 	{
 		if (!G_IsRidingVehicle(pm->gent))
 		{
-			PM_SetSaberMove(LS_PUTAWAY);
+			if (!NoSaberTwirlCharacter(pm->gent))
+				PM_SetSaberMove(LS_PUTAWAY);
+			else
+				PM_SetSaberMove(LS_NONE);
 		}
 		return;
 	}
@@ -5504,7 +5513,30 @@ void PM_TorsoAnimLightsaber()
 	}
 }
 
+qboolean NoSaberTwirlCharacter(gentity_t* ent)
+{
+	if (ent == player)
+	{
+		if (!Q_stricmp("anakin_dark", g_char_model->string)
+			|| !Q_stricmp("oldben", g_char_model->string)
+			|| !Q_stricmp("am_vader", g_char_model->string)
+			|| !Q_stricmp("anakin_apprentice", g_char_model->string))
+			return qtrue;
+	}
+	else
+	{
+		if (!Q_stricmp(EP3_VADER, ent->NPC_type)
+			|| !Q_stricmp(BEN_KENOBI, ent->NPC_type)
+			|| !Q_stricmp(VADER, ent->NPC_type)
+			|| !Q_stricmp(ANAKIN_INFINITIES, ent->NPC_type))
+			return qtrue;
+	}
 
+	if (!g_allowSaberTwirling->integer)
+		return qtrue;
+
+	return qfalse;
+}
 
 
 /*
@@ -5634,6 +5666,10 @@ void PM_TorsoAnimation( void )
 		{
 			if ( pm->ps->forcePowersActive&(1<<FP_GRIP) && pm->ps->forcePowerLevel[FP_GRIP] > FORCE_LEVEL_1 )
 			{//holding an enemy aloft with force-grip
+				return;
+			}
+			if (pm->ps->forcePowersActive&(1 << FP_GRASP) && pm->ps->forcePowerLevel[FP_GRASP] > FORCE_LEVEL_1)
+			{//holding an enemy aloft with force-grasp
 				return;
 			}
 			if ( pm->ps->forcePowersActive&(1<<FP_LIGHTNING) && pm->ps->forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -5906,6 +5942,9 @@ void PM_TorsoAnimation( void )
 					}
 					break;
 				case WP_BLASTER_PISTOL:
+				case WP_REY:
+				case WP_JANGO:
+				case WP_CLONEPISTOL:
 					if ( pm->gent
 						&& pm->gent->weaponModel[1] > 0 )
 					{//dual pistols
@@ -5990,6 +6029,8 @@ void PM_TorsoAnimation( void )
 					break;
 
 				case WP_BLASTER:
+				case WP_THEFIRSTORDER:
+				case WP_REBELBLASTER:
 					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
 					//PM_SetAnim(pm,SETANIM_LEGS,BOTH_ATTACK2,SETANIM_FLAG_NORMAL);
 					break;
@@ -6069,6 +6110,12 @@ void PM_TorsoAnimation( void )
 					}
 					break;
 				case WP_REPEATER:
+				case WP_BATTLEDROID:
+				case WP_CLONECARBINE:
+				case WP_CLONERIFLE:
+				case WP_CLONECOMMANDO:
+				case WP_REBELRIFLE:
+				case WP_BOBA:
 					if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH )
 					{//
 						if ( pm->gent->alt_fire )
@@ -6172,6 +6219,15 @@ void PM_TorsoAnimation( void )
 				&& pm->ps->weapon != WP_FLECHETTE
 				&& pm->ps->weapon != WP_ROCKET_LAUNCHER
 				&& pm->ps->weapon != WP_CONCUSSION
+				&& pm->ps->weapon != WP_BATTLEDROID
+				&& pm->ps->weapon != WP_CLONECARBINE
+				&& pm->ps->weapon != WP_CLONERIFLE
+				&& pm->ps->weapon != WP_CLONECOMMANDO
+				&& pm->ps->weapon != WP_REBELRIFLE
+				&& pm->ps->weapon != WP_BOBA
+				&& pm->ps->weapon != WP_REY
+				&& pm->ps->weapon != WP_JANGO
+				&& pm->ps->weapon != WP_CLONEPISTOL
 				&& ( PM_RunningAnim( pm->ps->legsAnim )
 					|| (PM_WalkingAnim( pm->ps->legsAnim ) && (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()))
 					|| PM_JumpingAnim( pm->ps->legsAnim )
@@ -6207,6 +6263,9 @@ void PM_TorsoAnimation( void )
 					}
 					break;
 				case WP_BLASTER_PISTOL:
+				case WP_REY:
+				case WP_JANGO:
+				case WP_CLONEPISTOL:
 					if ( pm->gent
 						&& pm->gent->weaponModel[1] > 0 )
 					{//dual pistols
@@ -6368,13 +6427,31 @@ void PM_TorsoAnimation( void )
 					break;
 
 				case WP_REPEATER:
-					if ( weaponBusy )
+				case WP_BATTLEDROID:
+				case WP_THEFIRSTORDER:
+				case WP_CLONECARBINE:
+				case WP_REBELBLASTER:
+					if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 					{
-						PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
+						if (pm->gent->alt_fire)
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE3, SETANIM_FLAG_NORMAL);
+						}
+						else
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE1, SETANIM_FLAG_NORMAL);
+						}
 					}
 					else
 					{
-						PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
+						if (weaponBusy)
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONREADY3, SETANIM_FLAG_NORMAL);
+						}
+						else
+						{
+							PM_SetAnim(pm, SETANIM_TORSO, TORSO_WEAPONIDLE3, SETANIM_FLAG_NORMAL);
+						}
 					}
 					break;
 				case WP_TRIP_MINE:

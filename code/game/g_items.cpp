@@ -146,13 +146,13 @@ int Add_Ammo2 (gentity_t *ent, int ammoType, int count)
 		switch( ammoType )
 		{
 		case AMMO_THERMAL:
-			ent->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_THERMAL );
+			ent->client->ps.weapons[WP_THERMAL] = 1;
 			break;
 		case AMMO_DETPACK:
-			ent->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DET_PACK );
+			ent->client->ps.weapons[WP_DET_PACK] = 1;
 			break;
 		case AMMO_TRIPMINE:
-			ent->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_TRIP_MINE );
+			ent->client->ps.weapons[WP_TRIP_MINE] = 1;
 			break;
 		}
 
@@ -280,7 +280,16 @@ gentity_t *G_DropSaberItem( const char *saberType, saber_colors_t saberColor, ve
 			newItem->spawnflags |= 64;/*ITMSF_NOGLOW*/
 			newItem->NPC_type = G_NewString( saberType );//saberType
 			//FIXME: transfer per-blade color somehow?
-			newItem->NPC_targetname = (char *)saberColorStringForColor[saberColor];
+			if (saberColor >= SABER_RGB)
+			{
+				char rgbColor[8];
+				Com_sprintf(rgbColor, 8, "x%02x%02x%02x", saberColor & 0xff, (saberColor >> 8) & 0xff, (saberColor >> 16) & 0xff);
+				newItem->NPC_targetname = rgbColor;
+			}
+			else
+			{
+				newItem->NPC_targetname = (char *)saberColorStringForColor[saberColor];
+			}
 			newItem->count = 1;
 			newItem->flags = FL_DROPPED_ITEM;
 			G_SpawnItem( newItem, FindItemForWeapon( WP_SABER ) );
@@ -473,11 +482,11 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other)
 	}
 
 	// add the weapon
-	if ( other->client->ps.stats[STAT_WEAPONS] & ( 1 << ent->item->giTag ) )
+	if ( other->client->ps.weapons[ent->item->giTag] )
 	{
 		hadWeapon = qtrue;
 	}
-	other->client->ps.stats[STAT_WEAPONS] |= ( 1 << ent->item->giTag );
+	other->client->ps.weapons[ent->item->giTag] = 1;
 
 	if ( ent->item->giTag == WP_SABER && (!hadWeapon || ent->NPC_type != NULL) )
 	{//didn't have a saber or it is specifying a certain kind of saber to use
@@ -839,7 +848,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 			TIMER_Set( other, "attackDelay", 600 );
 			respawn = 0;
 		}
-		if ( other->client->ps.stats[STAT_WEAPONS] & ( 1 << ent->item->giTag ) )
+		if ( other->client->ps.weapons[ent->item->giTag] )
 		{
 			bHadWeapon = qtrue;
 		}
@@ -1262,6 +1271,7 @@ char itemRegistered[MAX_ITEMS+1];
 ClearRegisteredItems
 ==============
 */
+extern void Player_CacheFromPrevLevel(void);//g_client.cpp /////// Jace Solaris fix
 void ClearRegisteredItems( void ) {
 	for ( int i = 0; i < bg_numItems; i++ )
 	{
@@ -1270,12 +1280,15 @@ void ClearRegisteredItems( void ) {
 	itemRegistered[ bg_numItems ] = 0;
 
 	//these are given in g_client, ClientSpawn(), but MUST be registered HERE, BEFORE cgame starts.
-	//RegisterItem( FindItemForWeapon( WP_NONE ) );	//has no item
-	RegisterItem( FindItemForInventory( INV_ELECTROBINOCULARS ));
-	//RegisterItem( FindItemForInventory( INV_BACTA_CANISTER ));
-	// saber or baton is cached in SP_info_player_deathmatch now.
+	RegisterItem(FindItemForWeapon(WP_MELEE));	//has no item /////// Jace Solaris fix
+	RegisterItem(FindItemForWeapon(WP_BRYAR_PISTOL));	//these are given in g_client, ClientSpawn(), but MUST be registered HERE, BEFORE cgame starts./////// Jace Solaris fix
+	RegisterItem(FindItemForWeapon(WP_STUN_BATON)); /////// Jace Solaris fix
 
-extern void Player_CacheFromPrevLevel(void);//g_client.cpp
+	RegisterItem(FindItemForInventory(INV_ELECTROBINOCULARS));
+	RegisterItem(FindItemForInventory(INV_BACTA_CANISTER));
+	RegisterItem(FindItemForInventory(INV_SEEKER));
+	RegisterItem(FindItemForInventory(INV_SENTRY));
+
 	Player_CacheFromPrevLevel();	//reads from transition carry-over;
 }
 
@@ -1659,6 +1672,9 @@ void ItemUse_Bacta(gentity_t *ent)
 
 	ent->client->ps.inventory[INV_BACTA_CANISTER]--;
 
-	G_SoundOnEnt( ent, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", Q_irand( 1, 4 ), g_sex->string[0] ) );
+	if (!Q_stricmp("kyle", ent->client->clientInfo.customBasicSoundDir))
+		G_SoundOnEnt(ent, CHAN_VOICE, va("sound/weapons/force/heal%d.mp3", Q_irand(1, 4)));
+	else
+		G_SoundOnEnt( ent, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", Q_irand( 1, 4 ), g_sex->string[0] ) );
 }
 

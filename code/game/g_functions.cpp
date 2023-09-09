@@ -370,7 +370,8 @@ void GEntity_PainFunc(gentity_t *self, gentity_t *inflictor, gentity_t *attacker
 	PAINCASE( GasBurst )
 	PAINCASE( CrystalCratePain )
 	PAINCASE( TurretPain )
-	PAINCASE( eweb_pain )
+	PAINCASE(eweb_pain)
+	PAINCASE(NPC_GM_Pain)
 
 	default:
 		Com_Error(ERR_DROP, "GEntity_PainFunc: case %d not handled!\n",self->e_PainFunc);
@@ -409,7 +410,6 @@ void GEntity_DieFunc(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
 	DIECASE( misc_panel_turret_die )
 	DIECASE( thermal_die )
 	DIECASE( eweb_die )
-
 	default:
 		Com_Error(ERR_DROP, "GEntity_DieFunc: case %d not handled!\n",self->e_DieFunc);
 	}

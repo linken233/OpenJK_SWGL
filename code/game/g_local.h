@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
+#define	GAMEVERSION	"SWGL"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -62,6 +62,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	FL_DMG_BY_SABER_ONLY	0x00000004	//protected from all damage except saber damage
 #define	FL_GODMODE				0x00000010
 #define	FL_NOTARGET				0x00000020
+#define FL_NOFORCE				0x00000040
 #define	FL_TEAMSLAVE			0x00000400	// not the first on the team
 #define FL_NO_KNOCKBACK			0x00000800
 #define FL_DROPPED_ITEM			0x00001000

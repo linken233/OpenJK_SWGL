@@ -192,4 +192,8 @@ XCVAR_DEF( ui_tm2_c4_cnt,						"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm2_c5_cnt,						"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm2_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm3_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
+XCVAR_DEF(rgb_saber1,							"0,150,150",			NULL, CVAR_USERINFO | CVAR_ARCHIVE)
+XCVAR_DEF(rgb_saber2,						    "150,0,150",			NULL, CVAR_USERINFO | CVAR_ARCHIVE)
+XCVAR_DEF(rgb_script1,							":255,0,255:500:0,0,255:500:", NULL, CVAR_USERINFO | CVAR_ARCHIVE)
+XCVAR_DEF(rgb_script2,							":0,255,255:500:0,255,0:500:", NULL, CVAR_USERINFO | CVAR_ARCHIVE)
 #undef XCVAR_DEF

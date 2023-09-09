@@ -45,6 +45,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include <float.h>
+#include "NPC_SWGL.h"
 
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
@@ -119,6 +120,8 @@ extern void WP_SaberSwingSound( gentity_t *ent, int saberNum, swingType_t swingT
 extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel );
 extern qboolean WP_SaberStyleValidForSaber( gentity_t *ent, int saberAnimLevel );
 
+extern qboolean PlayerAffectedByStasis(void);
+
 qboolean PM_InKnockDown( playerState_t *ps );
 qboolean PM_InKnockDownOnGround( playerState_t *ps );
 qboolean PM_InGetUp( playerState_t *ps );
@@ -146,6 +149,10 @@ extern cvar_t	*g_debugMelee;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
+extern cvar_t	*g_char_model;
+extern int defaultDamageCopy[WP_NUM_WEAPONS];
+
+qboolean CasualWalker(pmove_t* pm);
 
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
@@ -222,7 +229,10 @@ qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 	return qfalse;
 }
 
-
+qboolean BG_AllowThirdPersonSpecialMove( playerState_t *ps )
+{
+	return (qboolean)((cg.renderingThirdPerson || (cg_trueguns.integer || CG_PlayerIsDualWielding(ps->weapon)) || ps->weapon == WP_SABER || ps->weapon == WP_MELEE) && !cg.zoomMode);
+}
 /*
 ===============
 PM_AddEvent
@@ -679,7 +689,7 @@ static void PM_Friction( void ) {
 	else if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
 		&& pm->gent
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM )
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM)
 	{//player as Boba
 		drop += speed*pm_waterfriction*pml.frametime;
 	}
@@ -1090,7 +1100,7 @@ static qboolean PM_CheckJump( void )
 #if METROID_JUMP
 	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
 		&& pm->gent && pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) )
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
 	{//player playing as boba fett
 		if ( pm->cmd.upmove > 0 )
 		{//turn on/go up
@@ -1269,7 +1279,7 @@ static qboolean PM_CheckJump( void )
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_1 &&
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_2 &&
 								pm->ps->legsAnim != BOTH_ALORA_FLIP_3
-								&& cg.renderingThirdPerson//third person only
+								&& BG_AllowThirdPersonSpecialMove( pm->ps )//third person only
 								&& !cg.zoomMode //not zoomed in
 								&& !(pm->ps->saber[0].saberFlags&SFL_NO_FLIPS)//okay to do flips with this saber
 								&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_FLIPS) )//okay to do flips with this saber
@@ -1483,7 +1493,7 @@ static qboolean PM_CheckJump( void )
 		//&& !PM_InKnockDown( pm->ps )//not in a knockdown
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
 		&& pm->gent && WP_ForcePowerAvailable( pm->gent, FP_LEVITATION, 0 ) //have enough force power to jump
-		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode	&& !(pm->gent->flags&FL_LOCK_PLAYER_WEAPONS) )) )// yes this locked weapons check also includes force powers, if we need a separate check later I'll make one
+		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode	&& !(pm->gent->flags&FL_LOCK_PLAYER_WEAPONS) )) )// yes this locked weapons check also includes force powers, if we need a separate check later I'll make one
 	{
 		if ( pm->gent->NPC && pm->gent->NPC->rank != RANK_CREWMAN && pm->gent->NPC->rank <= RANK_LT_JG )
 		{//reborn who are not acrobats can't do any of these acrobatics
@@ -2360,7 +2370,7 @@ static qboolean PM_CheckJump( void )
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
 		&& pm->ps->weapon == WP_SABER
 		&& (pm->ps->weaponTime > 0||(pm->cmd.buttons&BUTTON_ATTACK))
-		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode)) )
+		&& ((pm->ps->clientNum&&!PM_ControlledByPlayer())||((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && BG_AllowThirdPersonSpecialMove( pm->ps ) && !cg.zoomMode)) )
 	{//okay, we just jumped and we're in an attack
 		if ( !PM_RollingAnim( pm->ps->legsAnim )
 			&& !PM_InKnockDown( pm->ps )
@@ -2782,7 +2792,7 @@ static void PM_FlyMove( void )
 	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
 		&& pm->gent
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM )
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO|| pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM)
 	{//jetpack accel
 		accel = pm_flyaccelerate;
 		jetPackMove = qtrue;
@@ -3124,7 +3134,7 @@ static void PM_WalkMove( void ) {
 	if ( g_debugMelee->integer )
 	{
 		if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())//player
-			&& cg.renderingThirdPerson//in third person
+			&& BG_AllowThirdPersonSpecialMove( pm->ps )//in third person
 			&& ((pm->cmd.buttons&BUTTON_USE)||pm->ps->leanStopDebounceTime)//holding use or leaning
 			//&& (pm->ps->forcePowersActive&(1<<FP_SPEED))
 			&& pm->ps->groundEntityNum != ENTITYNUM_NONE//on ground
@@ -3794,7 +3804,7 @@ static qboolean PM_TryRoll( void )
 			return qfalse;
 		}
 	}
-	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (!cg.renderingThirdPerson || cg.zoomMode) )
+	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (!BG_AllowThirdPersonSpecialMove( pm->ps )) )
 	{//player can't do this in 1st person
 		return qfalse;
 	}
@@ -3831,8 +3841,10 @@ static qboolean PM_TryRoll( void )
 			{//only jedi/reborn NPCs should be able to do rolls (with a few exceptions)
 				if ( !pm->gent
 					|| !pm->gent->client
-					|| (pm->gent->client->NPC_class != CLASS_BOBAFETT //boba can roll with it, baby
-						&& pm->gent->client->NPC_class != CLASS_REBORN //reborn using weapons other than saber can still roll
+					|| (pm->gent->client->NPC_class != CLASS_BOBAFETT && 
+						pm->gent->client->NPC_class != CLASS_MANDALORIAN &&
+						pm->gent->client->NPC_class != CLASS_JANGO &&//Fetts see me rollin, they hatin.
+						pm->gent->client->NPC_class != CLASS_REBORN //reborn using weapons other than saber can still roll
 					))
 				{//can't roll
 					return qfalse;
@@ -4008,11 +4020,11 @@ static void PM_CrashLand( void )
 		}
 		else if ( pm->gent
 			&& pm->gent->client
-			&& (pm->gent->client->NPC_class == CLASS_BOBAFETT||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) )
+			&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO|| pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
 		{
 			if ( JET_Flying( pm->gent ) )
 			{
-				if ( pm->gent->client->NPC_class == CLASS_BOBAFETT
+				if ((pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO)
 					|| (pm->gent->client->NPC_class == CLASS_ROCKETTROOPER&&pm->gent->NPC&&pm->gent->NPC->rank<RANK_LT) )
 				{
 					JET_FlyStop( pm->gent );
@@ -4400,11 +4412,13 @@ qboolean PM_RocketeersAvoidDangerousFalls( void )
 {
 	if ( pm->gent->NPC
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) )
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
 	{//fixme:  fall through if jetpack broken?
 		if ( JET_Flying( pm->gent ) )
 		{
-			if ( pm->gent->client->NPC_class == CLASS_BOBAFETT )
+			if (pm->gent->client->NPC_class == CLASS_BOBAFETT || 
+				pm->gent->client->NPC_class == CLASS_MANDALORIAN || 
+				pm->gent->client->NPC_class == CLASS_JANGO)
 			{
 				pm->gent->client->jetPackTime = level.time + 2000;
 				//Wait, what if the effect is already playing, how do we know???
@@ -4853,7 +4867,7 @@ static void PM_GroundTraceMissed( void ) {
 												}
 												else if ( trace.entityNum < ENTITYNUM_NONE
 													&& pm->ps->weapon != WP_SABER
-													&& (!pm->gent || !pm->gent->client || (pm->gent->client->NPC_class != CLASS_BOBAFETT&&pm->gent->client->NPC_class!=CLASS_REBORN&&pm->gent->client->NPC_class!=CLASS_ROCKETTROOPER)) )
+													&& (!pm->gent || !pm->gent->client || (pm->gent->client->NPC_class != CLASS_BOBAFETT&&pm->gent->client->NPC_class != CLASS_MANDALORIAN&&pm->gent->client->NPC_class != CLASS_JANGO&&pm->gent->client->NPC_class != CLASS_REBORN&&pm->gent->client->NPC_class != CLASS_ROCKETTROOPER)))
 												{//Jedi don't scream and die if they're heading for a hard impact
 													gentity_t *traceEnt = &g_entities[trace.entityNum];
 													if ( trace.entityNum == ENTITYNUM_WORLD || (traceEnt && traceEnt->bmodel) )
@@ -5697,7 +5711,7 @@ static void PM_CheckDuck (void)
 
 		if ( pm->ps->clientNum < MAX_CLIENTS
 			&& (pm->gent->client->NPC_class == CLASS_ATST ||pm->gent->client->NPC_class == CLASS_RANCOR)
-			&& !cg.renderingThirdPerson )
+			&& !BG_AllowThirdPersonSpecialMove( pm->ps ) )
 		{
 			standheight = crouchheight = 128;
 		}
@@ -7452,7 +7466,7 @@ qboolean PM_AdjustStandAnimForSlope( void )
 		return qfalse;
 	}
 	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
-		&& (!cg.renderingThirdPerson || cg.zoomMode) )
+		&& (!BG_AllowThirdPersonSpecialMove( pm->ps )) )
 	{//first person doesn't do this
 		return qfalse;
 	}
@@ -8113,7 +8127,7 @@ static void PM_Footsteps( void )
 					{
 						if ( pm->gent
 							&& pm->gent->client
-							&& (pm->gent->client->NPC_class == CLASS_BOBAFETT ||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+							&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDALORIAN || pm->gent->client->NPC_class == CLASS_JANGO || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
 							&& pm->gent->client->moveType == MT_FLYSWIM )
 						{//flying around with jetpack
 							//do something else?
@@ -8141,7 +8155,10 @@ static void PM_Footsteps( void )
 			{
 				if ( pm->gent
 					&& pm->gent->client
-					&& (pm->gent->client->NPC_class == CLASS_BOBAFETT||pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+					&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || 
+					pm->gent->client->NPC_class == CLASS_MANDALORIAN || 
+					pm->gent->client->NPC_class == CLASS_JANGO || 
+					pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
 					&& pm->gent->client->moveType == MT_FLYSWIM )
 				{//flying around with jetpack
 					//do something else?
@@ -8457,7 +8474,7 @@ static void PM_Footsteps( void )
 				}
 				else
 				{
-					PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALKBACK2,setAnimFlags);
+					PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALKBACK1,setAnimFlags);
 				}
 			}
 			else
@@ -8575,7 +8592,10 @@ static void PM_Footsteps( void )
 					}
 					else
 					{
-						PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALK2,setAnimFlags);
+						if (CasualWalker(pm))
+							PM_SetAnim(pm, SETANIM_LEGS, BOTH_WALK1, setAnimFlags);
+						else
+							PM_SetAnim(pm,SETANIM_LEGS,BOTH_WALK2,setAnimFlags);
 					}
 				}
 				else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_WAMPA )
@@ -8721,6 +8741,44 @@ DoFootSteps:
 			PM_AddEvent( EV_SWIM );
 		}
 	}
+}
+
+qboolean CasualWalker(pmove_t *pm)
+{
+	gentity_t *ent = pm->gent;
+
+	if (ent == player)
+	{
+		// Lord Vader only does a casual walk with specific styles
+		if (((!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_dl", g_char_model->string))
+			&& (pm->ps->saberAnimLevel == SS_DESANN
+				|| pm->ps->saberAnimLevel == SS_TAVION
+				|| pm->ps->saberAnimLevel == SS_FAST)))
+			return qtrue;
+
+		// Kyle should always do it
+		else if(!Q_stricmp("kyle", g_char_model->string) || !Q_stricmp("kylejk2", g_char_model->string))
+			return qtrue;
+	}
+	else
+	{
+		// Lord Vader only does a casual walk with specific styles
+		if (((!Q_stricmp(EP3_VADER, ent->NPC_type) || !Q_stricmp(ANAKIN_INFINITIES, ent->NPC_type))
+			&& (pm->ps->saberAnimLevel == SS_DESANN
+				|| pm->ps->saberAnimLevel == SS_TAVION
+				|| pm->ps->saberAnimLevel == SS_FAST)))
+			return qtrue;
+
+		// Kyle should always do it
+		else if (!Q_stricmp("kyle", ent->NPC_type)
+			|| !Q_stricmp("kyle_boss", ent->NPC_type)
+			|| !Q_stricmp("KyleJK2", ent->NPC_type)
+			|| !Q_stricmp("KyleJK2noforce", ent->NPC_type))
+			return qtrue;
+
+	}
+	
+	return qfalse;
 }
 
 /*
@@ -8892,7 +8950,7 @@ static void PM_BeginWeaponChange( int weapon ) {
 		return;
 	}
 
-	if ( !( pm->ps->stats[STAT_WEAPONS] & ( 1 << weapon ) ) ) {
+	if ( !( pm->ps->weapons[weapon] ) ) {
 		return;
 	}
 
@@ -8905,11 +8963,28 @@ static void PM_BeginWeaponChange( int weapon ) {
 		PM_AddEvent( EV_CHANGE_WEAPON );
 	}
 
+	pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
-	if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+
+	if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 	{
-		PM_SetAnim(pm,SETANIM_TORSO,TORSO_DROPWEAP1,SETANIM_FLAG_HOLD);
+		if (pm->gent->alt_fire)
+		{//FIXME: attack delay?
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		}
+		else
+		{//FIXME: attack delay?
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+		}
+	}
+	else
+	{
+		if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+		{
+			PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_HOLD);
+		}
 	}
 
 	// turn of any kind of zooming when weapon switching....except the LA Goggles
@@ -8921,6 +8996,12 @@ static void PM_BeginWeaponChange( int weapon ) {
 			cg.zoomMode = 0;
 			cg.zoomTime = cg.time;
 		}
+		else if ( cg.zoomMode >= ST_A280 )
+		{
+			cg.zoomMode = 0;
+		} 
+
+		pm->ps->tertiaryMode = qfalse;
 	}
 
 	if ( pm->gent
@@ -8976,7 +9057,7 @@ static void PM_FinishWeaponChange( void ) {
 		weapon = WP_NONE;
 	}
 
-	if ( !( pm->ps->stats[STAT_WEAPONS] & ( 1 << weapon ) ) ) {
+	if ( !( pm->ps->weapons[weapon] ) ) {
 		weapon = WP_NONE;
 	}
 
@@ -8984,6 +9065,21 @@ static void PM_FinishWeaponChange( void ) {
 	{
 		trueSwitch = qfalse;
 	}
+
+	if ( trueSwitch && pm->ps->weapon == WP_EMPLACED_GUN && !(pm->ps->eFlags & EF_LOCKED_TO_WEAPON) )
+	{
+		gitem_t *item;
+		item = FindItemForWeapon( WP_EMPLACED_GUN );
+		gentity_t *dropped = Drop_Item(pm->gent, item, 0, qfalse);
+		dropped->count = pm->ps->ammo[AMMO_EMPLACED];
+		gi.G2API_InitGhoul2Model( dropped->ghoul2, "models/map_objects/hoth/eweb_model.glm", G_ModelIndex( "models/map_objects/hoth/eweb_model.glm" ), NULL_HANDLE, NULL_HANDLE, 0, 0);
+		gi.G2API_SetSurfaceOnOff(&dropped->ghoul2[0], "eweb_cannon", 0x00000002);
+		dropped->s.radius = 10;
+		dropped->delay = level.time + 1000;
+		pm->ps->ammo[AMMO_EMPLACED] = 0;
+		pm->ps->weapons[WP_EMPLACED_GUN] = 0;
+	}
+
 	//int oldWeap = pm->ps->weapon;
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
@@ -9058,14 +9154,28 @@ static void PM_FinishWeaponChange( void ) {
 			}
 		}
 
-		if ( !(pm->ps->eFlags&EF_HELD_BY_WAMPA) )
+		if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH)
 		{
-			if ( pm->ps->weapon != WP_THERMAL
-				&& pm->ps->weapon != WP_TRIP_MINE
-				&& pm->ps->weapon != WP_DET_PACK
-				&& !G_IsRidingVehicle(pm->gent))
+			if (pm->gent->alt_fire)
+			{//FIXME: attack delay?
+				PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+			}
+			else
+			{//FIXME: attack delay?
+				PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+			}
+		}
+		else
+		{
+			if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA))
 			{
-				PM_SetAnim(pm,SETANIM_TORSO,TORSO_RAISEWEAP1,SETANIM_FLAG_HOLD);
+				if (pm->ps->weapon != WP_THERMAL
+					&& pm->ps->weapon != WP_TRIP_MINE
+					&& pm->ps->weapon != WP_DET_PACK
+					&& !G_IsRidingVehicle(pm->gent))
+				{
+					PM_SetAnim(pm, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_HOLD);
+				}
 			}
 		}
 
@@ -9109,7 +9219,10 @@ int PM_ReadyPoseForSaberAnimLevel( void )
 	case SS_MEDIUM:
 	case SS_DESANN:
 	default:
-		anim = BOTH_STAND2;
+		if((!Q_stricmp(EP3_VADER, pm->gent->NPC_type) || !Q_stricmp(ANAKIN_INFINITIES, pm->gent->NPC_type) || (pm->gent == player && (!Q_stricmp("anakin_dark", g_char_model->string) || !Q_stricmp("anakin_dl", g_char_model->string)))) && pm->ps->saberAnimLevel != SS_MEDIUM)
+			anim = BOTH_SABERFAST_STANCE;
+		else
+			anim = BOTH_STAND2;
 		break;
 	}
 	return anim;
@@ -10568,6 +10681,7 @@ qboolean PM_SaberLocked( void )
 #ifdef _DEBUG
 					assert( ret ); // this would be pretty bad, the below code seems to assume the call succeeds. -gil
 #endif
+
 					strength = G_SaberLockStrength( gent );
 					if ( PM_InSaberLockOld( pm->ps->torsoAnim ) )
 					{//old locks
@@ -10998,9 +11112,9 @@ saberMoveName_t G_PickAutoMultiKick( gentity_t *self, qboolean allowSingles, qbo
 			continue;
 		kickMove = G_PickAutoKick( self, ent, qfalse );
 		if ( kickMove == LS_KICK_F_AIR
-			&& kickMove == LS_KICK_B_AIR
-			&& kickMove == LS_KICK_R_AIR
-			&& kickMove == LS_KICK_L_AIR )
+			|| kickMove == LS_KICK_B_AIR
+			|| kickMove == LS_KICK_R_AIR
+			|| kickMove == LS_KICK_L_AIR )
 		{//in air?  Can't do multikicks
 		}
 		else
@@ -11952,7 +12066,7 @@ void PM_WeaponLightsaber(void)
 		}
 	}
 
-	if ( pm->ps->stats[STAT_WEAPONS]&(1<<WP_SCEPTER)
+	if ( pm->ps->weapons[WP_SCEPTER]
 		&& !pm->ps->dualSabers
 		&& pm->gent
 		&& pm->gent->weaponModel[1] )
@@ -12849,7 +12963,7 @@ void PM_WeaponLightsaber(void)
 				{
 					if ( !MatrixMode )
 					{//Special test for Matrix Mode (tm)
-						if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+						if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 						{//player always fires at normal speed
 							addTime *= g_timescale->value;
 						}
@@ -12903,7 +13017,7 @@ static bool PM_DoChargedWeapons( void )
 	//------------------
 	case WP_BRYAR_PISTOL:
 	case WP_BLASTER_PISTOL:
-
+	case WP_REY:
 		// alt-fire charges the weapon
 		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 		{
@@ -13317,6 +13431,37 @@ void PM_WeaponWampa( void )
 		pm->ps->saberMoveNext = LS_NONE;
 	}
 }
+
+/*
+==============
+PM_SecondaryMdlChange
+==============
+*/
+static void PM_SecondaryMdlChange(qboolean secondaryMdl)
+{
+	char *currWeaponMdl = (secondaryMdl) ? weaponData[pm->ps->weapon].weaponMdl2 : weaponData[pm->ps->weapon].weaponMdl;
+
+	// Set secondaryMdl.
+	weaponData[pm->ps->weapon].secondaryMdl = secondaryMdl;
+
+	// Reregister the same weapon with a different model.
+	cg_weapons[pm->ps->weapon].registered = qfalse;
+	CG_RegisterWeapon(pm->ps->weapon);
+	
+	// Remove the weapon you have currently with a different model.
+	G_RemoveWeaponModels(pm->gent);
+	G_CreateG2AttachedWeaponModel(pm->gent, currWeaponMdl, pm->gent->handRBolt, 0);
+
+	// Set weaponstate and play the animation.
+	pm->ps->weaponstate = WEAPON_RAISING;
+	pm->ps->weaponTime += 500;
+
+	if (!(pm->ps->eFlags & EF_HELD_BY_WAMPA) && !G_IsRidingVehicle(pm->gent))
+	{
+		PM_SetAnim(pm, SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_HOLD);
+	}
+}
+
 /*
 ==============
 PM_Weapon
@@ -13328,6 +13473,40 @@ static void PM_Weapon( void )
 {
 	int			addTime, amount, trueCount = 1;
 	qboolean	delayed_fire = qfalse;
+
+	int firing_type = 0;
+	int fire_time = 0;
+	int burst_fire_delay = 0;
+	int burst_shots = 0;
+	qboolean is_pistol = (qboolean)(pm->ps->weapon == WP_BLASTER_PISTOL
+									|| pm->ps->weapon == WP_REY
+									|| pm->ps->weapon == WP_JANGO
+									|| pm->ps->weapon == WP_CLONEPISTOL);
+
+	if (pm->cmd.buttons & BUTTON_ATTACK)
+	{	
+		if (pm->ps->firing_attack & TERTIARY_ATTACK)
+		{
+			firing_type = weaponData[pm->ps->weapon].tertiaryFireOpt[FIRING_TYPE];
+			fire_time = weaponData[pm->ps->weapon].tertiaryFireTime;
+			burst_shots = weaponData[pm->ps->weapon].tertiaryFireOpt[SHOTS_PER_BURST];
+			burst_fire_delay = weaponData[pm->ps->weapon].tertiaryFireOpt[BURST_FIRE_DELAY];
+		}
+		else if (pm->ps->firing_attack & ALT_ATTACK)
+		{
+			firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
+			fire_time = weaponData[pm->ps->weapon].altFireTime;
+			burst_shots = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
+			burst_fire_delay = weaponData[pm->ps->weapon].altFireOpt[BURST_FIRE_DELAY];
+		}
+		else if (pm->ps->firing_attack & MAIN_ATTACK)
+		{
+			firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
+			fire_time = weaponData[pm->ps->weapon].fireTime;
+			burst_shots = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
+			burst_fire_delay = weaponData[pm->ps->weapon].mainFireOpt[BURST_FIRE_DELAY];
+		}
+	}
 
 	if ( (pm->ps->eFlags&EF_HELD_BY_WAMPA) )
 	{
@@ -13367,6 +13546,7 @@ static void PM_Weapon( void )
 			if ( pm->ps->weaponTime <= 0 )
 			{
 				pm->ps->weaponTime = 0;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 			}
 		}
 		return;
@@ -13432,11 +13612,49 @@ static void PM_Weapon( void )
 		}
 	}
 
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		if (is_pistol)
+		{
+			// If you don't have a weapon in your left hand and you just turned dual wielding on.
+			if (pm->gent->weaponModel[1] <= 0 && cg_dualWielding.integer)
+			{
+				// Add the model you have in your right hand to your left hand.
+				G_CreateG2AttachedWeaponModel(pm->gent, weaponData[pm->ps->weapon].weaponMdl, pm->gent->handLBolt, 1);
+			}
+			// If you do have a weapon in your left hand and you just turned dual wielding off.
+			else if (pm->gent->weaponModel[1] > 0 && cg_dualWielding.integer == 0)
+			{
+				// Remove the weapon from your left hand.
+				gi.G2API_RemoveGhoul2Model(pm->gent->ghoul2, pm->gent->weaponModel[1]);
+				pm->gent->weaponModel[1] = -1;
+				pm->gent->count = 0;
+			}
+		}
+	}
+
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
 	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
 		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
+		}
+	}
+
+	if (pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
+	{
+		// If the weapon has two model paths.
+		if (weaponData[pm->ps->weapon].weaponMdl[0] && weaponData[pm->ps->weapon].weaponMdl2[0]
+			&& pm->ps->weaponstate != WEAPON_DROPPING)
+		{
+			if (pm->ps->tertiaryMode && weaponData[pm->ps->weapon].secondaryMdl == qfalse)
+			{
+				PM_SecondaryMdlChange(qtrue);
+			}
+			else if (pm->ps->tertiaryMode == 0 && weaponData[pm->ps->weapon].secondaryMdl)
+			{
+				PM_SecondaryMdlChange(qfalse);
+			}
 		}
 	}
 
@@ -13471,6 +13689,9 @@ static void PM_Weapon( void )
 			{
 			case WP_BRYAR_PISTOL:
 			case WP_BLASTER_PISTOL:
+			case WP_REY:
+			case WP_JANGO:
+			case WP_CLONEPISTOL:
 				if ( pm->gent
 					&& pm->gent->weaponModel[1] > 0 )
 				{//dual pistols
@@ -13482,9 +13703,10 @@ static void PM_Weapon( void )
 					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE2,SETANIM_FLAG_NORMAL);
 				}
 				break;
-			default:
-				PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
-				break;
+
+				default:
+					PM_SetAnim(pm,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
+					break;
 			}
 		}
 		return;
@@ -13581,13 +13803,30 @@ static void PM_Weapon( void )
 			}
 			return;
 		}
+
+		// Code from JKG: 2 (Only called if you are holding down main click)
+		// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
+		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+		{
+			// If you are holding down the button, return.
+			if (firing_type == FT_SEMI || firing_type == FT_HIGH_POWERED)
+			{
+				return;
+			}
+			// If you are holding down the button, keep reloading shotsRemaining.
+			else if (firing_type == FT_BURST)
+			{
+				pm->ps->shotsRemaining = burst_shots;
+			}
+		}
+
 		if (pm->gent->s.m_iVehicleNum!=0)
 		{
 			// No Anims if on Veh
 		}
 
 		// start the animation even if out of ammo
-		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER )
+		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER && (!Q_stricmp("rockettrooper2", pm->gent->NPC_type) || !Q_stricmp("rockettrooper2officer", pm->gent->NPC_type)))
 		{
 			if ( pm->gent->client->moveType == MT_FLYSWIM )
 			{
@@ -13596,6 +13835,18 @@ static void PM_Weapon( void )
 			else
 			{
 				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+		}
+
+		else if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+		{
+			if (pm->gent->client->moveType == MT_FLYSWIM)
+			{
+				PM_SetAnim(pm, SETANIM_TORSO, BOTH_ATTACK3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+			}
+			else
+			{
+				PM_SetAnim(pm, SETANIM_TORSO, BOTH_ATTACK3, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
 			}
 		}
 #ifndef BASE_SAVE_COMPAT
@@ -13649,6 +13900,9 @@ static void PM_Weapon( void )
 	*/
 			case WP_BRYAR_PISTOL://1-handed
 			case WP_BLASTER_PISTOL://1-handed
+			case WP_REY:
+			case WP_JANGO:
+			case WP_CLONEPISTOL:
 				if ( pm->gent && pm->gent->weaponModel[1] > 0 )
 				{//dual pistols
 					PM_SetAnim(pm,SETANIM_TORSO,BOTH_GUNSIT1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
@@ -13837,7 +14091,7 @@ static void PM_Weapon( void )
 				}
 				else
 				{
-					if ( cg.renderingThirdPerson )
+					if ( BG_AllowThirdPersonSpecialMove( pm->ps ) )
 					{
 						if ( PM_StandingAnim( pm->ps->legsAnim )
 							|| pm->ps->legsAnim == BOTH_THERMAL_READY )
@@ -13862,6 +14116,14 @@ static void PM_Weapon( void )
 				break;
 
 			case WP_REPEATER:
+			case WP_BATTLEDROID:
+			case WP_THEFIRSTORDER:
+			case WP_CLONECARBINE:
+			case WP_REBELBLASTER:
+			case WP_CLONERIFLE:
+			case WP_CLONECOMMANDO:
+			case WP_REBELRIFLE:
+			case WP_BOBA:
 				if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH )
 				{//
 					if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
@@ -13891,13 +14153,27 @@ static void PM_Weapon( void )
 		}
 	}
 
+	
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
 		amount = weaponData[pm->ps->weapon].altEnergyPerShot;
 	}
 	else
 	{
-		amount = weaponData[pm->ps->weapon].energyPerShot;
+		
+		if (pm->ps->firing_attack & ALT_ATTACK)
+		{
+			amount = weaponData[pm->ps->weapon].altEnergyPerShot;
+		}
+		else if (pm->ps->firing_attack & TERTIARY_ATTACK)
+		{
+			amount = weaponData[pm->ps->weapon].tertiaryEnergyPerShot;
+		}
+		else
+		{
+			// We need to make sure that the base guns also get their energy shot.
+			amount = weaponData[pm->ps->weapon].energyPerShot;
+		}
 	}
 
 	if ( (pm->ps->weaponstate == WEAPON_CHARGING) || (pm->ps->weaponstate == WEAPON_CHARGING_ALT) )
@@ -13923,6 +14199,7 @@ static void PM_Weapon( void )
 				// Switch weapons
 				PM_AddEvent( EV_NOAMMO );
 				pm->ps->weaponTime += 500;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
 			}
 			return;
 		}
@@ -14017,13 +14294,64 @@ static void PM_Weapon( void )
 		}
 	}
 
+	// Code from JKG: 3
+	if (pm->cmd.buttons & BUTTON_ATTACK)
+	{
+		// This is for firing sounds.
+		pm->ps->prev_firing_attack = pm->ps->firing_attack;
+
+		switch (firing_type)
+		{
+			case FT_AUTOMATIC:
+				addTime = fire_time;
+				break;
+			case FT_SEMI:
+			case FT_HIGH_POWERED:
+				// When PM_Weapon is called once, the shotsRemaining gets set to SHOTS_TOGGLEBIT.
+				// When PM_Weapon is called more than once, it checks the above SHOTS_TOGGLEBIT if statement (2)
+				// and returns out of the function.
+				addTime = fire_time;
+				pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				break;
+			case FT_BURST:
+				if (pm->ps->shotsRemaining == 1)
+				{
+					// Setting it to a regular fire delay between each burst.
+					addTime = fire_time;
+					// Checks the above SHOTS_TOGGLEBIT if statement (2) to reset shotsRemaining so it's ready for burst again.
+					// And to stop BUTTON_ATTACK (4).
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
+				else
+				{
+					// The delay between each shot.
+					addTime = burst_fire_delay;
+					// Minus it by 1 to call the above if statement.
+					pm->ps->shotsRemaining--;
+				}
+				break;
+		}
+	}
+
+	// If the current firing type is high powered.
+	if (firing_type == FT_HIGH_POWERED)
+	{
+		weaponData[pm->ps->weapon].damage = HIGH_POWERED_DAMAGE;
+	}
+	// If the damages are different.
+	else if (weaponData[pm->ps->weapon].damage != defaultDamageCopy[pm->ps->weapon])
+	{
+		// Load back the default damage of that weapon.
+		weaponData[pm->ps->weapon].damage = defaultDamageCopy[pm->ps->weapon];
+	}
+
 	if ( g_timescale != NULL )
 	{
 		if ( g_timescale->value < 1.0f )
 		{
 			if ( !MatrixMode )
 			{//Special test for Matrix Mode (tm)
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{//player always fires at normal speed
 					addTime *= g_timescale->value;
 				}
@@ -14189,7 +14517,7 @@ static void PM_VehicleWeapon( void )
 		{
 			if ( !MatrixMode )
 			{//Special test for Matrix Mode (tm)
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{//player always fires at normal speed
 					addTime *= g_timescale->value;
 				}
@@ -14213,6 +14541,11 @@ extern void ForceRage( gentity_t *self );
 extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
 extern void ForceSeeing( gentity_t *self );
+extern void ForceStasis(gentity_t *self);
+extern void ForceBlast(gentity_t *self);
+extern void ForceDestruction(gentity_t *self);
+extern void ForceFear(gentity_t *self);
+extern void ForceLightningStrike(gentity_t *self);
 void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 {
 	if ( !ent )
@@ -14255,6 +14588,21 @@ void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 			case FP_SEE:		//duration - detect/see hidden enemies
 				ForceSeeing( ent );
 				break;
+			case FP_STASIS: // Instant
+				ForceStasis(ent);
+				break;
+			case FP_FEAR:
+				ForceFear(ent);
+				break;
+			case FP_DESTRUCTION:
+				ForceDestruction(ent);
+				break;
+			case FP_LIGHTNING_STRIKE:
+				ForceLightningStrike(ent);
+				break;
+			case FP_BLAST:
+				ForceBlast(ent);
+				break;
 			}
 		}
 		//these stay are okay to call every frame button is down
@@ -14262,6 +14610,9 @@ void PM_CheckForceUseButton( gentity_t *ent, usercmd_t *ucmd  )
 		{
 		case FP_LEVITATION:
 			ucmd->upmove = 127;
+			break;
+		case FP_GRASP:
+			ucmd->buttons |= BUTTON_FORCEGRASP;
 			break;
 		case FP_GRIP:
 			ucmd->buttons |= BUTTON_FORCEGRIP;
@@ -14388,7 +14739,7 @@ void PM_SetSpecialMoveValues (void )
 		{
 			if ( !MatrixMode )
 			{
-				if ( pm->ps->clientNum == 0 && !player_locked && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
+				if ( pm->ps->clientNum == 0 && !player_locked && !PlayerAffectedByStasis() && (pm->ps->forcePowersActive&(1<<FP_SPEED)||pm->ps->forcePowersActive&(1<<FP_RAGE)) )
 				{
 					pml.frametime *= (1.0f/g_timescale->value);
 				}
@@ -14410,6 +14761,13 @@ void PM_AdjustAttackStates( pmove_t *pm )
 {
 	int amount;
 
+	int main_firing_type = weaponData[pm->ps->weapon].mainFireOpt[FIRING_TYPE];
+	int alt_firing_type = weaponData[pm->ps->weapon].altFireOpt[FIRING_TYPE];
+	int tertiary_firing_type = weaponData[pm->ps->weapon].tertiaryFireOpt[FIRING_TYPE];
+	int burst_shots = 0;
+
+	qboolean primFireDown = qfalse;
+
 	if ( !g_saberAutoBlocking->integer
 		&& !g_saberNewControlScheme->integer
 		&& (pm->cmd.buttons&BUTTON_FORCE_FOCUS) )
@@ -14418,6 +14776,29 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->cmd.buttons &= ~BUTTON_ATTACK;
 		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
+
+	// This is to make sure that only the player can burst fire.
+	if (pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+	{
+		// Code from JKG: 4
+		// shotsRemaining is going to be equal to SHOTS_TOGGLEBIT. So (128 & -129) == 0.
+		// Keep attack button 'pressed' until no more shots are remaining.
+		if (pm->ps->shotsRemaining & ~SHOTS_TOGGLEBIT)
+		{
+			if (pm->ps->eFlags & EF_FIRING)
+			{
+				if ((main_firing_type == FT_BURST || alt_firing_type == FT_BURST || tertiary_firing_type == FT_BURST) && pm->ps->pm_type != PM_NOCLIP)
+				{
+					pm->cmd.buttons |= BUTTON_ATTACK;
+				}
+				else if (pm->ps->pm_type == PM_NOCLIP)
+				{
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
+			}
+		}
+	}
+
 	// get ammo usage
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
@@ -14508,6 +14889,51 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	}
 
+	if ( pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) && pm->ps->weaponstate != WEAPON_DROPPING && weaponData[pm->ps->weapon].scopeType >= ST_A280 )
+	{
+		// If you are not holding down main, you are not currently alt-firing,
+		// you press the alt key, and the alt firing type is not high powered.
+		if (!(pm->cmd.buttons & BUTTON_ATTACK)
+			&& !(pm->ps->eFlags & EF_ALT_FIRING) && pm->cmd.buttons & BUTTON_ALT_ATTACK 
+			&& (main_firing_type != FT_HIGH_POWERED && alt_firing_type != FT_HIGH_POWERED)
+			&& !(pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode))
+		{
+			if (cg.zoomMode == 0)
+			{
+				switch (weaponData[pm->ps->weapon].scopeType)
+				{
+					case ST_A280:
+						cg.zoomMode = ST_A280;
+						cg_zoomFov = 25.0f;
+						break;
+					case ST_DC17M:
+						cg.zoomMode = ST_DC17M;
+						cg_zoomFov = 20.0f;
+						break;
+					case ST_EE3:
+						cg.zoomMode = ST_EE3;
+						cg_zoomFov = 10.0f;
+						break;
+					case ST_F11D:
+						cg.zoomMode = ST_F11D;
+						cg_zoomFov = 25.0f;
+						break;
+				}
+			}
+			else if (cg.zoomMode >= ST_A280)
+			{
+				cg.zoomMode = 0;
+			}
+		}
+		// If you are holding down main while trying to
+		// scope, stop firing. This is to avoid main firing
+		// while scoped.
+		else if (pm->ps->eFlags & EF_ALT_FIRING && !(pm->ps->shotsRemaining))
+		{
+			pm->cmd.buttons &= ~BUTTON_ATTACK;
+		}
+	}
+
 	// Check for binocular specific mode
 	if ( cg.zoomMode == 1 && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)) ) //
 	{
@@ -14533,6 +14959,106 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->ps->eFlags &= ~EF_FIRING;
 		pm->ps->eFlags &= ~EF_ALT_FIRING;
 		pm->cmd.buttons &= ~(BUTTON_ALT_ATTACK|BUTTON_ATTACK);
+	}
+
+	// If main click is not pressed(this is to avoid main overriding alt), 
+	// you pressed alt click, alt-fire is not currently firing,
+	// you have no scope, tertiary mode is not enabled, and you have an alt firing type.
+	// When you have a scope, alt click doesn't get through.
+	if (!(pm->cmd.buttons & BUTTON_ATTACK) && pm->cmd.buttons & BUTTON_ALT_ATTACK
+		&& !(pm->ps->eFlags & EF_ALT_FIRING) && weaponData[pm->ps->weapon].scopeType < ST_A280
+		&& pm->ps->tertiaryMode == qfalse && alt_firing_type >= FT_AUTOMATIC)
+	{
+		// Don't let the alt-fire get through.
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		// Switch the flag.
+		pm->cmd.buttons |= BUTTON_ATTACK;
+		// Clear it just in case.
+		pm->ps->firing_attack &= ~MAIN_ATTACK;
+
+		// Setting burst_shots.
+		burst_shots = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
+		pm->ps->firing_attack |= ALT_ATTACK;
+	}
+	// If a you press the main key, alt click is not pressed(this is to avoid one overriding the other),
+	// main fire is not currently firing, and you either have a tertiary or main firing type.
+	else if (pm->cmd.buttons & BUTTON_ATTACK && !(pm->cmd.buttons & BUTTON_ALT_ATTACK) 
+		&& !(pm->ps->eFlags & EF_FIRING) && (tertiary_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
+	{
+		// If you have tertiaryMode on regardless if you are scoped or not.
+		if (pm->ps->tertiaryMode)
+		{
+			// If you are not scope and you have the firing type of high powered, you can not use main click,
+			// and you should still be able to turbo boost while you are in noclip.
+			if (cg.zoomMode < ST_A280 && tertiary_firing_type == FT_HIGH_POWERED && pm->ps->pm_type != PM_NOCLIP)
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+			}
+			else
+			{
+				burst_shots = weaponData[pm->ps->weapon].tertiaryFireOpt[SHOTS_PER_BURST];
+				pm->ps->firing_attack |= TERTIARY_ATTACK;
+
+				// I don't want an extra shot to get through right after
+				// you turn off noclip.
+				if (pm->ps->pm_type == PM_NOCLIP)
+				{
+					pm->ps->shotsRemaining = SHOTS_TOGGLEBIT;
+				}
+			}
+		}
+		// If you are scoped.
+		else if (cg.zoomMode >= ST_A280)
+		{
+			burst_shots = weaponData[pm->ps->weapon].altFireOpt[SHOTS_PER_BURST];
+			pm->ps->firing_attack |= ALT_ATTACK;
+		}
+		// Default main.
+		else
+		{
+			burst_shots = weaponData[pm->ps->weapon].mainFireOpt[SHOTS_PER_BURST];
+			pm->ps->firing_attack |= MAIN_ATTACK;
+		}
+	}
+	else if (weaponData[pm->ps->weapon].scopeType < ST_A280 
+		&& (tertiary_firing_type >= FT_AUTOMATIC || alt_firing_type >= FT_AUTOMATIC || main_firing_type >= FT_AUTOMATIC))
+	{
+		// Don't let the alt-fire get through.
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+	}
+
+	if (pm->ps->weapon == WP_CLONECOMMANDO && pm->ps->tertiaryMode)
+	{
+		// Don't let the alt-fire get through.
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+	}
+
+	primFireDown = (qboolean)(pm->cmd.buttons & BUTTON_ATTACK);
+
+	// Code from JKG: 1
+	// This is the initial click.
+	// If there are no shots, main click is pressed, and the weapon is not currently firing.
+	if (!(pm->ps->shotsRemaining) && (primFireDown && !(pm->ps->eFlags & EF_FIRING)) )
+	{
+		// Right when you press main click. 
+		if (pm->ps->weaponTime <= 0)
+		{
+			// First time loading shotsRemaining.
+			if ((tertiary_firing_type == FT_BURST && pm->ps->firing_attack & TERTIARY_ATTACK)
+				|| (alt_firing_type == FT_BURST && pm->ps->firing_attack & ALT_ATTACK)
+				|| (main_firing_type == FT_BURST && pm->ps->firing_attack & MAIN_ATTACK))
+			{
+				pm->ps->shotsRemaining = burst_shots;
+			}
+		}
+		// If you enter noclip while you are bursting, you still
+		// should be able to turbo boost. 
+		else if (pm->ps->pm_type != PM_NOCLIP)
+		{
+			// If you try to press main click between burts, do nothing.
+			pm->cmd.buttons &= ~BUTTON_ATTACK;
+			primFireDown = qfalse;
+		}
 	}
 
 	// set the firing flag for continuous beam weapons, phaser will fire even if out of ammo
@@ -14566,6 +15092,16 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		pm->ps->eFlags &= ~EF_FIRING;
 		pm->ps->eFlags &= ~EF_ALT_FIRING;
 
+		// Code from JKG: 5
+		// If shotsRemaining are SHOTS_TOGGLEBIT are the same.
+		if (pm->ps->shotsRemaining & SHOTS_TOGGLEBIT)
+		{
+			pm->ps->shotsRemaining = 0;
+		}
+
+		// Clear it out
+		pm->ps->firing_attack = 0;
+
 		// if I don't check the flags before stopping FX then it switches them off too often, which tones down
 		//	the stronger FFFX so you can hardly feel them. However, if you only do iton these flags then the
 		//	repeat-fire weapons like tetrion and dreadnought don't switch off quick enough. So...
@@ -14591,6 +15127,36 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		{
 			// don't let an alt-fire through
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		}
+	}
+	
+	if (pm->ps->weapon != WP_DISRUPTOR && pm->gent && (pm->gent->s.number<MAX_CLIENTS||G_ControlledByPlayer(pm->gent)))
+	{
+		// If you have a scope.
+		if (weaponData[pm->ps->weapon].scopeType >= ST_A280)
+		{
+			// High powered shot only works with tertiary.
+			if (main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED)
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
+			// Don't let an alt-fire through.
+			else
+			{
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
+		}
+		// If you don't have a scope, but a firing type.
+		else if (weaponData[pm->ps->weapon].scopeType < ST_A280)
+		{
+			// If you have the firing type of high powered, you can not use main or alt click.
+			// High powered firing type is useless without a scope.
+			if ((main_firing_type == FT_HIGH_POWERED || alt_firing_type == FT_HIGH_POWERED) || (tertiary_firing_type == FT_HIGH_POWERED && pm->ps->tertiaryMode))
+			{
+				pm->cmd.buttons &= ~BUTTON_ATTACK;
+				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			}
 		}
 	}
 }
@@ -15115,12 +15681,16 @@ void Pmove( pmove_t *pmove )
 	else // TEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMPTEMP
 	{
 		// footstep events / legs animations
-		PM_Footsteps();
+		if (pm->ps->stasisTime < level.time) {
+			PM_Footsteps();
+		}
 	}
 	// torso animation
 	if ( !pVeh )
 	{//not riding a vehicle
-		PM_TorsoAnimation();
+		if (pm->ps->stasisTime < level.time) {
+			PM_TorsoAnimation();
+		}
 	}
 
 	// entering / leaving water splashes

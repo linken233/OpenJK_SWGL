@@ -334,6 +334,15 @@ field_t fields[] = {
 	{"NPC_target2", FOFS(target2), F_LSTRING},//NPC_spawner only
 	{"NPC_target4", FOFS(target4), F_LSTRING},//NPC_spawner only
 	{"NPC_type", FOFS(NPC_type), F_LSTRING},
+	{"NPC_skin", FOFS(NPC_skin), F_LSTRING},
+	{ "NPC_team", FOFS(NPC_team), F_LSTRING },
+	{ "NPC_Weapon", FOFS(NPC_Weapon), F_LSTRING },
+	{ "NPC_SaberOne", FOFS(NPC_SaberOne), F_LSTRING },
+	{ "NPC_SaberTwo", FOFS(NPC_SaberTwo), F_LSTRING },
+	{ "NPC_SaberOneColor", FOFS(NPC_SaberOneColor), F_LSTRING },
+	{ "NPC_SaberTwoColor", FOFS(NPC_SaberTwoColor), F_LSTRING },
+	{ "NPC_LightningColor", FOFS(NPC_LightningColor), F_LSTRING },
+	{ "NPC_LightningVictim", FOFS(NPC_LightningVictim), F_LSTRING },
 	{"ownername", FOFS(ownername), F_LSTRING},
 	//for weapon_saber
 	{"saberType", FOFS(NPC_type), F_LSTRING},
@@ -531,8 +540,10 @@ void SP_NPC_Lannik_Racto( gentity_t *self );
 void SP_NPC_Kothos( gentity_t *self );
 void SP_NPC_Chewbacca( gentity_t *self );
 void SP_NPC_Bartender( gentity_t *self );
-void SP_NPC_MorganKatarn( gentity_t *self );
+void SP_NPC_MorganKatarn( gentity_t *	self );
 void SP_NPC_Jedi( gentity_t *self );
+void SP_NPC_SWGL_Jedi(gentity_t *self);
+void SP_NPC_Drallig(gentity_t* self);
 void SP_NPC_Prisoner( gentity_t *self );
 void SP_NPC_Merchant( gentity_t *self );
 void SP_NPC_Rebel( gentity_t *self );
@@ -829,6 +840,8 @@ spawn_t	spawns[] = {
 	{"NPC_Droid_Protocol", SP_NPC_Droid_Protocol },
 	{"NPC_Droid_Assassin", SP_NPC_Droid_Assassin },
 	{"NPC_Droid_Saber", SP_NPC_Droid_Saber },
+	{"NPC_SWGL_Jedi", SP_NPC_SWGL_Jedi },
+	{ "NPC_Drallig", SP_NPC_Drallig },
 
 	//rwwFIXMEFIXME: Faked for testing NPCs (another other things) in RMG with sof2 assets
 	{"NPC_Colombian_Soldier", SP_NPC_Reborn },

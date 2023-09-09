@@ -41,6 +41,19 @@ extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeN
 extern void WP_SaberSwingSound( gentity_t *ent, int saberNum, swingType_t swingType );
 
 extern vmCvar_t	cg_debugHealthBars;
+
+extern vmCvar_t	cg_SFXSabers;
+extern vmCvar_t	cg_SFXSabersGlowSize;
+extern vmCvar_t	cg_SFXSabersCoreSize;
+
+extern cvar_t *g_forceLightningColor;
+
+//True View Camera Position Check Function
+extern void CheckCameraLocation( vec3_t OldeyeOrigin );
+
+fxHandle_t CG_GetWideForceLightning(centity_t* const cent);
+fxHandle_t CG_GetForceLightning(centity_t* const cent);
+
 /*
 
 player entities generate a great deal of information from implicit ques
@@ -1658,7 +1671,7 @@ static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 
 	if ( !client
 		|| cg_drawBreath.integer == 0
-		|| !cg.renderingThirdPerson
+		|| (!cg.renderingThirdPerson && !((cg_trueguns.integer || CG_PlayerIsDualWielding(client->ps.weapon)) || client->ps.weapon == WP_MELEE || client->ps.weapon == WP_SABER ))
 		|| client->ps.pm_type == PM_DEAD
 		|| client->breathPuffTime > cg.time )
 	{
@@ -2775,12 +2788,12 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			if ( ((cent->gent->client->ps.eFlags&EF_FORCE_GRIPPED)||((cent->gent->client->NPC_class == CLASS_BOBAFETT||cent->gent->client->NPC_class == CLASS_ROCKETTROOPER)&&cent->gent->client->moveType==MT_FLYSWIM))
+			if (((cent->gent->client->ps.eFlags&EF_FORCE_GRIPPED) || ((cent->gent->client->NPC_class == CLASS_BOBAFETT || cent->gent->client->NPC_class == CLASS_MANDALORIAN || cent->gent->client->NPC_class == CLASS_JANGO || cent->gent->client->NPC_class == CLASS_ROCKETTROOPER) && cent->gent->client->moveType == MT_FLYSWIM))
 				&& cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{
 				vec3_t	centFwd, centRt;
 				float	divFactor = 1.0f;
-				if ( (cent->gent->client->NPC_class == CLASS_BOBAFETT||cent->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+				if ((cent->gent->client->NPC_class == CLASS_BOBAFETT || cent->gent->client->NPC_class == CLASS_MANDALORIAN || cent->gent->client->NPC_class == CLASS_JANGO || cent->gent->client->NPC_class == CLASS_ROCKETTROOPER)
 					&& cent->gent->client->moveType == MT_FLYSWIM )
 				{
 					divFactor = 3.0f;
@@ -3044,7 +3057,7 @@ static void CG_PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t torso[3], v
 	int			i;
 	qboolean	looking = qfalse, talking = qfalse;
 
-	if ( cg.renderingThirdPerson && cent->gent && cent->gent->s.number == 0 )
+	if ( (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_PlayerIsDualWielding(cent->gent->client->ps.weapon)) && !cg.zoomMode) || cent->gent->client->ps.weapon == WP_SABER || cent->gent->client->ps.weapon == WP_MELEE) && cent->gent && cent->gent->s.number == 0 )
 	{
 		// If we are rendering third person, we should just force the player body to always fully face
 		//	whatever way they are looking, otherwise, you can end up with gun shots coming off of the
@@ -3829,7 +3842,7 @@ static void CG_PlayerFootsteps( centity_t *const cent, footstepType_t footStepTy
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, footDownDir );
 		VectorMA( sideOrigin, -8.0f, footDownDir, sideOrigin );//was [2] += 15;	//fudge up a bit for coplanar
-		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle, 6, cent, footStepType );
+		_PlayerFootStep( sideOrigin, footDownDir, cent->pe.legs.yawAngle, 6, cent, footStepType );/////// Jace Solaris fix
 	}
 }
 
@@ -4288,7 +4301,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent, const vec3_t origin, vec3_t t
 	}
 }
 
-static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean alwaysDo = qfalse )
+static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean forceLightning, qboolean alwaysDo = qfalse )
 {
 	// Undoing for now, at least this code should compile if I ( or anyone else ) decides to work on this effect
 	qboolean	found = qfalse;
@@ -4398,6 +4411,43 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	trace_t	tr;
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
+
+	if (cent->gent->client && cent->gent->NPC_LightningVictim && forceLightning && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "red"))
+		{
+			shader = cgs.media.redBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "orange"))
+		{
+			shader = cgs.media.orangeBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "yellow"))
+		{
+			shader = cgs.media.yellowBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "green"))
+		{
+			shader = cgs.media.greenBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "blue"))
+		{
+			shader = cgs.media.boltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "purple"))
+		{
+			shader = cgs.media.purpleBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "white"))
+		{
+			shader = cgs.media.whiteBoltShader;
+		}
+		if (!Q_stricmp(cent->gent->NPC_LightningVictim, "black"))
+		{
+			shader = cgs.media.blackBoltShader;
+		}
+
+	}
 
 	if ( tr.fraction < 1.0f || Q_flrand(0.0f, 1.0f) > 0.94f || alwaysDo )
 	{
@@ -4599,6 +4649,8 @@ CG_AddRefEntityWithPowerups
 Adds a piece with modifications or duplications for powerups
 ===============
 */
+extern vmCvar_t	cg_thirdPersonAlpha;
+extern qboolean G_ControlledByPlayer(gentity_t* self);
 void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cent )
 {
 	if ( !cent )
@@ -4633,6 +4685,25 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 	ent->shaderRGBA[1] = gent->client->renderInfo.customRGBA[1];
 	ent->shaderRGBA[2] = gent->client->renderInfo.customRGBA[2];
 	ent->shaderRGBA[3] = gent->client->renderInfo.customRGBA[3];
+
+	if ((cent->gent->s.number == 0 || G_ControlledByPlayer(cent->gent)))
+	{
+		float alpha = 1.0f;
+		if ((cg.overrides.active & CG_OVERRIDE_3RD_PERSON_APH))
+		{
+			alpha = cg.overrides.thirdPersonAlpha;
+		}
+		else
+		{
+			alpha = cg_thirdPersonAlpha.value;
+		}
+
+		if (alpha < 1.0f)
+		{
+			ent->renderfx |= RF_ALPHA_FADE;
+			ent->shaderRGBA[3] *= alpha;
+		}
+	}
 
 	// If certain states are active, we don't want to add in the regular body
 	if ( !gent->client->ps.powerups[PW_CLOAKED] &&
@@ -4853,9 +4924,10 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 	// Galak Mech shield bubble
 	//------------------------------------------------------
-	if ( powerups & ( 1 << PW_GALAK_SHIELD ))
+
+	if ( powerups & ( 1 << PW_GALAK_SHIELD ) && cent->gent->client->NPC_class == CLASS_GALAKMECH)
 	{
-/*		refEntity_t tent;
+		refEntity_t tent;
 
 		memset( &tent, 0, sizeof( refEntity_t ));
 
@@ -4882,7 +4954,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		tent.endTime = gent->fx_time + 1000;			// if you want the shell to build around the guy, pass in a time that is 1000ms after the start of the turn-on-effect
 		tent.customShader = cgi_R_RegisterShader( "gfx/effects/irid_shield" );
 
-		cgi_R_AddRefEntityToScene( &tent );*/
+		cgi_R_AddRefEntityToScene( &tent );
 	}
 
 	// Invincibility -- effect needs work
@@ -5034,6 +5106,19 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		}
 
 		cgi_R_AddRefEntityToScene( ent);
+	}
+
+	if (cent->gent->client->ps.stasisTime > (cg.time ? cg.time : level.time))
+	{ //stasis is represented by purple..
+		ent->shaderRGBA[0] = 255;
+		ent->shaderRGBA[1] = 0;
+		ent->shaderRGBA[2] = 255;
+		ent->shaderRGBA[3] = 254;
+		
+		ent->renderfx &= ~RF_RGB_TINT;
+		ent->customShader = cgs.media.playerShieldDamage;
+
+		cgi_R_AddRefEntityToScene(ent);
 	}
 }
 
@@ -5626,6 +5711,18 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb )
 		case SABER_PURPLE:
 			VectorSet( rgb, 0.9f, 0.2f, 1.0f );
 			break;
+		case SABER_UNSTABLE_RED:
+			VectorSet(rgb, 1.0f, 0.2f, 0.2f);
+			break;
+		case SABER_BLACK:
+			VectorSet(rgb, 1.0f, 1.0f, 1.0f );
+			break;
+		case SABER_DARKSABER:
+			VectorSet(rgb, 1.0f, 1.0f, 1.0f);
+			break;
+		default://SABER_RGB
+			VectorSet( rgb, ((color) & 0xff)/255.0f, ((color >> 8) & 0xff)/255.0f, ((color >> 16) & 0xff)/255.0f );
+			break;
 	}
 }
 
@@ -5743,6 +5840,413 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 	}
 }
 
+void CG_DoSFXSaber( vec3_t blade_muz, vec3_t blade_tip, vec3_t trail_tip, vec3_t trail_muz, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight )
+{
+	vec3_t	dif, mid, blade_dir, end_dir, trail_dir, base_dir;
+	float	radiusmult, effectradius, coreradius, effectalpha, AngleScale;
+	float	blade_len, end_len, trail_len, base_len, DisTip, DisMuz, DisDif;
+	float	glowscale = 0.5;
+	float 	v1, v2, len;
+
+	qhandle_t	glow = 0;
+	refEntity_t saber;
+
+	VectorSubtract( blade_tip, blade_muz, blade_dir );
+	VectorSubtract( trail_tip, trail_muz, trail_dir );
+	blade_len = VectorLength(blade_dir);
+	trail_len = VectorLength(trail_dir);
+	VectorNormalize(blade_dir);
+	VectorNormalize(trail_dir);
+
+	if ( blade_len < MIN_SABERBLADE_DRAW_LENGTH )
+	{
+		return;
+	}
+
+	VectorSubtract( trail_tip, blade_tip, end_dir );
+	VectorSubtract( trail_muz, blade_muz, base_dir );
+	end_len = VectorLength(end_dir);
+	base_len = VectorLength(base_dir);
+	VectorNormalize(end_dir);
+	VectorNormalize(base_dir);
+
+	switch( color )
+	{
+		case SABER_RED:
+			glow = cgs.media.redSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_ORANGE:
+			glow = cgs.media.orangeSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_YELLOW:
+			glow = cgs.media.yellowSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_GREEN:
+			glow = cgs.media.greenSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_PURPLE:
+			glow = cgs.media.purpleSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_BLUE:
+			glow = cgs.media.blueSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_UNSTABLE_RED:
+			glow = cgs.media.redSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade_unstable");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+		case SABER_BLACK:
+			glow = cgs.media.blackSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade_black");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end_black");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail_black");
+			break;
+		case SABER_DARKSABER:
+			glow = cgs.media.darkSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/darksaber_line");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/darksabertrail");
+			break;
+		default://SABER_RGB
+			glow = cgs.media.rgbSaberGlowShader;
+			cgs.media.SaberBladeShader = cgi_R_RegisterShader("SFX_Sabers/saber_blade");
+			cgs.media.SaberEndShader = cgi_R_RegisterShader("SFX_Sabers/saber_end");
+			cgs.media.SaberTrailShader = cgi_R_RegisterShader("SFX_Sabers/saber_trail");
+			break;
+	}
+
+	VectorMA( blade_muz, blade_len * 0.5f, blade_dir, mid );
+
+	if (doLight)
+	{
+		vec3_t rgb={1,1,1};
+		CG_RGBForSaberColor( color, rgb );
+		VectorScale( rgb, 0.66f, rgb );
+		cgi_R_AddLightToScene( mid, (blade_len*2.0f) + (Q_flrand(0.0f, 1.0f)*10.0f), rgb[0], rgb[1], rgb[2] );
+	}
+
+	//Distance Scale
+	{
+		VectorSubtract( mid, cg.refdef.vieworg, dif );
+		len = VectorLength( dif );
+		if ( len > 4000 )
+		{
+			len = 4000;
+		}
+		else if ( len < 1 )
+		{
+			len = 1;
+		}
+
+		v1 = ((len+400) / 400);
+		v2 = ((len+4000) / 4000);
+
+		if(end_len > 1 || base_len > 1)
+		{
+			if(end_len > base_len)
+				glowscale = (end_len+4)*0.1;
+			else
+				glowscale = (base_len+4)*0.1;
+
+			if(glowscale > 1.0)
+				glowscale = 1.0;
+		}
+		effectalpha = glowscale;
+	}
+
+	//Angle Scale
+	{
+		VectorSubtract( blade_tip, cg.refdef.vieworg, dif );
+		DisTip = VectorLength( dif );
+
+		VectorSubtract( blade_muz, cg.refdef.vieworg, dif );
+		DisMuz = VectorLength( dif );
+
+		if(DisTip > DisMuz)
+		{
+			DisDif = DisTip - DisMuz;
+		}
+		else if(DisTip < DisMuz)
+		{
+			DisDif = DisMuz - DisTip;
+		}
+		else
+		{
+			DisDif = 0;
+		}
+
+		AngleScale = 1.2 - (DisDif/blade_len)*(DisDif/blade_len);
+
+		if(AngleScale > 1.0)
+			AngleScale = 1.0;
+		if(AngleScale < 0.2)
+			AngleScale = 0.2f;/////// Jace Solaris fix
+
+		effectalpha *= AngleScale;
+
+		AngleScale += 0.3f;/////// Jace Solaris fix
+
+		if(AngleScale > 1.0)
+			AngleScale = 1.0;
+		if(AngleScale < 0.4)
+			AngleScale = 0.4f;/////// Jace Solaris fix
+	}
+
+	memset( &saber, 0, sizeof( refEntity_t ));
+
+	if (blade_len < lengthMax)
+	{
+		radiusmult = 0.5 + ((blade_len / lengthMax)/2);
+	}
+	else
+	{
+		radiusmult = 1.0;
+	}
+
+	effectradius	= ((radius * 1.6 * v1) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*cg_SFXSabersGlowSize.value;
+	coreradius		= ((radius * 0.4 * v2) + Q_flrand(-1.0f, 1.0f) * 0.1f)*radiusmult*cg_SFXSabersCoreSize.value;
+
+	{
+		saber.renderfx = rfx;
+		if(blade_len-((effectradius*AngleScale)/2) > 0)
+		{
+			saber.radius = effectradius*AngleScale;
+			saber.saberLength = (blade_len - (saber.radius/2));
+			VectorCopy( blade_muz, saber.origin );
+			VectorCopy( blade_dir, saber.axis[0] );
+			saber.reType = RT_SABER_GLOW;
+			saber.customShader = glow;
+			saber.shaderRGBA[0] = 0xff * effectalpha;
+			saber.shaderRGBA[1] = 0xff * effectalpha;
+			saber.shaderRGBA[2] = 0xff * effectalpha;
+			saber.shaderRGBA[3] = 0xff * effectalpha;
+
+			if (color >= SABER_RGB)
+			{
+				saber.shaderRGBA[0] = ((color) & 0xff) * effectalpha;
+				saber.shaderRGBA[1] = ((color >> 8) & 0xff) * effectalpha;
+				saber.shaderRGBA[2] = ((color >> 16) & 0xff) * effectalpha;
+			}
+
+			cgi_R_AddRefEntityToScene( &saber );
+		}
+
+		// Do the hot core
+		VectorMA( blade_muz, blade_len, blade_dir, saber.origin );
+		VectorMA( blade_muz, -1, blade_dir, saber.oldorigin );
+
+		saber.customShader = cgs.media.SaberBladeShader;
+		saber.reType = RT_LINE;
+
+		saber.radius = coreradius;
+
+		saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+
+		cgi_R_AddRefEntityToScene( &saber );
+	}
+
+	{
+		saber.renderfx = rfx;
+		if(trail_len-((effectradius*AngleScale)/2) > 0)
+		{
+			saber.radius = effectradius*AngleScale;
+			saber.saberLength = (trail_len - (saber.radius/2));
+			VectorCopy( trail_muz, saber.origin );
+			VectorCopy( trail_dir, saber.axis[0] );
+			saber.reType = RT_SABER_GLOW;
+			saber.customShader = glow;
+			saber.shaderRGBA[0] = 0xff * effectalpha;
+			saber.shaderRGBA[1] = 0xff * effectalpha;
+			saber.shaderRGBA[2] = 0xff * effectalpha;
+			saber.shaderRGBA[3] = 0xff * effectalpha;
+
+			if (color >= SABER_RGB)
+			{
+				saber.shaderRGBA[0] = ((color) & 0xff) * effectalpha;
+				saber.shaderRGBA[1] = ((color >> 8) & 0xff) * effectalpha;
+				saber.shaderRGBA[2] = ((color >> 16) & 0xff) * effectalpha;
+			}
+
+			cgi_R_AddRefEntityToScene( &saber );
+		}
+
+		// Do the hot core
+		VectorMA( trail_muz, trail_len, trail_dir, saber.origin );
+		VectorMA( trail_muz, -1, trail_dir, saber.oldorigin );
+
+		saber.customShader = cgs.media.SaberBladeShader;
+		saber.reType = RT_LINE;
+
+		saber.radius = coreradius;
+
+		saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+
+		cgi_R_AddRefEntityToScene( &saber );
+	}
+
+	VectorMA( blade_muz, blade_len - 0.5, blade_dir, blade_tip );
+	VectorMA( trail_muz, trail_len - 0.5, trail_dir, trail_tip );
+
+	if(base_len > 2)
+	{
+		saber.renderfx = rfx;
+		if(base_len-(effectradius*AngleScale) > 0)
+		{
+			saber.radius = effectradius*AngleScale;
+			saber.saberLength = (base_len - (effectradius*AngleScale));
+			VectorMA( blade_muz, ((effectradius*AngleScale)/2), base_dir, saber.origin );
+			VectorCopy( base_dir, saber.axis[0] );
+			saber.reType = RT_SABER_GLOW;
+			saber.customShader = glow;
+			saber.shaderRGBA[0] = 0xff * effectalpha;
+			saber.shaderRGBA[1] = 0xff * effectalpha;
+			saber.shaderRGBA[2] = 0xff * effectalpha;
+			saber.shaderRGBA[3] = 0xff * effectalpha;
+
+			if (color >= SABER_RGB)
+			{
+				saber.shaderRGBA[0] = ((color) & 0xff) * effectalpha;
+				saber.shaderRGBA[1] = ((color >> 8) & 0xff) * effectalpha;
+				saber.shaderRGBA[2] = ((color >> 16) & 0xff) * effectalpha;
+			}
+
+			cgi_R_AddRefEntityToScene( &saber );
+		}
+
+		// Do the hot core
+		VectorMA( blade_muz, base_len, base_dir, saber.origin );
+		VectorMA( blade_muz, -0.1f, base_dir, saber.oldorigin );/////// Jace Solaris fix
+
+		saber.customShader = cgs.media.SaberBladeShader;
+		saber.reType = RT_LINE;
+
+		saber.radius = coreradius;
+		saber.saberLength = base_len;
+
+		saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+
+		cgi_R_AddRefEntityToScene( &saber );
+	}
+
+	if(end_len > 1)
+	{
+		{
+			VectorSubtract( blade_tip, cg.refdef.vieworg, dif );
+			DisTip = VectorLength( dif );
+
+			VectorSubtract( trail_tip, cg.refdef.vieworg, dif );
+			DisMuz = VectorLength( dif );
+
+			if(DisTip > DisMuz)
+			{
+				DisDif = DisTip - DisMuz;
+			}
+			else if(DisTip < DisMuz)
+			{
+				DisDif = DisMuz - DisTip;
+			}
+			else
+			{
+				DisDif = 0;
+			}
+
+			if(DisDif > end_len * 0.9)
+			{
+				effectalpha *= 0.3f;/////// Jace Solaris fix
+			}
+			else if(DisDif > end_len * 0.8)
+			{
+				effectalpha *= 0.5;
+			}
+			else if(DisDif > end_len * 0.7)
+			{
+				effectalpha *= 0.7f;/////// Jace Solaris fix
+			}
+		}
+
+
+		saber.renderfx = rfx;
+		if(end_len-(effectradius*AngleScale) > 0)
+		{
+			saber.radius = effectradius*AngleScale;
+			saber.saberLength = (end_len - (effectradius*AngleScale));
+			VectorMA( blade_tip, ((effectradius*AngleScale)/2), end_dir, saber.origin );
+			VectorCopy( end_dir, saber.axis[0] );
+			saber.reType = RT_SABER_GLOW;
+			saber.customShader = glow;
+			saber.shaderRGBA[0] = 0xff * effectalpha;
+			saber.shaderRGBA[1] = 0xff * effectalpha;
+			saber.shaderRGBA[2] = 0xff * effectalpha;
+			saber.shaderRGBA[3] = 0xff * effectalpha;
+
+			if (color >= SABER_RGB)
+			{
+				saber.shaderRGBA[0] = ((color) & 0xff) * effectalpha;
+				saber.shaderRGBA[1] = ((color >> 8) & 0xff) * effectalpha;
+				saber.shaderRGBA[2] = ((color >> 16) & 0xff) * effectalpha;
+			}
+
+			cgi_R_AddRefEntityToScene( &saber );
+		}
+
+		// Do the hot core
+		VectorMA( blade_tip, end_len, end_dir, saber.origin );
+		VectorMA( blade_tip, -0.1f, end_dir, saber.oldorigin );/////// Jace Solaris fix
+
+		saber.customShader = cgs.media.SaberEndShader;
+		saber.reType = RT_LINE;
+
+		if(end_len > 9)
+		{
+			AngleScale = 5;
+		}
+		else if(end_len < 3)
+		{
+			AngleScale = 1;
+		}
+		else
+		{
+			AngleScale = end_len/5;
+		}
+
+		{
+			AngleScale -= (((DisDif/end_len)*(DisDif/end_len))*AngleScale);
+
+			if(AngleScale < 0.8)
+				AngleScale = 0.8f;/////// Jace Solaris fix
+		}
+
+		saber.radius = (coreradius * AngleScale);
+		saber.saberLength = end_len;
+
+		saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+		saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+
+		cgi_R_AddRefEntityToScene( &saber );
+	}
+}
+
 static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight )
 {
 	vec3_t		mid;
@@ -5785,6 +6289,22 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 			glow = cgs.media.purpleSaberGlowShader;
 			blade = cgs.media.purpleSaberCoreShader;
 			break;
+		case SABER_UNSTABLE_RED:
+			glow = cgs.media.unstableRedSaberGlowShader;
+			blade = cgs.media.unstableRedSaberCoreShader;
+			break;
+		case SABER_BLACK:
+			glow = cgs.media.blackSaberGlowShader;
+			blade = cgs.media.blackSaberCoreShader;
+			break;
+		case SABER_DARKSABER:
+			glow = cgs.media.darkSaberGlowShader;
+			blade = cgs.media.darkSaberCoreShader;
+			break;
+		default://SABER_RGB
+			glow = cgs.media.rgbSaberGlowShader;
+			blade = cgs.media.rgbSaberCoreShader;
+			break;
 	}
 
 	// always add a light because sabers cast a nice glow before they slice you in half!!  or something...
@@ -5825,6 +6345,13 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 	saber.customShader = glow;
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
 	saber.renderfx = rfx;
+
+	if (color >= SABER_RGB)
+	{
+		saber.shaderRGBA[0] = ((color) & 0xff);
+		saber.shaderRGBA[1] = ((color >> 8) & 0xff);
+		saber.shaderRGBA[2] = ((color >> 16) & 0xff);
+	}
 
 	cgi_R_AddRefEntityToScene( &saber );
 
@@ -6569,6 +7096,17 @@ Ghoul2 Insert End
 		return;
 	}
 
+	qboolean noDlight = qfalse;
+	if ( client->ps.saber[saberNum].numBlades >= 3
+		|| (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_DLIGHT) )
+		|| ( WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_DLIGHT2) )
+		)
+	{
+		noDlight = qtrue;
+	}
+
+if (cg_SFXSabers.integer == 0)
+{
 	if ( (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && client->ps.saber[saberNum].trailStyle < 2 )
 		 || ( WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && client->ps.saber[saberNum].trailStyle2 < 2 ) )
 	{//okay to draw the trail
@@ -6616,6 +7154,21 @@ Ghoul2 Insert End
 						case SABER_PURPLE:
 							VectorSet( rgb1, 220.0f, 0.0f, 255.0f );
 							break;
+						case SABER_UNSTABLE_RED:
+							VectorSet(rgb1, 255.0f, 0.0f, 0.0f);
+							break;
+						case SABER_DARKSABER:
+							VectorSet(rgb1, 255.0f, 255.0f, 255.0f);
+							break;
+						case SABER_BLACK:
+							VectorSet( rgb1, 255.0f, 255.0f, 255.0f );
+							break;
+						default://SABER_RGB
+							VectorSet( rgb1, ((client->ps.saber[saberNum].blade[bladeNum].color) & 0xff),
+									  ((client->ps.saber[saberNum].blade[bladeNum].color >> 8) & 0xff),
+									  ((client->ps.saber[saberNum].blade[bladeNum].color >> 16) & 0xff) );
+							break;
+
 					}
 				}
 
@@ -6637,6 +7190,11 @@ Ghoul2 Insert End
 						fx->mShader = cgs.media.swordTrailShader;
 						duration = saberTrail->duration/2.0f; // stay around twice as long
 						VectorSet( rgb1, 32.0f, 32.0f, 32.0f ); // make the sith sword trail pretty faint
+					}
+					else if( client->ps.saber[saberNum].blade[bladeNum].color == SABER_BLACK )
+					{
+						fx->mShader = cgs.media.blackSaberBlurShader;
+						duration = saberTrail->duration/5.0f;
 					}
 					else
 					{
@@ -6701,24 +7259,14 @@ Ghoul2 Insert End
 			saberTrail->lastTime = cg.time;
 		}
 	}
-
 	if ( cent->gent->client->ps.saber[saberNum].type == SABER_SITH_SWORD)
 	{
 		// don't need to do nuthin else
 		return;
 	}
 
-	qboolean noDlight = qfalse;
-	if ( client->ps.saber[saberNum].numBlades >= 3
-		|| (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_DLIGHT) )
-		|| ( WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_DLIGHT2) )
-		)
-	{
-		noDlight = qtrue;
-	}
-
 	if ( (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE) )
-		 || ( WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE2) ) )
+		|| ( WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && (client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE2) ) )
 	{//don't draw a blade
 		if ( !noDlight )
 		{//but still do dlight
@@ -6734,6 +7282,192 @@ Ghoul2 Insert End
 		client->ps.saber[saberNum].blade[bladeNum].radius,
 		client->ps.saber[saberNum].blade[bladeNum].color,
 		renderfx, (qboolean)!noDlight );
+}
+else
+{
+
+	saberTrail_t	*saberTrail = &client->ps.saber[saberNum].blade[bladeNum].trail;
+	saberTrail->duration = 0;
+
+	if ( saberTrail->lastTime > cg.time )
+	{//after a pause, cg.time jumps ahead in time for one frame
+		//and lastTime gets set to that and will freak out, so, since
+		//it's never valid for saberTrail->lastTime to be > cg.time,
+		//cap it to cg.time here
+		saberTrail->lastTime = cg.time;
+	}
+
+	if(!saberTrail->base || !saberTrail->tip || !saberTrail->dualtip || !saberTrail->dualbase || !saberTrail->lastTime/* || !saberTrail->inAction*/)
+	{
+		VectorCopy( org_, saberTrail->base );
+		VectorMA( end, -1.5f, axis_[0], saberTrail->tip );
+		VectorCopy( saberTrail->tip, saberTrail->dualtip );
+		VectorCopy( saberTrail->base, saberTrail->dualbase );
+		saberTrail->lastTime = cg.time;
+		saberTrail->inAction = cg.time;
+		return;
+	}
+	else if ( cg.time > saberTrail->lastTime )
+	{
+		float dirlen0, dirlen1, dirlen2, lagscale;
+		vec3_t dir0, dir1, dir2;
+
+		VectorCopy( saberTrail->base, saberTrail->dualbase );
+		VectorCopy( saberTrail->tip, saberTrail->dualtip );
+
+		VectorCopy( org_, saberTrail->base );
+		VectorMA( end, -1.5f, axis_[0], saberTrail->tip );
+
+		VectorSubtract( saberTrail->dualtip, saberTrail->tip, dir0 );
+		VectorSubtract( saberTrail->dualbase, saberTrail->base, dir1 );
+		VectorSubtract( saberTrail->dualtip, saberTrail->dualbase, dir2 );
+
+		dirlen0 = VectorLength(dir0);
+		dirlen1 = VectorLength(dir1);
+		dirlen2 = VectorLength(dir2);
+
+		if ( saberMoveData[client->ps.saberMove].trailLength == 0 )
+		{
+			dirlen0 *= 0.5;
+			dirlen1 *= 0.3f;/////// Jace Solaris fix
+		}
+		else
+		{
+			dirlen0 *= 1.0;
+			dirlen1 *= 0.5;
+		}
+
+		lagscale = (cg.time - saberTrail->lastTime);
+		lagscale = 1-(lagscale*3/200);
+
+		if(lagscale < 0.1)
+			lagscale = 0.1f;/////// Jace Solaris fix
+
+		VectorNormalize( dir0 );
+		VectorNormalize( dir1 );
+
+		VectorMA( saberTrail->tip, dirlen0*lagscale, dir0, saberTrail->dualtip );
+		VectorMA( saberTrail->base, dirlen1*lagscale, dir1, saberTrail->dualbase );
+		VectorSubtract( saberTrail->dualtip, saberTrail->dualbase, dir1 );
+		VectorNormalize( dir1 );
+
+		VectorMA( saberTrail->dualbase, dirlen2, dir1, saberTrail->dualtip );
+
+		saberTrail->lastTime = cg.time;
+	}
+
+		vec3_t	rgb1={255.0f,255.0f,255.0f};
+
+		switch( client->ps.saber[saberNum].blade[bladeNum].color )
+		{
+			case SABER_RED:
+				VectorSet( rgb1, 255.0f, 0.0f, 0.0f );
+				break;
+			case SABER_ORANGE:
+				VectorSet( rgb1, 253.0f, 125.0f, 80.0f );
+				break;
+			case SABER_YELLOW:
+				VectorSet( rgb1, 250.0f, 250.0f, 160.0f );
+				break;
+			case SABER_GREEN:
+				VectorSet( rgb1, 100.0f, 240.0f, 100.0f );
+				break;
+			case SABER_PURPLE:
+				VectorSet( rgb1, 196.0f, 0.0f, 196.0f );
+				break;
+			case SABER_BLUE:
+				VectorSet( rgb1, 0.0f, 0.0f, 255.0f );
+				break;
+			case SABER_UNSTABLE_RED:
+				VectorSet(rgb1, 255.0f, 0.0f, 0.0f);
+				break;
+			case SABER_BLACK:
+				VectorSet( rgb1, 255.0f, 255.0f, 255.0f );
+				break;
+			default://SABER_RGB
+				VectorSet( rgb1, ((client->ps.saber[saberNum].blade[bladeNum].color) & 0xff),
+						  ((client->ps.saber[saberNum].blade[bladeNum].color >> 8) & 0xff),
+						  ((client->ps.saber[saberNum].blade[bladeNum].color >> 16) & 0xff) );
+				break;
+		}
+
+		CTrail *fx = new CTrail;
+
+		VectorCopy( saberTrail->base, fx->mVerts[0].origin );
+		VectorCopy( saberTrail->tip, fx->mVerts[1].origin );
+		VectorCopy( saberTrail->dualtip, fx->mVerts[2].origin );
+		VectorCopy( saberTrail->dualbase, fx->mVerts[3].origin );
+
+
+		if ( !(cent->gent->client->ps.saber[saberNum].type == SABER_SITH_SWORD || client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE) )
+		{
+			CG_DoSFXSaber(fx->mVerts[0].origin, fx->mVerts[1].origin, fx->mVerts[2].origin, fx->mVerts[3].origin, (client->ps.saber[saberNum].blade[bladeNum].lengthMax), (client->ps.saber[saberNum].blade[bladeNum].radius), client->ps.saber[saberNum].blade[bladeNum].color, renderfx & ~RF_ALPHA_FADE, (qboolean)!noDlight);
+
+		}
+
+		if ( cg.time > saberTrail->inAction )
+		{
+			saberTrail->inAction = cg.time;
+
+			if ( cent->gent->client->ps.saber[saberNum].type == SABER_SITH_SWORD || client->ps.saber[saberNum].trailStyle == 1 )
+			{
+				fx->mShader = cgs.media.swordTrailShader;
+				VectorSet( rgb1, 32.0f, 32.0f, 32.0f ); // make the sith sword trail pretty faint
+			}
+			else
+			{
+				fx->mShader = cgs.media.SaberTrailShader;
+			}
+			fx->SetFlags( FX_USE_ALPHA );
+
+			// New muzzle
+			VectorCopy( rgb1, fx->mVerts[0].rgb );
+			fx->mVerts[0].alpha = 255.0f;
+
+			fx->mVerts[0].ST[0] = 0.0f;
+			fx->mVerts[0].ST[1] = 4.0f;
+			fx->mVerts[0].destST[0] = 4.0f;
+			fx->mVerts[0].destST[1] = 4.0f;
+
+			// new tip
+			VectorCopy( rgb1, fx->mVerts[1].rgb );
+			fx->mVerts[1].alpha = 255.0f;
+
+			fx->mVerts[1].ST[0] = 0.0f;
+			fx->mVerts[1].ST[1] = 0.0f;
+			fx->mVerts[1].destST[0] = 4.0f;
+			fx->mVerts[1].destST[1] = 0.0f;
+
+			// old tip
+			VectorCopy( rgb1, fx->mVerts[2].rgb );
+			fx->mVerts[2].alpha = 255.0f;
+
+			fx->mVerts[2].ST[0] = 4.0f;
+			fx->mVerts[2].ST[1] = 0.0f;
+			fx->mVerts[2].destST[0] = 4.0f;
+			fx->mVerts[2].destST[1] = 0.0f;
+
+			// old muzzle
+			VectorCopy( rgb1, fx->mVerts[3].rgb );
+			fx->mVerts[3].alpha = 255.0f;
+
+			fx->mVerts[3].ST[0] = 4.0f;
+			fx->mVerts[3].ST[1] = 4.0f;
+			fx->mVerts[3].destST[0] = 4.0f;
+			fx->mVerts[3].destST[1] = 4.0f;
+
+			FX_AddPrimitive( (CEffect**)&fx, 0 );
+		}
+
+		if ( (client->ps.saber[saberNum].saberFlags2&SFL2_NO_BLADE) )
+		{
+			if ( !noDlight )
+			{
+				CG_DoSaberLight( &client->ps.saber[saberNum] );
+			}
+		}
+
+}
 }
 
 void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles )
@@ -6765,6 +7499,407 @@ static void CG_AddSaberBlades( centity_t *cent, int renderfx, vec3_t origin, vec
 }
 */
 //--------------- END SABER STUFF --------
+
+/*
+ ================
+ GetSelfLegAnimPoint
+ ================
+ */
+//Get the point in the leg animation and return a percentage of the current point in the anim between 0 and the total anim length (0.0f - 1.0f)
+float GetSelfLegAnimPoint(void)
+{
+	float		current	  = 0.0f;
+	int			end		  = 0;
+	int			start	  = 0;
+	if (!!gi.G2API_GetBoneAnimIndex(&
+									cg_entities[cg.snap->ps.viewEntity].gent->ghoul2[cg_entities[cg.snap->ps.viewEntity].gent->playerModel],
+									cg_entities[cg.snap->ps.viewEntity].gent->rootBone,
+									level.time,
+									&current,
+									&start,
+									&end,
+									NULL,
+									NULL,
+									NULL))
+	{
+		float percentComplete = (current-start)/(end-start);
+		
+		return percentComplete;
+	}
+	
+	return 0.0f;
+
+}
+
+
+/*
+ ================
+ GetSelfTorsoAnimPoint
+ 
+ ================
+ */
+//Get the point in the torso animation and return a percentage of the current point in the anim between 0 and the total anim length (0.0f - 1.0f)
+float GetSelfTorsoAnimPoint(void)
+{
+	float		current	  = 0.0f;
+	int			end		  = 0;
+	int			start	  = 0;
+	if (!!gi.G2API_GetBoneAnimIndex(&
+									cg_entities[cg.snap->ps.viewEntity].gent->ghoul2[cg_entities[cg.snap->ps.viewEntity].gent->playerModel],
+									cg_entities[cg.snap->ps.viewEntity].gent->lowerLumbarBone,
+									level.time,
+									&current,
+									&start,
+									&end,
+									NULL,
+									NULL,
+									NULL))
+	{
+		float percentComplete = (current-start)/(end-start);
+		
+		return percentComplete;
+	}
+	
+	return 0.0f;
+}
+
+
+/*
+ ===============
+ SmoothTrueView
+ 
+ Purpose:  Uses the currently setup model-based First Person View to calculation the final viewangles.  Features the
+ following:
+ 1.  Simulates allowable eye movement by makes a deadzone around the inputed viewangles vs the desired
+ viewangles of cg.refdef.viewangles
+ 2.  Prevents the sudden view flipping during moves where your camera is suppose to flip 360 on the pitch (x)
+ pitch (x) axis.
+ ===============
+ */
+
+void SmoothTrueView(vec3_t eyeAngles)
+{
+	float LegAnimPoint = GetSelfLegAnimPoint();
+	float TorsoAnimPoint = GetSelfTorsoAnimPoint();
+	
+	//counter
+	int		i;
+	
+	//cg.refdef.viewangles in relation to eyeAngles
+	float	AngDiff;
+	
+	qboolean	eyeRange = qtrue;
+	qboolean	UseRefDef = qfalse;
+	qboolean	DidSpecial = qfalse;
+	
+	//Debug messages
+	//CG_Printf("eyeAngles: %f, %f, %f\n", eyeAngles[0], eyeAngles[1], eyeAngles[2]);
+	//CG_Printf("cg.refdef.viewangles: %f, %f, %f\n", cg.refdefViewAngles[0], cg.refdefViewAngles[1], cg.refdefViewAngles[2]);
+	
+	
+	
+	//RAFIXME: See if I can find a link this to the prediction stuff.  I think the snap is of just the last gamestate snap
+	
+	//Rolls
+	if ( cg_trueroll.integer )
+	{
+		if ( ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_RIGHT )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT_STOP )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_RIGHT_STOP )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT_FLIP )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_RUN_RIGHT_FLIP )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_FLIP_LEFT )
+			|| ( (cg.snap->ps.legsAnim) == BOTH_WALL_FLIP_RIGHT ) )
+		{//Roll moves that look good with eye range
+			eyeRange = qtrue;
+			DidSpecial = qtrue;
+		}
+		else if ( cg_trueroll.integer == 1 )
+		{//Use simple roll for the more complicated rolls
+			if ( ( (cg.snap->ps.legsAnim) == BOTH_FLIP_L )
+				|| ( (cg.snap->ps.legsAnim) == BOTH_ROLL_L ) )
+			{//Left rolls
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[2] += AngleNormalize180( (360 * LegAnimPoint) );
+				AngleNormalize180( eyeAngles[2] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+			else if( ((cg.snap->ps.legsAnim) == BOTH_FLIP_R)
+					|| ((cg.snap->ps.legsAnim) == BOTH_ROLL_R) )
+			{//Right rolls
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[2] += AngleNormalize180( ( 360 - (360 * LegAnimPoint) ) );
+				AngleNormalize180( eyeAngles[2] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+		else
+		{//You're here because you're using cg_trueroll.integer == 2
+			if ( ((cg.snap->ps.legsAnim) == BOTH_FLIP_L)
+				|| ((cg.snap->ps.legsAnim) == BOTH_ROLL_L)
+				|| ((cg.snap->ps.legsAnim) == BOTH_FLIP_R)
+				|| ((cg.snap->ps.legsAnim) == BOTH_ROLL_R) )
+			{//Roll animation, lock the eyemovement
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+	}
+	else if ( ((cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_RUN_RIGHT)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT_STOP)
+			 || ((cg.snap->ps.legsAnim) ==	BOTH_WALL_RUN_RIGHT_STOP)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_RUN_LEFT_FLIP)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_RUN_RIGHT_FLIP)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_FLIP_LEFT)
+			 || ((cg.snap->ps.legsAnim) == BOTH_WALL_FLIP_RIGHT)
+			 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_L)
+			 || ((cg.snap->ps.legsAnim) == BOTH_ROLL_L)
+			 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_R)
+			 || ((cg.snap->ps.legsAnim) == BOTH_ROLL_R) )
+	{//you don't want rolling so use cg.refdef.viewangles as the view
+		UseRefDef = qtrue;
+	}
+	
+	//Flips
+	if( cg_trueflip.integer )
+	{
+		if( cg.snap->ps.legsAnim == BOTH_WALL_FLIP_BACK1 )
+		{//Flip moves that look good with the eyemovement locked
+			eyeRange = qfalse;
+			DidSpecial = qtrue;
+		}
+		else if ( cg_trueflip.integer == 1 )
+		{//Use simple flip for the more complicated flips
+			if ( ((cg.snap->ps.legsAnim) == BOTH_FLIP_F)
+				|| ((cg.snap->ps.legsAnim) == BOTH_ROLL_F) )
+			{//forward flips
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[0] += AngleNormalize180( 360 - (360 * LegAnimPoint) );
+				AngleNormalize180( eyeAngles[0] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+			else if ( ((cg.snap->ps.legsAnim) == BOTH_FLIP_B)
+					 || ((cg.snap->ps.legsAnim) == BOTH_ROLL_B)
+					 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_BACK1) )
+			{//back flips
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[0] += AngleNormalize180( (360 * LegAnimPoint) );
+				AngleNormalize180( eyeAngles[0] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+		else
+		{//You're here because you're using cg_trueflip.integer = 2
+			if ( ( (cg.snap->ps.legsAnim) == BOTH_FLIP_F )
+				|| ( (cg.snap->ps.legsAnim) == BOTH_ROLL_F )
+				|| ( (cg.snap->ps.legsAnim) == BOTH_FLIP_B )
+				|| ( (cg.snap->ps.legsAnim) == BOTH_ROLL_B )
+				|| ( (cg.snap->ps.legsAnim) == BOTH_FLIP_BACK1 ) )
+			{//Flip animation and using cg_trueflip.integer = 2, lock the eyemovement
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+	}
+	else if ( ((cg.snap->ps.legsAnim) == BOTH_WALL_FLIP_BACK1)
+			 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_F)
+			 || ((cg.snap->ps.legsAnim) == BOTH_ROLL_F)
+			 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_B)
+			 || ((cg.snap->ps.legsAnim) == BOTH_ROLL_B)
+			 || ((cg.snap->ps.legsAnim) == BOTH_FLIP_BACK1) )
+	{//you don't want flipping so use cg.refdef.viewangles as the view
+		UseRefDef = qtrue;
+	}
+	
+	
+	
+	if ( cg_truespin.integer )
+	{
+		if ( cg_truespin.integer == 1 )
+		{//Do a simulated Spin for the more complicated spins
+			if ( ((cg.snap->ps.torsoAnim) == BOTH_T1_TL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T1__L_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T1__L__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T1_BL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T1_BL__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T1_BL_TR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T2__L_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T2_BL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T2_BL__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T3__L_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T3_BL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T3_BL__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T4__L_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T4_BL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T4_BL__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5_TL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5__L_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5__L__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5_BL_BR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5_BL__R)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_T5_BL_TR)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_ATTACK_BACK)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_CROUCHATTACKBACK1)
+				|| ((cg.snap->ps.torsoAnim) == BOTH_BUTTERFLY_LEFT)
+				//This technically has 2 spins and seems to have been labeled wrong
+				|| ((cg.snap->ps.legsAnim) == BOTH_FJSS_TR_BL) )
+			{//Left Spins
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[1] += AngleNormalize180( (360 - (360 * TorsoAnimPoint)) );
+				AngleNormalize180( eyeAngles[1] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+			else if ( ((cg.snap->ps.torsoAnim) == BOTH_T1_BR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T1__R__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T1__R_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T1_TR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T1_BR_TL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T1_BR__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T2_BR__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T2_BR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T2__R_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T3_BR__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T3_BR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T3__R_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T4_BR__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T4_BR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T4__R_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5_BR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5__R__L)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5__R_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5_TR_BL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5_BR_TL)
+					 || ((cg.snap->ps.torsoAnim) == BOTH_T5_BR__L)
+					 //This technically has 2 spins
+					 || ((cg.snap->ps.legsAnim) == BOTH_BUTTERFLY_RIGHT)
+					 //This technically has 2 spins and seems to have been labeled wrong
+					 || ((cg.snap->ps.legsAnim) == BOTH_FJSS_TL_BR) )
+			{//Right Spins
+				VectorCopy( cg.refdefViewAngles, eyeAngles );
+				eyeAngles[1] += AngleNormalize180( (360 * TorsoAnimPoint) );
+				AngleNormalize180( eyeAngles[1] );
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+		else
+		{//You're here because you're using cg_truespin.integer == 2
+			if ( PM_SpinningSaberAnim( (cg.snap->ps.torsoAnim) )
+				&& ((cg.snap->ps.torsoAnim)  != BOTH_JUMPFLIPSLASHDOWN1)
+				&& ((cg.snap->ps.torsoAnim)  != BOTH_JUMPFLIPSTABDOWN) )
+			{//Flip animation and using cg_trueflip.integer = 2, lock the eyemovement
+				eyeRange = qfalse;
+				DidSpecial = qtrue;
+			}
+		}
+	}
+	else if ( PM_SpinningSaberAnim( (cg.snap->ps.torsoAnim) )
+				&& ((cg.snap->ps.torsoAnim)  != BOTH_JUMPFLIPSLASHDOWN1)
+				&& ((cg.snap->ps.torsoAnim)  != BOTH_JUMPFLIPSTABDOWN) )
+	{//you don't want spinning so use cg.refdef.viewangles as the view
+		UseRefDef = qtrue;
+	}
+	else if ( (cg.snap->ps.legsAnim) == BOTH_JUMPATTACK6)
+	{
+		UseRefDef = qtrue;
+	}
+	
+	//Prevent camera flicker while landing.
+	if ( ((cg.snap->ps.legsAnim)  == BOTH_LAND1)
+		|| ((cg.snap->ps.legsAnim)  == BOTH_LAND2)
+		|| ((cg.snap->ps.legsAnim)  == BOTH_LANDBACK1)
+		|| ((cg.snap->ps.legsAnim)  == BOTH_LANDLEFT1)
+		|| ((cg.snap->ps.legsAnim)  == BOTH_LANDRIGHT1) )
+	{
+		UseRefDef = qtrue;
+	}
+	
+	//Prevent the camera flicker while switching to the saber.
+	if ( ( (cg.snap->ps.torsoAnim) ==	BOTH_STAND2TO1 )
+		|| ( (cg.snap->ps.torsoAnim) == BOTH_STAND1TO2 ) )
+	{
+		UseRefDef = qtrue;
+	}
+	
+	//special camera view for blue backstab
+	if ( (cg.snap->ps.torsoAnim) == BOTH_A2_STABBACK1)
+	{
+		eyeRange = qfalse;
+		DidSpecial = qtrue;
+	}
+	
+	if ( ( (cg.snap->ps.torsoAnim) == BOTH_JUMPFLIPSLASHDOWN1)
+		|| ( (cg.snap->ps.torsoAnim) == BOTH_JUMPFLIPSLASHDOWN1) )
+	{
+		eyeRange = qfalse;
+		DidSpecial = qtrue;
+	}
+	
+	
+	if ( UseRefDef )
+	{
+		VectorCopy( cg.refdefViewAngles, eyeAngles );
+	}
+	else
+	{
+		//Movement Roll dampener
+		if ( !DidSpecial )
+		{
+			if ( !cg_truemoveroll.integer )
+			{
+				eyeAngles[2] = cg.refdefViewAngles[2];
+			}
+			else if ( cg_truemoveroll.integer == 1 )
+			{//dampen the movement leaning
+				eyeAngles[2] *= .5;
+			}
+		}
+		
+		//eye movement
+		if ( eyeRange )
+		{//allow eye motion
+			for (i = 0; i < 2; i++ )
+			{
+				int fov;
+				if ( cg_truefov.integer )
+				{
+					fov = cg_truefov.value;
+				}
+				else
+				{
+					fov = cg_fov.value;
+				}
+				
+				AngDiff = eyeAngles[i] - cg.refdefViewAngles[i];
+				
+				AngDiff = AngleNormalize180( AngDiff );
+				if ( fabs( AngDiff ) > fov )
+				{
+					if ( AngDiff < 0 )
+					{
+						eyeAngles[i] += fov;
+					}
+					else
+					{
+						eyeAngles[i] -= fov;
+					}
+				}
+				else
+				{
+					eyeAngles[i] = cg.refdefViewAngles[i];
+				}
+				AngleNormalize180( eyeAngles[i] );
+			}
+		}
+	}
+}
 
 /*
 ===============
@@ -6854,7 +7989,7 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
-	if(cent->currentState.number == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson.integer )
+	if(cent->currentState.number == 0 && !cg.renderingThirdPerson && (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) || cg.zoomMode))//!cg_thirdPerson.integer )
 	{
 		calcedMp = qtrue;
 	}
@@ -6905,7 +8040,7 @@ Ghoul2 Insert Start
 			{//no viewentity
 				if ( cent->currentState.number == cg.snap->ps.clientNum )
 				{//I am the player
-					if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+					if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 					{//not using saber or fists
 						ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 					}
@@ -6913,7 +8048,7 @@ Ghoul2 Insert Start
 			}
 			else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 			{//I am the view entity
-				if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using first person saber test or, if so, not using saber
 					ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -7212,27 +8347,6 @@ Ghoul2 Insert Start
 		*/
 //HACK - add swoop model
 
-extern vmCvar_t	cg_thirdPersonAlpha;
-
-		if ( (cent->gent->s.number == 0 || G_ControlledByPlayer( cent->gent )) )
-		{
-			float alpha = 1.0f;
-			if ( (cg.overrides.active&CG_OVERRIDE_3RD_PERSON_APH) )
-			{
-				alpha = cg.overrides.thirdPersonAlpha;
-			}
-			else
-			{
-				alpha = cg_thirdPersonAlpha.value;
-			}
-
-			if ( alpha < 1.0f )
-			{
-				ent.renderfx |= RF_ALPHA_FADE;
-				ent.shaderRGBA[3] = (unsigned char)(alpha * 255.0f);
-			}
-		}
-
 		if ( cg_debugHealthBars.integer )
 		{
 			if ( cent->gent && cent->gent->health > 0 && cent->gent->max_health > 0 )
@@ -7255,6 +8369,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 		if ( cent->currentState.number != 0
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
+			|| ( (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode )
 			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
 			)
 		{//in some third person mode or NPC
@@ -7304,6 +8419,121 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 							cgs.model_draw, cent->currentState.modelScale );
 			gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, cent->gent->client->renderInfo.footRPoint );
 		}
+
+		//[TrueView]
+		//Restrict True View Model changes to the player and do the True View camera view work.
+		if (cg.snap && cent->currentState.number == cg.snap->ps.viewEntity && cg_truebobbing.integer)
+		{
+			if ( !cg.renderingThirdPerson && ((cg_trueguns.integer || CG_PlayerIsDualWielding(cent->currentState.weapon)) || cent->currentState.weapon == WP_SABER
+											  || cent->currentState.weapon == WP_MELEE) && !cg.zoomMode)
+			{
+				//<True View varibles
+				mdxaBone_t 		eyeMatrix;
+				vec3_t			eyeAngles;
+				vec3_t			EyeAxis[3];
+				vec3_t			OldeyeOrigin;
+				qhandle_t		eyesBolt;
+				qboolean		boneBased = qfalse;
+				
+				//make the player's be based on the ghoul2 model
+				
+				//grab the location data for the "*head_eyes" tag surface
+				eyesBolt = gi.G2API_AddBolt(&cent->gent->ghoul2[cent->gent->playerModel], "*head_eyes");
+				if( !gi.G2API_GetBoltMatrix(cent->gent->ghoul2, cent->gent->playerModel, eyesBolt, &eyeMatrix, tempAngles, cent->lerpOrigin,
+											  cg.time, cgs.model_draw, cent->currentState.modelScale) )
+				{//Something prevented you from getting the "*head_eyes" information.  The model probably doesn't have a
+					//*head_eyes tag surface.  Try using *head_front instead
+					
+					eyesBolt = gi.G2API_AddBolt(&cent->gent->ghoul2[cent->gent->playerModel], "*head_front");
+					if( !gi.G2API_GetBoltMatrix(cent->gent->ghoul2, cent->gent->playerModel, eyesBolt, &eyeMatrix, tempAngles, cent->lerpOrigin,
+												  cg.time, cgs.model_draw, cent->currentState.modelScale) )
+					{
+						eyesBolt = gi.G2API_AddBolt(&cent->gent->ghoul2[cent->gent->playerModel], "reye");
+						boneBased = qtrue;
+						if( !gi.G2API_GetBoltMatrix(cent->gent->ghoul2, cent->gent->playerModel, eyesBolt, &eyeMatrix, tempAngles, cent->lerpOrigin,
+													  cg.time, cgs.model_draw, cent->currentState.modelScale) )
+						{
+/*							if( !trueviewwarning )
+							{//first failure.  Do a single warning then turn the warnings off.
+								CG_Printf("WARNING:  This Model seems to have missing the *head_eyes and *head_front tag surfaces.  True View Disabled.\n");
+								trueviewwarning = qtrue;
+							}*/
+							
+							goto SkipTrueView;
+						}
+					}
+				}
+				
+				//Set the original eye Origin
+				VectorCopy( cg.refdef.vieworg, OldeyeOrigin);
+				
+				//set the player's view origin
+				gi.G2API_GiveMeVectorFromMatrix(eyeMatrix, ORIGIN, cg.refdef.vieworg);
+				
+				//Find the orientation of the eye tag surface
+				//I based this on coordsys.h that I found at http://www.xs4all.nl/~hkuiper/cwmtx/html/coordsys_8h-source.html
+				//According to the file, Harry Kuiper, Will DeVore deserve credit for making that file that I based this on.
+				
+				if(boneBased)
+				{//the eye bone has different default axis orientation than the tag surfaces.
+					EyeAxis[0][0] = eyeMatrix.matrix[0][1];
+					EyeAxis[1][0] = eyeMatrix.matrix[1][1];
+					EyeAxis[2][0] = eyeMatrix.matrix[2][1];
+					
+					EyeAxis[0][1] = eyeMatrix.matrix[0][0];
+					EyeAxis[1][1] = eyeMatrix.matrix[1][0];
+					EyeAxis[2][1] = eyeMatrix.matrix[2][0];
+					
+					EyeAxis[0][2] = -eyeMatrix.matrix[0][2];
+					EyeAxis[1][2] = -eyeMatrix.matrix[1][2];
+					EyeAxis[2][2] = -eyeMatrix.matrix[2][2];
+				}
+				else
+				{
+					EyeAxis[0][0] = eyeMatrix.matrix[0][0];
+					EyeAxis[1][0] = eyeMatrix.matrix[1][0];
+					EyeAxis[2][0] = eyeMatrix.matrix[2][0];
+					
+					EyeAxis[0][1] = eyeMatrix.matrix[0][1];
+					EyeAxis[1][1] = eyeMatrix.matrix[1][1];
+					EyeAxis[2][1] = eyeMatrix.matrix[2][1];
+					
+					EyeAxis[0][2] = eyeMatrix.matrix[0][2];
+					EyeAxis[1][2] = eyeMatrix.matrix[1][2];
+					EyeAxis[2][2] = eyeMatrix.matrix[2][2];
+				}
+				
+				eyeAngles[YAW] = ( atan2(EyeAxis[1][0], EyeAxis[0][0]) * 180 / M_PI );
+				
+				//I want asin but it's not setup in the libraries so I'm useing the statement asin x = (M_PI / 2) - acos x
+				eyeAngles[PITCH] = ( ( (M_PI / 2) - acos (-EyeAxis[2][0]) ) * 180 / M_PI );
+				eyeAngles[ROLL] = ( atan2(EyeAxis[2][1], EyeAxis[2][2]) * 180 / M_PI );
+				
+				//END Find the orientation of the eye tag surface
+				
+				//Shift the camera origin by cg_trueeyeposition
+				AngleVectors( eyeAngles, EyeAxis[0], NULL, NULL );
+				VectorMA( cg.refdef.vieworg, cg_trueeyeposition.value, EyeAxis[0], cg.refdef.vieworg );
+				
+				//Trace to see if the bolt eye origin is ok to move to.  If it's not, place it at the last safe position.
+				CheckCameraLocation( OldeyeOrigin );
+				
+				//Singleplayer TrueView fix (ghoul2 axes calculated differently to in MP!)
+				eyeAngles[YAW] -= 90;
+
+				//Do all the Eye "movement" and simplified moves here.
+				SmoothTrueView(eyeAngles);
+				
+				//set the player view angles
+				VectorCopy( eyeAngles, cg.refdefViewAngles );
+				
+				//set the player view axis
+				AnglesToAxis( eyeAngles, cg.refdef.viewaxis );
+				
+			}
+		}
+		
+SkipTrueView:
 
 		//Handle saber
 		if ( cent->gent
@@ -7471,7 +8701,8 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 		if ( cent->currentState.number != 0
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
-			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
+			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )  //First person saber
+			|| ( (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode )
 			)
 		{//if NPC, third person, or dead, unless using saber
 			//Get eyePoint & eyeAngles
@@ -7540,6 +8771,10 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 			//NOTE: I'm only doing this for the saboteur right now - AT-STs might need this... others?
 			vec3_t oldMP = {0,0,0};
 			vec3_t oldMD = {0,0,0};
+			qboolean is_pistol = (qboolean)(cent->gent->s.weapon == WP_BLASTER_PISTOL
+											|| cent->gent->s.weapon == WP_REY
+											|| cent->gent->s.weapon == WP_JANGO
+											|| cent->gent->s.weapon == WP_CLONEPISTOL);
 
 			if( !calcedMp )
 			{
@@ -7650,14 +8885,15 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 						}
 					}
 				}
-				else if ( cent->gent->client && cent->gent->NPC//client NPC
+				else if ( ((cent->gent->client && cent->gent->NPC) || cg_dualWielding.integer)//client NPC
 					/*
 					&& cent->gent->client->NPC_class == CLASS_REBORN//cultist
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
 					*/
-					&& cent->gent->s.weapon == WP_BLASTER_PISTOL//using blaster pistol
+					&& is_pistol//using pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
+
 					qboolean getBoth = qfalse;
 					int	oldOne = 0;
 					if ( cent->muzzleFlashTime > 0 && wData && !(cent->currentState.eFlags & EF_LOCKED_TO_WEAPON ))
@@ -7743,10 +8979,25 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 
 				cent->muzzleFlashTime  = 0;
 
+				// I declared this variable just for readability.
+				char firing_attack = cent->gent->client->ps.prev_firing_attack;
+
 				// Try and get a default muzzle so we have one to fall back on
 				if ( wData->mMuzzleEffect[0] )
 				{
-					effect = &wData->mMuzzleEffect[0];
+					if (firing_attack & ALT_ATTACK)
+					{
+						effect = &wData->mAltMuzzleEffect[0];
+					}
+					else if (firing_attack & TERTIARY_ATTACK)
+					{
+						effect = &wData->mTertiaryMuzzleEffect[0];
+					}
+					else
+					{	
+						// We need to make sure that the base guns also get their sound.
+						effect = &wData->mMuzzleEffect[0];
+					}
 				}
 
 				if ( cent->altFire )
@@ -7760,7 +9011,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 
 				if (/*( cent->currentState.eFlags & EF_FIRING || cent->currentState.eFlags & EF_ALT_FIRING ) &&*/ effect )
 				{
-					if ( cent->gent && cent->gent->NPC )
+					if ( (cent->gent && cent->gent->NPC) || CG_PlayerIsDualWielding(cg.snap->ps.weapon) )
 					{
 						if ( !VectorCompare( oldMP, vec3_origin )
 							&& !VectorCompare( oldMD, vec3_origin ) )
@@ -7806,21 +9057,30 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 				CG_ForcePushBlur( cent->gent->client->renderInfo.handLPoint, qtrue );
 			}
 
+			//This is now being done via an effect and the animevents.cfg
+			//if ( cent->gent->client->ps.powerups[PW_FORCE_PUSH] > cg.time ||
+			if ((cent->gent->client->ps.forcePowersActive & (1 << FP_GRASP)))
+			{//doing the gripping
+				//FIXME: effect?
+				CG_ForcePushBlur(cent->gent->client->renderInfo.handLPoint, qtrue);
+			}
+
 			if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED )
 			{//being gripped
 				CG_ForcePushBlur( cent->gent->client->renderInfo.headPoint, qtrue );
 			}
 
-			if ( cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time )
+			if ( (cent->gent->client && cent->gent->client->ps.powerups[PW_SHOCKED] > cg.time)
+			  || (cent->gent->client && cent->gent->client->ps.powerups[PW_FORCE_SHOCKED] > cg.time))
 			{//being electrocuted
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.boltShader, qtrue);
 			}
 
 			if ( cent->gent->client->ps.eFlags & EF_FORCE_DRAINED
 				|| (cent->currentState.powerups&(1<<PW_DRAINED)) )
 			{//being drained
 				//do red electricity lines off them and red drain shell on them
-				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qtrue );
+				CG_ForceElectrocution( cent, ent.origin, tempAngles, cgs.media.drainShader, qfalse);
 			}
 
 			if ( cent->gent->client->ps.forcePowersActive&(1<<FP_LIGHTNING) )
@@ -7832,19 +9092,19 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 				{//arc
 					vec3_t	fxAxis[3];
 					AnglesToAxis( tAng, fxAxis );
-					theFxScheduler.PlayEffect( cgs.effects.forceLightningWide, cent->gent->client->renderInfo.handLPoint, fxAxis );
+					theFxScheduler.PlayEffect( CG_GetWideForceLightning(cent), cent->gent->client->renderInfo.handLPoint, fxAxis );
 					if ( cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_START
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_HOLD
 						|| cent->gent->client->ps.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_RELEASE )
 					{//jackin' 'em up, Palpatine-style
-						theFxScheduler.PlayEffect( cgs.effects.forceLightningWide, cent->gent->client->renderInfo.handRPoint, fxAxis );
+						theFxScheduler.PlayEffect(CG_GetWideForceLightning(cent), cent->gent->client->renderInfo.handRPoint, fxAxis );
 					}
 				}
 				else
 				{//line
 					AngleVectors( tAng, fxDir, NULL, NULL );
-					theFxScheduler.PlayEffect( cgs.effects.forceLightning, cent->gent->client->renderInfo.handLPoint, fxDir );
+					theFxScheduler.PlayEffect( CG_GetForceLightning(cent), cent->gent->client->renderInfo.handLPoint, fxDir );
 				}
 			}
 
@@ -8001,7 +9261,7 @@ Ghoul2 Insert End
 		{//no viewentity
 			if ( cent->currentState.number == cg.snap->ps.clientNum )
 			{//I am the player
-				if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using saber or fists
 					renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -8009,7 +9269,7 @@ Ghoul2 Insert End
 		}
 		else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 		{//I am the view entity
-			if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+			if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 			{//not using saber or fists
 				renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 			}
@@ -8287,6 +9547,11 @@ Ghoul2 Insert End
 					effect = wData->mMuzzleEffectID;
 				}
 
+				if (wData->mTertiaryMuzzleEffectID)
+				{
+					effect = wData->mTertiaryMuzzleEffectID;
+				}
+
 				if ( cent->currentState.eFlags & EF_ALT_FIRING )
 				{
 					// We're alt-firing, so see if we need to override with a custom alt-fire effect
@@ -8351,12 +9616,13 @@ Ghoul2 Insert End
 	}
 
 	//FIXME: for debug, allow to draw a cone of the NPC's FOV...
-	if ( cent->currentState.number == 0 && cg.renderingThirdPerson )
+	if ( cent->currentState.number == 0 && (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode)) )
 	{
 		playerState_t *ps = &cg.predicted_player_state;
 
 		if (( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BRYAR_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BLASTER_PISTOL )
+			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_REY )
 			|| ( ps->weapon == WP_BOWCASTER && ps->weaponstate == WEAPON_CHARGING )
 			|| ( ps->weapon == WP_DEMP2 && ps->weaponstate == WEAPON_CHARGING_ALT ))
 		{
@@ -8369,6 +9635,12 @@ Ghoul2 Insert End
 			{
 				// Hardcoded max charge time of 1 second
 				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
+				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
+			}
+			else if ( ps->weapon == WP_REY)
+			{
+				// Hardcoded max charge time of 0.5 second
+				val = ( cg.time - ps->weaponChargeTime ) * 0.0005f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 			}
 			else if ( ps->weapon == WP_BOWCASTER )
@@ -8404,6 +9676,103 @@ Ghoul2 Insert End
 			FX_AddSprite( cent->gent->client->renderInfo.muzzlePoint, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, Q_flrand(0.0f, 1.0f) * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA );
 		}
 	}
+}
+
+fxHandle_t CG_GetWideForceLightning(centity_t* const cent)
+{
+	if (cent->gent == player)
+	{
+		cent->gent->NPC_LightningColor = g_forceLightningColor->string;
+	}
+
+	if (cent->gent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningColor, "red"))
+		{
+			return cgs.effects.redForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "orange"))
+		{
+			return cgs.effects.orangeForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "yellow"))
+		{
+			return cgs.effects.yellowForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "green"))
+		{
+			return cgs.effects.greenForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "purple"))
+		{
+			return cgs.effects.purpleForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "indigo"))
+		{
+			return cgs.effects.indigoForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "white"))
+		{
+			return cgs.effects.whiteForceLightningWide;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "black"))
+		{
+			return cgs.effects.blackForceLightningWide;
+		}
+
+		return cgs.effects.forceLightningWide;
+	}
+	else
+	{
+		return cgs.effects.forceLightningWide;
+	}	
+}
+
+fxHandle_t CG_GetForceLightning(centity_t* const cent)
+{
+	if (cent->gent == player)
+	{
+		cent->gent->NPC_LightningColor = g_forceLightningColor->string;		
+	}
+
+	if (cent->gent->NPC_LightningColor)
+	{
+		if (!Q_stricmp(cent->gent->NPC_LightningColor, "red"))
+		{
+			return cgs.effects.redForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "orange"))
+		{
+			return cgs.effects.orangeForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "yellow"))
+		{
+			return cgs.effects.yellowForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "green"))
+		{
+			return cgs.effects.greenForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "purple"))
+		{
+			return cgs.effects.purpleForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "white"))
+		{
+			return cgs.effects.whiteForceLightning;
+		}
+		else if (!Q_stricmp(cent->gent->NPC_LightningColor, "black"))
+		{
+			return cgs.effects.blackForceLightning;
+		}
+
+		return cgs.effects.forceLightning;
+	}
+	else
+	{
+		return cgs.effects.forceLightning;
+	}
+	
 }
 
 //=====================================================================

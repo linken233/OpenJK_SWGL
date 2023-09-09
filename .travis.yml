@@ -9,6 +9,13 @@ addons:
     - libpng
     - sdl2
 
+addons:
+  homebrew:
+    update: true
+    packages:
+    - libpng
+    - sdl2
+
 install:
   - if [[ "${TRAVIS_OS_NAME}" != "osx" ]]; then ./scripts/travis/install.sh "${host:-native}" $opts; fi
 script: ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts

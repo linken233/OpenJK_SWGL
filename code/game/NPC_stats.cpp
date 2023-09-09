@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "anims.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "NPC_SWGL.h"
 #include "../cgame/cg_local.h"
 #if !defined(RUFL_HSTRING_INC)
 	#include "../Rufl/hstring.h"
@@ -39,6 +40,17 @@ extern qboolean NPCsPrecached;
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern stringID_table_t WPTable[];
+
+extern qboolean IsPlayingOperationKnightfall(void);
+
+extern qboolean G_StandardHumanoid(const char* GLAName);
+
+extern qboolean PlayingMission();
+
+extern qboolean saberFound;
+
+extern cvar_t *g_allowAlignmentChange;
+extern cvar_t* g_adoptcharstats;
 
 #define		MAX_MODELS_PER_LEVEL	60
 
@@ -88,6 +100,12 @@ stringID_table_t FPTable[] =
 	ENUM2STRING(FP_ABSORB),
 	ENUM2STRING(FP_DRAIN),
 	ENUM2STRING(FP_SEE),
+	ENUM2STRING(FP_STASIS),
+	ENUM2STRING(FP_BLAST),
+	ENUM2STRING(FP_GRASP),
+	ENUM2STRING(FP_DESTRUCTION),
+	ENUM2STRING(FP_FEAR),
+	ENUM2STRING(FP_LIGHTNING_STRIKE),
 	{ "",	-1 }
 };
 
@@ -102,6 +120,8 @@ stringID_table_t TeamTable[] =
 	ENUM2STRING(TEAM_ENEMY),
 	{ "neutral", TEAM_NEUTRAL },	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
 	ENUM2STRING(TEAM_NEUTRAL),	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
+	{ "solo", TEAM_SOLO},
+	ENUM2STRING(TEAM_SOLO),
 	{ "",	-1 }
 };
 
@@ -169,12 +189,14 @@ stringID_table_t ClassTable[] =
 	ENUM2STRING(CLASS_WEEQUAY),
 	ENUM2STRING(CLASS_TUSKEN),
 	ENUM2STRING(CLASS_BOBAFETT),
+	ENUM2STRING(CLASS_MANDALORIAN),
 	ENUM2STRING(CLASS_ROCKETTROOPER),
 	ENUM2STRING(CLASS_SABER_DROID),
 	ENUM2STRING(CLASS_PLAYER),
 	ENUM2STRING(CLASS_ASSASSIN_DROID),
 	ENUM2STRING(CLASS_HAZARD_TROOPER),
 	ENUM2STRING(CLASS_VEHICLE),
+	ENUM2STRING(CLASS_JANGO),
 	{ "",	-1 }
 };
 
@@ -214,7 +236,7 @@ qboolean G_ParseLiteral( const char **data, const char *string )
 //
 // NPC parameters file : ext_data/NPCs/*.npc*
 //
-#define MAX_NPC_DATA_SIZE 0x80000
+#define MAX_NPC_DATA_SIZE 0x100000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 /*
@@ -267,37 +289,81 @@ static rank_t TranslateRankName( const char *name )
 	return RANK_CIVILIAN;
 }
 
-saber_colors_t TranslateSaberColor( const char *name )
+saber_colors_t TranslateSaberColor(const char *name)
 {
-	if ( !Q_stricmp( name, "red" ) )
+	if (!Q_stricmp(name, "red"))
 	{
 		return SABER_RED;
 	}
-	if ( !Q_stricmp( name, "orange" ) )
+	if (!Q_stricmp(name, "orange"))
 	{
 		return SABER_ORANGE;
 	}
-	if ( !Q_stricmp( name, "yellow" ) )
+	if (!Q_stricmp(name, "yellow"))
 	{
 		return SABER_YELLOW;
 	}
-	if ( !Q_stricmp( name, "green" ) )
+	if (!Q_stricmp(name, "green"))
 	{
 		return SABER_GREEN;
 	}
-	if ( !Q_stricmp( name, "blue" ) )
+	if (!Q_stricmp(name, "blue"))
 	{
 		return SABER_BLUE;
 	}
-	if ( !Q_stricmp( name, "purple" ) )
+	if (!Q_stricmp(name, "purple"))
 	{
 		return SABER_PURPLE;
 	}
-	if ( !Q_stricmp( name, "random" ) )
+	if (!Q_stricmp(name, "unstable_red"))
 	{
-		return ((saber_colors_t)(Q_irand( SABER_ORANGE, SABER_PURPLE )));
+		return SABER_UNSTABLE_RED;
 	}
-	return SABER_BLUE;
+	if (!Q_stricmp(name, "black"))
+	{
+		return SABER_BLACK;
+	}
+	if (!Q_stricmp(name, "darksaber"))
+	{
+		return SABER_DARKSABER;
+	}
+	if (!Q_stricmp(name, "random"))
+	{
+		return ((saber_colors_t)(Q_irand(SABER_ORANGE, SABER_PURPLE)));
+	}
+	if (!Q_stricmp(name, "prequel_random"))
+	{
+		return ((saber_colors_t)(Q_irand(SABER_GREEN, SABER_BLUE)));
+	}
+	if (!Q_stricmp(name, "swtor_sith_random"))
+	{
+		switch (Q_irand(0, 2))
+		{
+		case 0:
+			return SABER_RED;
+			break;
+		
+		case 1:
+			return SABER_ORANGE;
+			break;
+
+		case 2:
+			return SABER_PURPLE;
+			break;
+
+		default:
+			return SABER_RED;
+			break;
+		}
+	}
+	float colors[3];
+	Q_parseSaberColor(name, colors);
+	int colourArray[3];
+	for (int i = 0; i < 3; i++)
+	{
+		colourArray[i] = (int)(colors[i] * 255);
+	}
+	return (saber_colors_t)((colourArray[0]) + (colourArray[1] << 8) + (colourArray[2] << 16) + (1 << 24));
 }
 
 /* static int MethodNameToNumber( const char *name ) {
@@ -1114,7 +1180,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 		// Get The Cinematic GLA Name
 		//----------------------------
-		if (Q_stricmp(skeletonName, "_humanoid")==0)
+		if (G_StandardHumanoid(skeletonName))
 		{
 			const char* mapName = strrchr( level.mapname, '/' );
 			if (mapName)
@@ -1127,7 +1193,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 			}
 			char  skeletonMapName[MAX_QPATH];
 			Com_sprintf(skeletonMapName, MAX_QPATH, "_humanoid_%s", mapName);
-			const int normalGLAIndex = gi.G2API_PrecacheGhoul2Model("models/players/_humanoid/_humanoid.gla");//double check this always comes first!
+			const int normalGLAIndex = gi.G2API_PrecacheGhoul2Model(va("models/players/%s/_humanoid.gla", skeletonName));//double check this always comes first!
 
 			// Make Sure To Precache The GLAs (both regular and cinematic), And Remember Their Indicies
 			//------------------------------------------------------------------------------------------
@@ -1137,11 +1203,11 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 			const int cineGLAIndex = gi.G2API_PrecacheGhoul2Model( va("models/players/%s/%s.gla", skeletonMapName, skeletonMapName));
 			if (cineGLAIndex)
 			{
-				assert(cineGLAIndex == normalGLAIndex+1);
+				/*assert(cineGLAIndex == normalGLAIndex + 1);
 				if (cineGLAIndex != normalGLAIndex+1)
 				{
 					Com_Error(ERR_DROP,"Cinematic GLA was not loaded after the normal GLA.  Cannot continue safely.");
-				}
+				}*/
 				G_ParseAnimationFile(1,    skeletonMapName, fileIndex);
 				G_ParseAnimationEvtFile(1, skeletonMapName, fileIndex, cineGLAIndex, false/*flag for model specific*/);
 			}
@@ -1408,6 +1474,7 @@ extern void NPC_Remote_Precache( void );
 extern void	NPC_R2D2_Precache(void);
 extern void	NPC_R5D2_Precache(void);
 extern void NPC_Probe_Precache(void);
+extern void NPC_Vader_Precache(void);
 extern void NPC_Interrogator_Precache(gentity_t *self);
 extern void NPC_MineMonster_Precache( void );
 extern void NPC_Howler_Precache( void );
@@ -1424,10 +1491,12 @@ extern void RT_Precache( void );
 extern void SandCreature_Precache( void );
 extern void NPC_TavionScepter_Precache( void );
 extern void NPC_TavionSithSword_Precache( void );
-extern void NPC_Rosh_Dark_Precache( void );
+extern void NPC_Rosh_Dark_Precache(void);
 extern void NPC_Tusken_Precache( void );
 extern void NPC_Saboteur_Precache( void );
 extern void NPC_CultistDestroyer_Precache( void );
+extern void NPC_GalakMech_Precache(void);
+extern void NPC_Shakkra_Precache(void);
 void NPC_Jawa_Precache( void )
 {
 	for ( int i = 1; i < 7; i++ )
@@ -1513,9 +1582,17 @@ void NPC_PrecacheByClassName( const char* type )
 	{
 		NPC_Wampa_Precache();
 	}
-	else if ( !Q_stricmp( "sand_creature", type ))
+	else if (!Q_stricmp("sand_creature", type))
 	{
 		SandCreature_Precache();
+	}
+	else if (!Q_stricmp("galak_mech", type))
+	{
+		NPC_GalakMech_Precache();
+	}
+	else if (!Q_stricmp(VADER, type) || !Q_stricmp(VADER_INFINITIES, type))
+	{
+		NPC_Vader_Precache();
 	}
 	else if ( !Q_stricmp( "sentry", type ))
 	{
@@ -1564,6 +1641,10 @@ void NPC_PrecacheByClassName( const char* type )
 	else if ( !Q_stricmpn( "jawa", type, 4 ) )
 	{
 		NPC_Jawa_Precache();
+	}
+	else if (!Q_stricmp(SHAKKRA_KIEN, type))
+	{
+		NPC_Shakkra_Precache();
 	}
 }
 
@@ -1710,18 +1791,18 @@ void CG_NPC_Precache ( gentity_t *spawner )
 		}
 
 		// customSkin
-		if ( !Q_stricmp( token, "customSkin" ) )
+		if (!Q_stricmp(token, "customSkin"))
 		{
-			if ( COM_ParseString( &p, &value ) )
+			if (COM_ParseString(&p, &value))
 			{
 				continue;
 			}
-			Q_strncpyz( customSkin, value, sizeof(customSkin));
+			Q_strncpyz(customSkin, value, sizeof(customSkin));
 			continue;
 		}
 
 		// playerTeam
-		if ( !Q_stricmp( token, "playerTeam" ) )
+		if ( !Q_stricmp( token, "playerTeam" ) && spawner != player)
 		{
 			if ( COM_ParseString( &p, &value ) )
 			{
@@ -1930,6 +2011,7 @@ void NPC_BuildRandom( gentity_t *NPC )
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
 extern void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn );
+void setYounglingSkin(gentity_t* NPC, char *custom_skin, int custom_skin_size);
 qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 {
 	const char	*token;
@@ -1948,8 +2030,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	surfOff[1024]={0};
 	char	surfOn[1024]={0};
 	qboolean parsingPlayer = qfalse;
+	qboolean lightningColor = qfalse;
 
-	strcpy(customSkin,"default");
+	
+	qboolean forcedRGBSaberColours[MAX_SABERS][MAX_BLADES] = {{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse},
+																{qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse, qfalse}};
+	strcpy(customSkin, "default");
+
 	if ( !NPCName || !NPCName[0])
 	{
 		NPCName = "Player";
@@ -1975,6 +2062,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 */
 		// fill in defaults
 		stats->sex			= SEX_MALE;
+		stats->lightningColor = LIGHTNING_BLUE;
 		stats->aggression	= 3;
 		stats->aim			= 3;
 		stats->earshot		= 1024;
@@ -1991,11 +2079,11 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			stats->visrange	= g_entities[ENTITYNUM_WORLD].max_health;
 		}
 		stats->health		= 0;
-
 		stats->yawSpeed		= 90;
 		stats->walkSpeed	= 90;
 		stats->runSpeed		= 300;
 		stats->acceleration	= 15;//Increase/descrease speed this much per frame (20fps)
+
 	}
 	else
 	{
@@ -2005,6 +2093,16 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	Q_strncpyz( ci->name, NPCName, sizeof( ci->name ) );
 
 	NPC->playerModel = -1;
+
+	if (parsingPlayer)
+	{
+		//Clear stuff when running the playermodel command, that way force powers and dual lightsabers don't carry from one character to another.
+		for (int i = 0; i < NUM_FORCE_POWERS; i++)
+			NPC->client->ps.forcePowerLevel[i] = 0;
+
+		NPC->client->ps.dualSabers = qfalse;
+		NPC->client->ps.saberStylesKnown = 0;
+	}
 
 	//Set defaults
 	//FIXME: should probably put default torso and head models, but what about enemies
@@ -2536,6 +2634,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				Q_strncpyz( playerModel, value, sizeof(playerModel));
+				if (NPC == player)
+				{
+					gi.cvar_set("g_char_model", playerModel);
+				}
 				md3Model = qfalse;
 				continue;
 			}
@@ -2549,6 +2651,15 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				Q_strncpyz( customSkin, value, sizeof(customSkin));
 				continue;
+			}
+			else if (NPC != player 
+				&& (!Q_stricmp("jedi_youngling1", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling2", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling3", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling4", NPC->NPC_type)
+					|| !Q_stricmp("jedi_youngling5", NPC->NPC_type)))
+			{
+				setYounglingSkin(NPC, customSkin, sizeof(customSkin));
 			}
 
 			// surfOff
@@ -2569,6 +2680,12 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				continue;
 			}
+
+			if (NPC->NPC_skin)
+			{
+				Q_strncpyz(customSkin, NPC->NPC_skin, sizeof(customSkin));
+			}
+			
 
 			// surfOn
 			if ( !Q_stricmp( token, "surfOn" ) )
@@ -3023,6 +3140,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 
+				// Special Mechanic
+				if (!Q_stricmp(token, "specialMechanic")) 
+				{
+					// To fill in later, for now just to stop the error message
+					continue;
+				}
+
 				// race
 		//		if ( !Q_stricmp( token, "race" ) )
 		//		{
@@ -3066,9 +3190,17 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					stats->health = n;
 				}
-				else if ( parsingPlayer )
+				else if ( parsingPlayer && !PlayingMission() && g_adoptcharstats->integer)
 				{
-					NPC->client->ps.stats[STAT_MAX_HEALTH] = NPC->client->pers.maxHealth = NPC->max_health = n;
+					// Since some characters in base JKA have more than 1000 health, let's pull it back a bit.
+					if (n > 500)
+						n = 500;
+
+					player->client->ps.stats[STAT_MAX_HEALTH] = n;
+
+					player->health = Com_Clampi(1, player->client->ps.stats[STAT_MAX_HEALTH], n);
+
+					player->client->ps.stats[STAT_ARMOR] = n;
 				}
 				continue;
 			}
@@ -3087,7 +3219,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// playerTeam
-			if ( !Q_stricmp( token, "playerTeam" ) )
+			if ( !Q_stricmp( token, "playerTeam" ) && (NPC != player || (NPC == player && g_allowAlignmentChange->integer)))
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
@@ -3098,7 +3230,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 			// enemyTeam
-			if ( !Q_stricmp( token, "enemyTeam" ) )
+			if ( !Q_stricmp( token, "enemyTeam" ) && (NPC != player || (NPC == player && g_allowAlignmentChange->integer)))
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
@@ -3107,6 +3239,40 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				NPC->client->enemyTeam = (team_t)GetIDForString( TeamTable, value );
 				continue;
 			}
+
+			try
+			{
+				if (NPC->NPC_team)
+				{
+					if (!Q_stricmp("player", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
+					}
+					else if (!Q_stricmp("enemy", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_ENEMY");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_PLAYER");
+					}
+					else if (!Q_stricmp("neutral", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_NEUTRAL");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_NEUTRAL");
+					}
+					else if (!Q_stricmp("free", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_FREE");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_FREE");
+					}
+					else if (!Q_stricmp("solo", NPC->NPC_team))
+					{
+						NPC->client->playerTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
+						NPC->client->enemyTeam = (team_t)GetIDForString(TeamTable, "TEAM_SOLO");
+					}
+				}
+			}
+			catch(...){}
+
 
 			// class
 			if ( !Q_stricmp( token, "class" ) )
@@ -3276,6 +3442,27 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				continue;
 			}
 
+			//Lightning Color
+			if (!Q_stricmp(token, "lightningColor") && parsingPlayer)
+			{
+				if (COM_ParseString(&p, &value))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				
+				
+				gi.cvar_set("g_forcelightningcolor", value);
+				lightningColor = qtrue;
+
+				continue;
+			}
+			else
+			{
+				if (!lightningColor && parsingPlayer)
+					gi.cvar_set("g_forcelightningcolor", "blue");
+			}
+
 			if ( !parsingPlayer )
 			{
 				if ( !Q_stricmp( token, "movetype" ) )
@@ -3404,6 +3591,46 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					}
 					continue;
 				}
+
+				//Lightning Color
+				if (!Q_stricmp(token, "lightningColor") && !NPC->NPC_LightningColor)
+				{
+					if (COM_ParseString(&p, &value))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (!Q_stricmp(value, "red"))
+					{
+						stats->lightningColor = LIGHTNING_RED;
+					}
+					else if (!Q_stricmp(value, "orange"))
+					{
+						stats->lightningColor = LIGHTNING_ORANGE;
+					}
+					else if (!Q_stricmp(value, "yellow"))
+					{
+						stats->lightningColor = LIGHTNING_YELLOW;
+					}
+					else if (!Q_stricmp(value, "green"))
+					{
+						stats->lightningColor = LIGHTNING_GREEN;
+					}
+					else if (!Q_stricmp(value, "purple"))
+					{
+						stats->lightningColor = LIGHTNING_PURPLE;
+					}
+					else if (!Q_stricmp(value, "white"))
+					{
+						stats->lightningColor = LIGHTNING_WHITE;
+					}
+					else if (!Q_stricmp(value, "black"))
+					{
+						stats->lightningColor = LIGHTNING_BLACK;
+					}
+
+					continue;
+				}
 //===MISC===============================================================================
 				// default behavior
 				if ( !Q_stricmp( token, "behavior" ) )
@@ -3443,6 +3670,10 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						*patch = 0;
 					}
 					ci->customBasicSoundDir = G_NewString( sound );
+				}
+				if (NPC == player)
+				{
+					gi.cvar_set("snd", G_NewString(sound));
 				}
 				continue;
 			}
@@ -3514,24 +3745,99 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			//starting weapon
 			if ( !Q_stricmp( token, "weapon" ) )
 			{
+				
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
+				}
+				if (NPC->NPC_Weapon)
+				{
+					value = NPC->NPC_Weapon;
 				}
 				//FIXME: need to precache the weapon, too?  (in above func)
 				int weap = GetIDForString( WPTable, value );
 				if ( weap >= WP_NONE && weap < WP_NUM_WEAPONS )
 				{
 					NPC->client->ps.weapon = weap;
-					NPC->client->ps.stats[STAT_WEAPONS] |= ( 1 << weap );
+					NPC->client->ps.weapons[weap] = 1;
 					if ( weap > WP_NONE )
 					{
 						RegisterItem( FindItemForWeapon( (weapon_t)(weap) ) );	//precache the weapon
 						NPC->client->ps.ammo[weaponData[weap].ammoIndex] = ammoData[weaponData[weap].ammoIndex].max;
 					}
 				}
+				if (NPC->NPC_SaberOne)
+				{
+					value = NPC->NPC_SaberOne;
+
+					char* saberName = G_NewString(value);
+					WP_SaberParseParms(saberName, &NPC->client->ps.saber[0]);
+					//if it requires a specific style, make sure we know how to use it
+					if (NPC->client->ps.saber[0].stylesLearned)
+					{
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].stylesLearned;
+					}
+					if (NPC->client->ps.saber[0].singleBladeStyle)
+					{
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].singleBladeStyle;
+					}
+				}
+				if (NPC->NPC_SaberTwo)
+				{
+					value = NPC->NPC_SaberTwo;
+
+					if (!(NPC->client->ps.saber[0].saberFlags & SFL_TWO_HANDED))
+					{//can't use a second saber if first one is a two-handed saber...?
+						char* saberName = G_NewString(value);
+						WP_SaberParseParms(saberName, &NPC->client->ps.saber[1]);
+						if (NPC->client->ps.saber[1].stylesLearned)
+						{
+							NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].stylesLearned;
+						}
+						if (NPC->client->ps.saber[1].singleBladeStyle)
+						{
+							NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].singleBladeStyle;
+						}
+						if ((NPC->client->ps.saber[1].saberFlags & SFL_TWO_HANDED))
+						{//tsk tsk, can't use a twoHanded saber as second saber
+							WP_RemoveSaber(NPC, 1);
+						}
+						else
+						{
+							NPC->client->ps.dualSabers = qtrue;
+						}
+					}
+				}
+				if (NPC->NPC_SaberOneColor)
+				{
+					value = NPC->NPC_SaberOneColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[0][n])
+						{
+							NPC->client->ps.saber[0].blade[n].color = color;
+						}
+					}
+				}
+				if (NPC->NPC_SaberTwoColor)
+				{
+					value = NPC->NPC_SaberTwoColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[1][n])
+						{
+							NPC->client->ps.saber[1].blade[n].color = color;
+						}
+					}
+				}
 				continue;
 			}
+
+			
 
 			if ( !parsingPlayer )
 			{
@@ -3624,11 +3930,16 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 
 			//have a sabers.cfg and just name your saber in your NPCs.cfg/ICARUS script
 			//saber name
-			if ( !Q_stricmp( token, "saber" ) )
+			if ( !Q_stricmp( token, "saber" ) || NPC->NPC_SaberOne)
 			{
+				saberFound = qtrue;
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
+				}
+				if (NPC->NPC_SaberOne)
+				{
+					value = NPC->NPC_SaberOne;
 				}
 				char *saberName = G_NewString( value );
 				WP_SaberParseParms( saberName, &NPC->client->ps.saber[0] );
@@ -3641,17 +3952,33 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].singleBladeStyle;
 				}
+				if (NPC->NPC_SaberOneColor)
+				{
+					value = NPC->NPC_SaberOneColor;
+
+					saber_colors_t color = TranslateSaberColor(value);
+					for (n = 0; n < MAX_BLADES; n++)
+					{
+						if (!forcedRGBSaberColours[0][n])
+						{
+							NPC->client->ps.saber[0].blade[n].color = color;
+						}
+					}
+				}
 				continue;
 			}
 
 			//second saber name
-			if ( !Q_stricmp( token, "saber2" ) )
+			if ( !Q_stricmp( token, "saber2" ) || NPC->NPC_SaberTwo)
 			{
 				if ( COM_ParseString( &p, &value ) )
 				{
 					continue;
 				}
-
+				if (NPC->NPC_SaberTwo)
+				{
+					value = NPC->NPC_SaberTwo;
+				}
 				if ( !(NPC->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 				{//can't use a second saber if first one is a two-handed saber...?
 					char *saberName = G_NewString( value );
@@ -3672,12 +3999,25 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						NPC->client->ps.dualSabers = qtrue;
 					}
+					if (NPC->NPC_SaberTwoColor)
+					{
+						value = NPC->NPC_SaberTwoColor;
+
+						saber_colors_t color = TranslateSaberColor(value);
+						for (n = 0; n < MAX_BLADES; n++)
+						{
+							if (!forcedRGBSaberColours[1][n])
+							{
+								NPC->client->ps.saber[1].blade[n].color = color;
+							}
+						}
+					}
 				}
 				continue;
 			}
 
 			// saberColor
-			if ( !Q_stricmpn( token, "saberColor", 10) )
+			if ( !Q_stricmpn( token, "saberColor", 10) || NPC->NPC_SaberOneColor)
 			{
 				if ( !NPC->client )
 				{
@@ -3690,10 +4030,21 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						continue;
 					}
+					if (NPC->NPC_SaberOneColor)
+					{
+						value = NPC->NPC_SaberOneColor;
+					}
 					saber_colors_t color = TranslateSaberColor( value );
 					for ( n = 0; n < MAX_BLADES; n++ )
 					{
-						NPC->client->ps.saber[0].blade[n].color = color;
+						if (!forcedRGBSaberColours[0][n])
+						{
+							NPC->client->ps.saber[0].blade[n].color = color;
+						}
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
 					}
 				}
 				else if (strlen(token)==11)
@@ -3708,7 +4059,14 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						continue;
 					}
-					NPC->client->ps.saber[0].blade[index].color = TranslateSaberColor( value );
+					if (!forcedRGBSaberColours[0][index])
+					{
+						NPC->client->ps.saber[0].blade[index].color = TranslateSaberColor( value );
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
 				}
 				else
 				{
@@ -3718,7 +4076,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			}
 
 
-			if ( !Q_stricmpn( token, "saber2Color", 11 ) )
+			if ( !Q_stricmpn( token, "saber2Color", 11 ) || NPC->NPC_SaberTwoColor)
 			{
 				if ( !NPC->client )
 				{
@@ -3731,10 +4089,21 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						continue;
 					}
+					if (NPC->NPC_SaberTwoColor)
+					{
+						value = NPC->NPC_SaberTwoColor;
+					}
 					saber_colors_t color = TranslateSaberColor( value );
 					for ( n = 0; n < MAX_BLADES; n++ )
 					{
-						NPC->client->ps.saber[1].blade[n].color = color;
+						if (!forcedRGBSaberColours[1][n])
+						{
+							NPC->client->ps.saber[1].blade[n].color = color;
+						}
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
 					}
 				}
 				else if (strlen(token)==12)
@@ -3749,7 +4118,14 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						continue;
 					}
-					NPC->client->ps.saber[1].blade[n].color = TranslateSaberColor( value );
+					if (!forcedRGBSaberColours[1][n])
+					{
+						NPC->client->ps.saber[1].blade[n].color = TranslateSaberColor( value );
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
 				}
 				else
 				{
@@ -3757,7 +4133,108 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				continue;
 			}
-
+			
+			// saberColor
+			if ( !Q_stricmpn( token, "saberColorRGB", 13) )
+			{
+				if ( !NPC->client )
+				{
+					continue;
+				}
+				
+				if (strlen(token)==13)
+				{
+					if ( COM_ParseString( &p, &value ) )
+					{
+						continue;
+					}
+					saber_colors_t color = TranslateSaberColor( value );
+					forcedRGBSaberColours[0][0] = qtrue;
+					for ( n = 0; n < MAX_BLADES; n++ )
+					{
+						NPC->client->ps.saber[0].blade[n].color = color;
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
+				}
+				else if (strlen(token)==14)
+				{
+					int index = atoi(&token[13])-1;
+					if (index > 7 || index < 1 )
+					{
+						gi.Printf( S_COLOR_YELLOW"WARNING: bad saberColorRGB '%s' in %s\n", token, NPCName );
+						continue;
+					}
+					if ( COM_ParseString( &p, &value ) )
+					{
+						continue;
+					}
+					forcedRGBSaberColours[0][index] = qtrue;
+					NPC->client->ps.saber[0].blade[index].color = TranslateSaberColor( value );
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber_color", value);
+					}
+				}
+				else
+				{
+					gi.Printf( S_COLOR_YELLOW"WARNING: bad saberColorRGB '%s' in %s\n", token, NPCName );
+				}
+				continue;
+			}
+			
+			
+			if ( !Q_stricmpn( token, "saber2ColorRGB", 14 ) )
+			{
+				if ( !NPC->client )
+				{
+					continue;
+				}
+				
+				if (strlen(token)==14)
+				{
+					if ( COM_ParseString( &p, &value ) )
+					{
+						continue;
+					}
+					forcedRGBSaberColours[1][0] = qtrue;
+					saber_colors_t color = TranslateSaberColor( value );
+					for ( n = 0; n < MAX_BLADES; n++ )
+					{
+						NPC->client->ps.saber[1].blade[n].color = color;
+					}
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
+				}
+				else if (strlen(token)==15)
+				{
+					n = atoi(&token[14])-1;
+					if (n > 7 || n < 1 )
+					{
+						gi.Printf( S_COLOR_YELLOW"WARNING: bad saber2ColorRGB '%s' in %s\n", token, NPCName );
+						continue;
+					}
+					if ( COM_ParseString( &p, &value ) )
+					{
+						continue;
+					}
+					forcedRGBSaberColours[1][n] = qtrue;
+					NPC->client->ps.saber[1].blade[n].color = TranslateSaberColor( value );
+					if (parsingPlayer)
+					{
+						gi.cvar_set("g_saber2_color", value);
+					}
+				}
+				else
+				{
+					gi.Printf( S_COLOR_YELLOW"WARNING: bad saber2ColorRGB '%s' in %s\n", token, NPCName );
+				}
+				continue;
+			}
 
 			//saber length
 			if ( !Q_stricmpn( token, "saberLength", 11) )
@@ -4081,7 +4558,7 @@ void NPC_LoadParms( void )
 {
 	int			len, totallen, npcExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
-	char		npcExtensionListBuf[2048];			//	The list of file names read in
+	char		npcExtensionListBuf[16384];			//	The list of file names read in, EDIT: Npcs, lots and lots of npcs =D
 
 	//gi.Printf( "Parsing ext_data/npcs/*.npc definitions\n" );
 
@@ -4092,7 +4569,6 @@ void NPC_LoadParms( void )
 
 	//now load in the .npc definitions
 	fileCnt = gi.FS_GetFileList("ext_data/npcs", ".npc", npcExtensionListBuf, sizeof(npcExtensionListBuf) );
-
 	holdChar = npcExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 )
 	{
@@ -4125,5 +4601,275 @@ void NPC_LoadParms( void )
 			totallen += len;
 			marker += len;
 		}
+
 	}
+	
+}
+
+void setYounglingSkin(gentity_t* NPC, char *custom_skin, int custom_skin_size)
+{
+	std::string skin;
+	int head = 0;
+	int torso = Q_irand(0, 7);
+
+	if (!Q_stricmp("jedi_youngling1", NPC->NPC_type))
+	{
+		head = Q_irand(0, 19);
+		switch (head)
+		{
+		case 0:
+			skin = "head_a1|";
+			break;
+		case 1:
+			skin = "head_a2|";
+			break;
+		case 2:
+			skin = "head_b1|";
+			break;
+		case 3:
+			skin = "head_b2|";
+			break;
+		case 4:
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c1|";
+				break;
+			}
+		case 5:
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c2|";
+				break;
+			}
+		case 6:
+			skin = "head_d1|";
+			break;
+		case 7:
+			skin = "head_d2|";
+			break;
+		case 8:
+			skin = "head_e1|";
+			break;
+		case 9:
+			skin = "head_e2|";
+			break;
+		case 10:
+			skin = "head_f1|";
+			break;
+		case 11:
+			skin = "head_f2|";
+			break;
+		case 12:
+			skin = "head_g1|";
+			break;
+		case 13:
+			skin = "head_g2|";
+			break;
+		case 14:
+			skin = "head_h1|";
+			break;
+		case 15:
+			skin = "head_h2|";
+			break;
+		case 16:
+			skin = "head_i1|";
+			break;
+		case 17:
+			skin = "head_i2|";
+			break;
+		case 18:
+			skin = "head_j1|";
+			break;
+		case 19:
+			skin = "head_j2|";
+			break;
+		default:
+			skin = "head_a1|";
+			break;
+		}
+	}
+	else if (!Q_stricmp("jedi_youngling2", NPC->NPC_type))
+	{
+		head = Q_irand(0, 5);
+		switch (head)
+		{
+		case 0:
+			skin = "head_a1|";
+			break;
+		case 1:
+			skin = "head_a2|";
+			break;
+		case 2:
+			skin = "head_b1|";
+			break;
+		case 3:
+			skin = "head_b2|";
+			break;
+		case 4:
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c1|";
+				break;
+			}
+		case 5:
+			if (!IsPlayingOperationKnightfall())
+			{
+				skin = "head_c2|";
+				break;
+			}
+		default:
+			skin = "head_a1|";
+			break;
+		}
+
+	}
+	else if (!Q_stricmp("jedi_youngling3", NPC->NPC_type))
+	{
+		skin = "head_a1|";
+	}
+
+	else if (!Q_stricmp("jedi_youngling4", NPC->NPC_type))
+	{
+	head = Q_irand(0, 11);
+	switch (head)
+	{
+	case 0:
+		skin = "head_a1|";
+		break;
+	case 1:
+		skin = "head_a2|";
+		break;
+	case 2:
+		skin = "head_a3|";
+		break;
+	case 3:
+		skin = "head_b1|";
+		break;
+	case 4:
+		skin = "head_b2|";
+		break;
+	case 5:
+		skin = "head_b3|";
+		break;
+	case 6:
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin = "head_c1|";
+			break;
+		}
+	case 7:
+		skin = "head_c2|";
+		break;
+	case 8:
+		skin = "head_d1|";
+		break;
+	case 9:
+		skin = "head_d2|";
+		break;
+	case 10:
+		skin = "head_d3|";
+		break;
+	case 11:
+		skin = "head_d4|";
+		break;
+	default:
+		skin = "head_a1|";
+		break;
+	}
+
+	}
+	else if (!Q_stricmp("jedi_youngling5", NPC->NPC_type))
+	{
+	head = Q_irand(0, 12);
+	switch (head)
+	{
+	case 0:
+		skin = "head_a1|";
+		break;
+	case 1:
+		skin = "head_a2|";
+		break;
+	case 2:
+		skin = "head_a3|";
+		break;
+	case 3:
+		skin = "head_a4|";
+		break;
+	case 4:
+		skin = "head_a5|";
+		break;
+	case 5:
+		skin = "head_a6|";
+		break;
+	case 6:
+		skin = "head_a7|";
+		break;
+	case 7:
+		skin = "head_b1|";
+		break;
+	case 8:
+		skin = "head_b2|";
+		break;
+	case 9:
+		skin = "head_c1|";
+		break;
+	case 10:
+		skin = "head_c2|";
+		break;
+	case 11:
+		skin = "head_d1|";
+		break;
+	case 12:
+		skin = "head_d2|";
+		break;
+	default:
+		skin = "head_a1|";
+		break;
+	}
+
+	}
+
+	switch (torso)
+	{
+	case 0:
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a1|";
+			break;
+		}
+	case 1:
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a2|";
+			break;
+		}
+	case 2:
+		if (!IsPlayingOperationKnightfall())
+		{
+			skin += "torso_a3|";
+			break;
+		}
+	case 3:
+		skin += "torso_b1|";
+		break;
+	case 4:
+		skin += "torso_b2|";
+		break;
+	case 5:
+		skin += "torso_c1|";
+		break;
+	case 6:
+		skin += "torso_d1|";
+		break;
+	case 7:
+		skin += "torso_e1|";
+		break;
+	default:
+		skin += "torso_a1|";
+		break;
+	}
+
+	skin += "lower_a1";
+
+	Q_strncpyz(custom_skin, skin.c_str(), custom_skin_size);
 }

@@ -410,7 +410,7 @@ void SV_TouchCGame(void) {
 	fileHandle_t	f;
 	char filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
+	Com_sprintf( filename, sizeof(filename), "swglcgamex86.dll" );
 
 	FS_FOpenFileRead( filename, &f, qfalse );
 	if ( f ) {

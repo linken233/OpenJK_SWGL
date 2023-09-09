@@ -30,6 +30,7 @@ typedef enum //# team_e
 	TEAM_PLAYER,
 	TEAM_ENEMY,
 	TEAM_NEUTRAL,	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
+	TEAM_SOLO,	// Kill everyone
 
 	//# #eol
 	TEAM_NUM_TEAMS
@@ -106,7 +107,8 @@ typedef enum
 	CLASS_HAZARD_TROOPER,
 	CLASS_PLAYER,
 	CLASS_VEHICLE,
-
+	CLASS_MANDALORIAN,
+	CLASS_JANGO,
 	CLASS_NUM_CLASSES
 } class_t;
 

@@ -37,6 +37,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 float cg_zoomFov;
 
+extern cvar_t* static_cam;
+
 //#define CG_CAM_ABOVE	2
 extern qboolean CG_OnMovingPlat( playerState_t *ps );
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
@@ -861,8 +863,11 @@ static void CG_OffsetThirdPersonView( void )
 		cameraLastYaw = cameraFocusAngles[YAW];
 
 		// Move the target to the new location.
-		CG_UpdateThirdPersonTargetDamp();
-		CG_UpdateThirdPersonCameraDamp();
+		if (!static_cam->value)
+		{
+			CG_UpdateThirdPersonTargetDamp();
+			CG_UpdateThirdPersonCameraDamp();
+		}
 	}
 
 	// Now interestingly, the Quake method is to calculate a target focus point above the player, and point the camera at it.
@@ -1324,17 +1329,26 @@ float CG_ForceSpeedFOV( void )
 	float timeLeft = player->client->ps.forcePowerDuration[FP_SPEED] - cg.time;
 	float length = FORCE_SPEED_DURATION*forceSpeedValue[player->client->ps.forcePowerLevel[FP_SPEED]];
 	float amt = forceSpeedFOVMod[player->client->ps.forcePowerLevel[FP_SPEED]];
+	if ( !cg.renderingThirdPerson && ((!cg.zoomMode && (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon))) || cg.snap->ps.weapon == WP_SABER
+										   || cg.snap->ps.weapon == WP_MELEE) && cg_truefov.value )
+	{
+		fov = cg_truefov.value;
+	}
+	else
+	{
+		fov = cg_fov.value;
+	}
 	if ( timeLeft < 500 )
 	{//start going back
-		fov = cg_fov.value + (timeLeft)/500*amt;
+		fov = fov + (timeLeft)/500*amt;
 	}
 	else if ( length - timeLeft < 1000 )
 	{//start zooming in
-		fov = cg_fov.value + (length - timeLeft)/1000*amt;
+		fov = fov + (length - timeLeft)/1000*amt;
 	}
 	else
 	{//stay at this FOV
-		fov = cg_fov.value+amt;
+		fov = fov+amt;
 	}
 	return fov;
 }
@@ -1385,7 +1399,7 @@ static qboolean	CG_CalcFov( void ) {
 			}
 		}
 	}
-	else if ( (!cg.zoomMode || cg.zoomMode > 2) && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson &&
+	else if ( (!cg.zoomMode || cg.zoomMode == 3) && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson &&
 	{
 		fov_x = CG_ForceSpeedFOV();
 	} else {
@@ -1393,6 +1407,11 @@ static qboolean	CG_CalcFov( void ) {
 		if ( cg.overrides.active & CG_OVERRIDE_FOV )
 		{
 			fov_x = cg.overrides.fov;
+		}
+		else if ( !cg.renderingThirdPerson && ((!cg.zoomMode && (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon))) || cg.snap->ps.weapon == WP_SABER
+											   || cg.snap->ps.weapon == WP_MELEE) && cg_truefov.value )
+		{
+			fov_x = cg_truefov.value;
 		}
 		else
 		{
@@ -1405,19 +1424,23 @@ static qboolean	CG_CalcFov( void ) {
 		}
 
 		// Disable zooming when in third person
-		if ( cg.zoomMode && cg.zoomMode < 3 )//&& !cg.renderingThirdPerson ) // light amp goggles do none of the zoom silliness
+		if ( ( cg.zoomMode && cg.zoomMode < 3 ) || cg.zoomMode >= ST_A280 )//&& !cg.renderingThirdPerson ) // light amp goggles do none of the zoom silliness
 		{
 			if ( !cg.zoomLocked )
 			{
-				if ( cg.zoomMode == 1 )
+				// I don't want to change the cg_zoomFov for the scope types.
+				if (cg.zoomMode < ST_A280)
 				{
-					// binoculars zooming either in or out
-					cg_zoomFov += cg.zoomDir * cg.frametime * 0.05f;
-				}
-				else
-				{
-					// disruptor zooming in faster
-					cg_zoomFov -= cg.frametime * 0.075f;
+					if ( cg.zoomMode == 1 )
+					{
+						// binoculars zooming either in or out
+						cg_zoomFov += cg.zoomDir * cg.frametime * 0.05f;
+					}
+					else
+					{
+						// disruptor zooming in faster
+						cg_zoomFov -= cg.frametime * 0.075f;
+					}
 				}
 
 				// Clamp zoomFov
@@ -1430,7 +1453,9 @@ static qboolean	CG_CalcFov( void ) {
 				{
 					cg_zoomFov = actualFOV;
 				}
-				else
+				// I don't want to play any zooming sound effects
+				// for the scope types.
+				else if ( cg.zoomMode < ST_A280 )
 				{//still zooming
 					static int zoomSoundTime = 0;
 
@@ -1564,8 +1589,8 @@ void CG_SaberClashFlare( void )
 	VectorSet( color, 0.8f, 0.8f, 0.8f );
 	cgi_R_SetColor( color );
 
-	CG_DrawPic( x - ( v * 300 ), y - ( v * 300 ),
-				v * 600, v * 600,
+	CG_DrawPic(x - (v * 300 * cgs.widthRatioCoef), y - (v * 300),
+				v * 600 * cgs.widthRatioCoef, v * 600,
 				cgi_R_RegisterShader( "gfx/effects/saberFlare" ));
 }
 
@@ -1665,7 +1690,7 @@ static qboolean CG_CalcViewValues( void ) {
 		}
 	}
 
-	if ( (cg.renderingThirdPerson||cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE)
+	if ( (cg.renderingThirdPerson)
 		&& !cg.zoomMode
 		&& !viewEntIsCam )
 	{
@@ -1677,7 +1702,7 @@ static qboolean CG_CalcViewValues( void ) {
 //		else
 //		{
 		// First person saber
-		if ( !cg.renderingThirdPerson )
+		/*if ( !cg.renderingThirdPerson )
 		{
 			if ( cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE )
 			{
@@ -1687,7 +1712,7 @@ static qboolean CG_CalcViewValues( void ) {
 				AngleVectors( cg.refdefViewAngles, dir, NULL, NULL );
 				VectorMA( cg.refdef.vieworg, -2, dir, cg.refdef.vieworg );
 			}
-		}
+		}*/
 		CG_OffsetThirdPersonView();
 //		}
 	}
@@ -2092,8 +2117,22 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 		|| (cg.snap->ps.stats[STAT_HEALTH] <= 0)
 		|| (cg.snap->ps.eFlags&EF_HELD_BY_SAND_CREATURE)
 		|| ((g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST)
-		|| (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE) ));
+		|| ((cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE) && !cg_fpls.integer) ));
 
+	if (cg_fpls.integer && cg_trueinvertsaber.integer == 2 && (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE))
+	{//force thirdperson for sabers/melee if in cg_trueinvertsaber.integer == 2
+		cg.renderingThirdPerson = qtrue;
+	}
+	else if (cg_fpls.integer && cg_trueinvertsaber.integer == 1 && !cg_thirdPerson.integer && (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE))
+	{
+		cg.renderingThirdPerson = qtrue;
+	}
+	else if (cg_fpls.integer && cg_trueinvertsaber.integer == 1 && cg_thirdPerson.integer && (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE))
+	{
+		cg.renderingThirdPerson = qfalse;
+	}
+
+	
 	if ( cg.zoomMode )
 	{
 		// zoomed characters should never do third person stuff??
@@ -2261,3 +2300,15 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	*/
 }
 
+//Checks to see if the current camera position is valid based on the last known safe location.  If it's not safe, place
+//the camera at the last position safe location
+void CheckCameraLocation( vec3_t OldeyeOrigin )
+{
+	trace_t			trace;
+	
+	CG_Trace(&trace, OldeyeOrigin, cameramins, cameramaxs, cg.refdef.vieworg, cg.snap->ps.clientNum, MASK_CAMERACLIP);
+	if (trace.fraction <= 1.0)
+	{
+		VectorCopy(trace.endpos, cg.refdef.vieworg);
+	}
+}

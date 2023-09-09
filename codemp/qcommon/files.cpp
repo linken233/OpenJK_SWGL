@@ -1405,7 +1405,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 							    !FS_IsExt(filename, ".arena", l) &&
 							    !FS_IsExt(filename, ".menu", l) &&
 							    !FS_IsExt(filename, ".fcf", l) &&
-							    Q_stricmp(filename, "jampgamex86.dll") != 0 &&
+							    Q_stricmp(filename, "swglmpgamex86.dll") != 0 &&
 							    //Q_stricmp(filename, "vm/qagame.qvm") != 0 &&
 							    !strstr(filename, "levelshots"))
 							{
@@ -1415,8 +1415,8 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 
 						if (!(pak->referenced & FS_CGAME_REF))
 						{
-							if ( Q_stricmp( filename, "cgame.qvm" ) == 0 ||
-									Q_stricmp( filename, "cgamex86.dll" ) == 0 )
+							if ( Q_stricmp( filename, "swglcgame.qvm" ) == 0 ||
+									Q_stricmp( filename, "swglcgamex86.dll" ) == 0 )
 							{
 								pak->referenced |= FS_CGAME_REF;
 							}
@@ -1424,8 +1424,8 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 
 						if (!(pak->referenced & FS_UI_REF))
 						{
-							if ( Q_stricmp( filename, "ui.qvm" ) == 0 ||
-									Q_stricmp( filename, "uix86.dll" ) == 0 )
+							if ( Q_stricmp( filename, "swglui.qvm" ) == 0 ||
+									Q_stricmp( filename, "swgluix86.dll" ) == 0 )
 							{
 								pak->referenced |= FS_UI_REF;
 							}
@@ -3400,8 +3400,14 @@ void FS_Startup( const char *gameName ) {
 	if (!homePath || !homePath[0]) {
 		homePath = fs_basepath->string;
 	}
-	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED, "(Read/Write) Location for user generated files" );
-	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
+
+	#ifdef MACOS_X
+		fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED, "(Read/Write) Location for user generated files" );
+	#else
+		fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_USER_CREATED, "(Read/Write) Location for user generated files" );
+	#endif
+
+	fs_gamedirvar = Cvar_Get ("fs_game", "SWGL", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 

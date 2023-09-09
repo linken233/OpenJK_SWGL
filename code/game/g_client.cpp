@@ -31,11 +31,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "objectives.h"
 #include "b_local.h"
+#include "NPC_SWGL.h"
 
 extern int WP_SaberInitBladeData( gentity_t *ent );
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
 extern qboolean	CheatsOk( gentity_t *ent );
 extern void Boba_Precache( void );
+extern const char* GetSaberColor(int color);
 
 extern cvar_t	*g_char_model;
 extern cvar_t	*g_char_skin_head;
@@ -44,6 +46,9 @@ extern cvar_t	*g_char_skin_legs;
 extern cvar_t	*g_char_color_red;
 extern cvar_t	*g_char_color_green;
 extern cvar_t	*g_char_color_blue;
+extern cvar_t	*g_npc_color_red;
+extern cvar_t	*g_npc_color_green;
+extern cvar_t	*g_npc_color_blue;
 extern cvar_t	*g_saber;
 extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
@@ -62,6 +67,8 @@ vec3_t playerMinsStep = {DEFAULT_MINS_0, DEFAULT_MINS_1, DEFAULT_MINS_2+STEPSIZE
 vec3_t playerMaxs = {DEFAULT_MAXS_0, DEFAULT_MAXS_1, DEFAULT_MAXS_2};
 
 void SP_misc_teleporter_dest (gentity_t *ent);
+
+qboolean saberFound = qfalse;
 
 /*QUAK-ED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 32) KEEP_PREV DROPTOFLOOR x x x STUN_BATON NOWEAPON x
 potential spawning position for deathmatch games.
@@ -238,7 +245,10 @@ gentity_t *SelectRandomDeathmatchSpawnPoint( team_t team ) {
 	count = 0;
 	spot = NULL;
 
-	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL && count < MAX_SPAWN_POINTS) {
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+		if (count >= MAX_SPAWN_POINTS) {
+			G_Error("Too many spawnpoints in map, must not exceed %d", MAX_SPAWN_POINTS);
+		}
 		/*if ( team == TEAM_RED && ( spot->spawnflags & 2 ) ) {
 			continue;
 		}
@@ -474,7 +484,7 @@ void ClientUserinfoChanged( int clientNum ) {
 	// set max health
 	maxHealth = 100;
 	health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
-	client->pers.maxHealth = health;
+	client->pers.maxHealth = player->client->ps.stats[STAT_MAX_HEALTH];
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
 		client->pers.maxHealth = 100;
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
@@ -633,41 +643,61 @@ Player_CacheFromPrevLevel
   Argument		: void
 ============
 */
+extern gitem_t* FindItemForInventory(int inv);/////// Jace Solaris fix
 void Player_CacheFromPrevLevel(void)
 {
-	char	s[MAX_STRING_CHARS];
-	int i;
+	char	    s[MAX_STRING_CHARS];
+	const char* var;
+	int         i;
 
-	gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
+	gi.Cvar_VariableStringBuffer(sCVARNAME_PLAYERSAVE, s, sizeof(s));
 
 	if (s[0])	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 	{
-		int iDummy, bits, ibits;
+		int iDummy, ibits;
 
-		sscanf( s, "%i %i %i %i",
+		sscanf(s, "%i %i %i",
 			&iDummy,//client->ps.stats[STAT_HEALTH],
 			&iDummy,//client->ps.stats[STAT_ARMOR],
-			&bits,	//client->ps.stats[STAT_WEAPONS]
 			&ibits	//client->ps.stats[STAT_ITEMS]
-			);
+		);
 
-		for ( i = 1 ; i < 16 ; i++ )
+		for (i = 0; i < 16; i++)
 		{
-			if ( bits & ( 1 << i ) )
+			if (ibits & (1 << i))
 			{
-				RegisterItem( FindItemForWeapon( (weapon_t)i ) );
+				RegisterItem(FindItemForInventory(i));
 			}
 		}
+	}
 
-extern gitem_t	*FindItemForInventory( int inv );
+	gi.Cvar_VariableStringBuffer("playerweaps", s, sizeof(s));
 
-		for ( i = 0 ; i < 16 ; i++ )
+	i = 0;
+
+	if (s[0])
+	{
+		var = strtok(s, " ");
+		while (var != NULL)
 		{
-			if ( ibits & ( 1 << i ) )
+			if (atoi(var) > 0)
 			{
-				RegisterItem( FindItemForInventory( i ));
+				if (i == WP_NONE) //don't register!
+				{
+					i++;
+				}
+				else
+				{
+					RegisterItem(FindItemForWeapon((weapon_t)i++));
+				}
 			}
+			else
+			{
+				i++;
+			}
+			var = strtok(NULL, " ");
 		}
+		assert(i == WP_NUM_WEAPONS);
 	}
 }
 
@@ -701,10 +731,9 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 			unsigned int saber1BladeColor[8];
 			unsigned int saber2BladeColor[8];
 
-			sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %i %i %i %i",
+			sscanf( s, "%i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %i %i %i %i",
 								&client->ps.stats[STAT_HEALTH],
 								&client->ps.stats[STAT_ARMOR],
-								&client->ps.stats[STAT_WEAPONS],
 								&client->ps.stats[STAT_ITEMS],
 								&client->ps.weapon,
 								&client->ps.weaponstate,
@@ -801,6 +830,19 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 //
 //			SetClientViewAngle( ent, ent->client->ps.viewangles);
 
+			//weapons
+			gi.Cvar_VariableStringBuffer( "playerweaps", s, sizeof(s) );
+			i=0;
+			var = strtok( s, " " );
+			while( var != NULL )
+			{
+				/* While there are tokens in "s" */
+				client->ps.weapons[i++] = atoi(var);
+				/* Get next token: */
+				var = strtok( NULL, " " );
+			}
+			assert (i==WP_NUM_WEAPONS);
+			
 			//ammo
 			gi.Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
 			i=0;
@@ -910,6 +952,90 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
+		if (!Q_stricmpn("models/players/JK2anims/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Clones/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Drallig/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_DVader/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_jabba/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_JBrute/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Jedi/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Jedi2/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_kotor/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_lanakin/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_malak/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_OldBen/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Palpatine/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Serra/", GLAName, 24))
+		{//only _humanoid skeleton is expected eto have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Shaak/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Shakkra/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Sidious/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_TDroid/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_TGuard/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_Vader/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmpn("models/players/_humanoid_dbgalen/", GLAName, 24))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
 		if ( !Q_stricmp( "models/players/protocol/protocol", GLAName ) )
 		{//protocol droid duplicates many of these
 			return qtrue;
@@ -932,6 +1058,102 @@ qboolean G_StandardHumanoid( gentity_t *self )
 		}
 		if ( !Q_stricmp( "models/players/wampa/wampa", GLAName ) )
 		{//rockettrooper duplicates many of these
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+qboolean G_StandardHumanoid(const char* GLAName)
+{
+	if (GLAName)
+	{
+		if (!Q_stricmp("_humanoid", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("JK2anims", GLAName))
+		{// only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Clones", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Drallig", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_DVader", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_jabba", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_JBrute", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Jedi", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Jedi2", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_kotor", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_lanakin", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_malak", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_OldBen", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Palpatine", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Serra", GLAName))
+		{//only _humanoid skeleton is expected eto have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Shaak", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Shakkra", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Sidious", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_TDroid", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_TGuard", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_Vader", GLAName))
+		{//only _humanoid skeleton is expected to have these
+			return qtrue;
+		}
+		if (!Q_stricmp("_humanoid_dbgalen", GLAName))
+		{//only _humanoid skeleton is expected to have these
 			return qtrue;
 		}
 	}
@@ -1190,15 +1412,26 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			ent->kneeRBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*hips_r_knee");
 			ent->footLBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_leg_foot");
 			ent->footRBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*r_leg_foot");
-			if ( ent->client->NPC_class == CLASS_BOBAFETT
-				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
+			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN
+				|| ent->client->NPC_class == CLASS_JANGO || ent->client->NPC_class == CLASS_ROCKETTROOPER )
 			{//get jet bolts
-				ent->genericBolt1 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet1" );
-				ent->genericBolt2 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet2" );
+				if (Q_stricmp("cad_bane", ent->NPC_type) && Q_stricmp("cadbane|model_default", ent->NPC_type))
+				{
+					ent->genericBolt1 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*jet1");
+					ent->genericBolt2 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*jet2");
+				}
+				else
+				{
+					ent->genericBolt1 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_leg_foot");
+					ent->genericBolt2 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*r_leg_foot");
+				}
+
 			}
-			if ( ent->client->NPC_class == CLASS_BOBAFETT )
+			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN || ent->client->NPC_class == CLASS_JANGO)
 			{//get the flamethrower bolt
 				ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flamethrower");
+				if(ent->genericBolt3 == -1)
+					ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_hand");
 			}
 		}
 		else
@@ -1289,6 +1522,16 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			else if ( !Q_stricmp( "minemonster", modelName ))
 			{
 				ent->handRBolt = ent->headBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*head_f1");
+			}
+			else if (!Q_stricmp("galak_mech", modelName))
+			{
+				ent->genericBolt1 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*antenna_effect");
+				ent->headBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*head_eyes");
+				ent->torsoBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "torso");
+				ent->crotchBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "hips");
+				ent->handRBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flasha");
+				ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flashb");
+				ent->handLBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flashc");
 			}
 			else if ( !Q_stricmp( "rancor", modelName )
 					|| !Q_stricmp( "mutant_rancor", modelName ))
@@ -1752,10 +1995,38 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 		if (strchr(customSkin, '|'))
 		{//three part skin
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/|%s", modelName, customSkin );
+			if (ent == player)
+			{
+				
+				char name[MAX_QPATH];
+				strcpy(name, customSkin);
+				char* p = strchr(name, '|');
+				*p = 0;
+				p++;
+
+				gi.cvar_set("g_char_skin_head", name);
+
+				//advance to second
+				char* p2 = strchr(p, '|');
+				if (!p2)
+				{
+					return;
+				}
+				*p2 = 0;
+				p2++;
+				gi.cvar_set("g_char_skin_torso", p);
+				gi.cvar_set("g_char_skin_legs", p2);
+			}
 		}
 		else
 		{
 			Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/model_%s.skin", modelName, customSkin );
+			if (ent == player)
+			{
+				gi.cvar_set("g_char_skin_head", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_torso", va("model_%s", customSkin));
+				gi.cvar_set("g_char_skin_legs", va("model_%s", customSkin));
+			}
 		}
 	}
 	int skin = gi.RE_RegisterSkin( skinName );
@@ -1770,8 +2041,14 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 	}
 	else
 	{
-		//NOTE: it still loads the default skin's tga's because they're referenced in the .glm.
-		ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, va("models/players/%s/model.glm", modelName), G_ModelIndex( va("models/players/%s/model.glm", modelName) ), G_SkinIndex( skinName ), NULL_HANDLE, 0, 0 );
+		//NOTE: attempting to load a special SP glm for models with their own animations
+		ent->playerModel = gi.G2API_InitGhoul2Model(ent->ghoul2, va("models/players/%s/model_sp.glm", modelName), G_ModelIndex(va("models/players/%s/model_sp.glm", modelName)), G_SkinIndex(skinName), NULL_HANDLE, 0, 0);
+
+		if (ent->playerModel == -1)
+		{
+			//NOTE: it still loads the default skin's tga's because they're referenced in the .glm.
+			ent->playerModel = gi.G2API_InitGhoul2Model(ent->ghoul2, va("models/players/%s/model.glm", modelName), G_ModelIndex(va("models/players/%s/model.glm", modelName)), G_SkinIndex(skinName), NULL_HANDLE, 0, 0);
+		}
 	}
 	if (ent->playerModel == -1)
 	{//try the stormtrooper as a default
@@ -1849,9 +2126,13 @@ extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 void G_SetSabersFromCVars( gentity_t *ent )
 {
+	// Set dual sabers to false so we start with a clean slate when changing sabers from dual to single.
+	ent->client->ps.dualSabers = qfalse;
+
 	if ( g_saber->string
 		&& g_saber->string[0]
 		&& Q_stricmp( "none", g_saber->string )
+		&& Q_stricmp("empty", g_saber->string)
 		&& Q_stricmp( "NULL", g_saber->string ) )
 	{//FIXME: how to specify second saber?
 		WP_SaberParseParms( g_saber->string, &ent->client->ps.saber[0] );
@@ -1877,16 +2158,32 @@ void G_SetSabersFromCVars( gentity_t *ent )
 		}
 	}
 	else if ( g_saber_color->string )
-	{//FIXME: how to specify color for each blade and/or color for second saber?
-		saber_colors_t color = TranslateSaberColor( g_saber_color->string );
-		for ( int n = 0; n < MAX_BLADES; n++ )
+	{
+		// Grievous's saber colors are always following a blue/green pattern. But allow for other colors to mix and match.
+		if (!Q_stricmp("grievous_right", g_saber->string) || !Q_stricmp("grievous_left", g_saber->string))
 		{
-			ent->client->ps.saber[0].blade[n].color = color;
+			ent->client->ps.saber[0].blade[0].color = TranslateSaberColor(g_saber_color->string);
+
+			// Just in case the player only wants 1 of the grievous sabers
+			if(g_saber2_color->string)
+				ent->client->ps.saber[0].blade[1].color = TranslateSaberColor(g_saber2_color->string);
+			else
+				ent->client->ps.saber[0].blade[1].color = TranslateSaberColor(g_saber_color->string);
+		}
+		else
+		{
+			//FIXME: how to specify color for each blade and/or color for second saber?
+			saber_colors_t color = TranslateSaberColor(g_saber_color->string);
+			for (int n = 0; n < MAX_BLADES; n++)
+			{
+				ent->client->ps.saber[0].blade[n].color = color;
+			}
 		}
 	}
 	if ( g_saber2->string
 		&& g_saber2->string[0]
 		&& Q_stricmp( "none", g_saber2->string )
+		&& Q_stricmp("empty", g_saber2->string)
 		&& Q_stricmp( "NULL", g_saber2->string ) )
 	{
 		if ( !(ent->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
@@ -1919,11 +2216,22 @@ void G_SetSabersFromCVars( gentity_t *ent )
 					}
 				}
 				else if ( g_saber2_color->string )
-				{//FIXME: how to specify color for each blade and/or color for second saber?
-					saber_colors_t color = TranslateSaberColor( g_saber2_color->string );
-					for ( int n = 0; n < MAX_BLADES; n++ )
+				{
+					// Grievous's saber colors are always following a blue/green pattern. But allow for other colors to mix and match.
+					if (!Q_stricmp("grievous_left", g_saber2->string) || !Q_stricmp("grievous_right", g_saber2->string))
 					{
-						ent->client->ps.saber[1].blade[n].color = color;
+						// Don't bother checking for dual wielding since we know that's already the case.
+						ent->client->ps.saber[1].blade[0].color = TranslateSaberColor(g_saber2_color->string);
+						ent->client->ps.saber[1].blade[1].color = TranslateSaberColor(g_saber_color->string);
+					}
+					else
+					{
+						//FIXME: how to specify color for each blade and/or color for second saber?
+						saber_colors_t color = TranslateSaberColor(g_saber2_color->string);
+						for (int n = 0; n < MAX_BLADES; n++)
+						{
+							ent->client->ps.saber[1].blade[n].color = color;
+						}
 					}
 				}
 			}
@@ -1981,6 +2289,29 @@ void G_InitPlayerFromCvars( gentity_t *ent )
 	}
 }
 
+void G_ChangeModel(gentity_t *ent, const char *newModel)
+{
+	gi.cvar_set("g_char_model", newModel);
+	gi.cvar_set("g_char_skin_head", "model_default");
+	gi.cvar_set("g_char_skin_torso", "model_default");
+	gi.cvar_set("g_char_skin_legs", "model_default");
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeSkin(gentity_t *ent, const char *newSkin)
+{
+	gi.cvar_set("g_char_skin_head", newSkin);
+	gi.cvar_set("g_char_skin_torso", newSkin);
+	gi.cvar_set("g_char_skin_legs", newSkin);
+	G_InitPlayerFromCvars(&g_entities[0]);
+}
+
+void G_ChangeScale(const char* data)
+{
+	int value = std::stoi(data);
+	player->s.modelScale[0] = player->s.modelScale[1] = player->s.modelScale[2] = value / 100.0f;
+}
+
 void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 {
 	if ( !ent || !ent->client || !newModel )
@@ -1993,6 +2324,14 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 	{
 		G_InitPlayerFromCvars( ent );
 		return;
+	}
+	if (Q_stricmp(PHASMA, newModel) == 0)
+	{
+		ent->flags |= FL_SHIELDED;
+	}
+	else
+	{
+		ent->flags &= ~FL_SHIELDED;
 	}
 
 	//attempt to free the string (currently can't since it's always "player" )
@@ -2027,17 +2366,43 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 			NPC_SetAnim( ent, SETANIM_TORSO, ent->client->ps.torsoAnim, SETANIM_FLAG_NORMAL|SETANIM_FLAG_RESTART );
 			ClientUserinfoChanged( ent->s.number );
 			//Ugh, kind of a hack for now:
-			if ( ent->client->NPC_class == CLASS_BOBAFETT
+			if (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDALORIAN || ent->client->NPC_class == CLASS_JANGO
 				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
 			{
 				//FIXME: remove saber, too?
 				Boba_Precache();	// player as boba?
 			}
+			if (ent == player && saberFound)
+			{
+				gi.cvar_set("g_saber", ent->client->ps.saber[0].name);
+				gi.cvar_set("g_saber_color", g_saber_color->string);
+
+				if (player->client->ps.dualSabers)
+				{
+					gi.cvar_set("g_saber2", ent->client->ps.saber[1].name);
+					gi.cvar_set("g_saber2_color", g_saber2_color->string);
+				}
+				else
+				{
+					gi.cvar_set("g_saber2", "") ;
+					gi.cvar_set("g_saber2_color", "");
+				}
+				saberFound = qfalse;
+				G_ChangePlayerModel(player, "player");
+			}
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
-			G_ChangePlayerModel( ent, "stormtrooper" );	//need a better fallback?
+			if (ent == player)
+			{
+				G_ChangePlayerModel(player, "player");
+			}
+			else
+			{
+				gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
+				G_ChangePlayerModel( ent, "stormtrooper" );	//need a better fallback?
+			}
+			
 		}
 	}
 }
@@ -2260,27 +2625,31 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 
 		// give default weapons
 		//these are precached in g_items, ClearRegisteredItems()
-		client->ps.stats[STAT_WEAPONS] = ( 1 << WP_NONE );
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			client->ps.weapons[i] = 0;
+		}
+		client->ps.weapons[WP_NONE] = 1;
 		//client->ps.inventory[INV_ELECTROBINOCULARS] = 1;
 		//ent->client->ps.inventory[INV_BACTA_CANISTER] = 1;
 
 		// give EITHER the saber or the stun baton..never both
 		if ( spawnPoint->spawnflags & 32 ) // STUN_BATON
 		{
-			client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_STUN_BATON );
+			client->ps.weapons[WP_STUN_BATON] = 1;
 			client->ps.weapon = WP_STUN_BATON;
 		}
 		else
 		{	// give the saber because most test maps will not have the STUN BATON flag set
-			client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//this is precached in SP_info_player_deathmatch
+			client->ps.weapons[WP_SABER] = 1;	//this is precached in SP_info_player_deathmatch
 			client->ps.weapon = WP_SABER;
 		}
 		// force the base weapon up
 		client->ps.weaponstate = WEAPON_READY;
 
-		for ( i = FIRST_WEAPON; i < MAX_PLAYER_WEAPONS; i++ ) // don't give ammo for explosives
+		for ( i = FIRST_WEAPON; i < WP_NUM_WEAPONS; i++ ) // don't give ammo for explosives
 		{
-			if ( (client->ps.stats[STAT_WEAPONS]&(1<<i)) )
+			if ( playerUsableWeapons[i] && (client->ps.weapons[i]) )
 			{//if starting with this weapon, gimme max ammo for it
 				client->ps.ammo[weaponData[i].ammoIndex] = ammoData[weaponData[i].ammoIndex].max;
 			}
@@ -2406,14 +2775,18 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 
 		if ( spawnPoint->spawnflags & 64 )	//NOWEAPON
 		{//player starts with absolutely no weapons
-			ent->client->ps.stats[STAT_WEAPONS] = ( 1 << WP_NONE );
+			for ( int i = 0; i < MAX_WEAPONS; i++ )
+			{
+				ent->client->ps.weapons[i] = 0;
+			}
+			ent->client->ps.weapons[WP_NONE] = 1;
 			ent->client->ps.ammo[weaponData[WP_NONE].ammoIndex] = 32000;
 			ent->client->ps.weapon = WP_NONE;
 			ent->client->ps.weaponstate = WEAPON_READY;
 			ent->client->ps.dualSabers = qfalse;
 		}
 
-		if ( ent->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_SABER ) )
+		if ( ent->client->ps.weapons[WP_SABER] )
 		{//set up so has lightsaber
 			WP_SaberInitBladeData( ent );
 			if ( (ent->weaponModel[0] <= 0 || (ent->weaponModel[1]<=0&&ent->client->ps.dualSabers)) //one or both of the saber models is not initialized
@@ -2460,7 +2833,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		G_CheckPlayerDarkSide();
 	}
 
-	if ( (ent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SABER))
+	if ( (ent->client->ps.weapons[WP_SABER])
 		&& !ent->client->ps.saberStylesKnown )
 	{//um, if you have a saber, you need at least 1 style to use it with...
 		ent->client->ps.saberStylesKnown |= (1<<SS_MEDIUM);
@@ -2505,6 +2878,63 @@ void ClientDisconnect( int clientNum ) {
 
 	IIcarusInterface::GetIcarus()->DeleteIcarusID(ent->m_iIcarusID);
 
+}
+
+qboolean PlayingMission()
+{
+	// All mission maps in JKO, JKA, and SWGL
+	char* jk2maps[] = { "kejim_post", "kejim_base", "artus_mine", "artus_detention", "artus_topside",
+		"valley", "yavin_temple", "yavin_trial", "ns_streets", "ns_hideout", "ns_starpad",
+		"bespin_undercity", "bespin_streets", "bespin_platform", "cairn_bay", "cairn_assembly",
+		"cairn_reactor", "cairn_dock1", "doom_comm", "doom_detention", "doom_shields", "yavin_swamp",
+		"yavin_canyon", "yavin_courtyard", "yavin_final" };
+
+	char* jkamaps[] = { "academy1", "academy2", "academy3", "academy4", "academy5", "academy6",
+						"hoth2", "hoth3", "kor1", "kor2", "t1_danger", "t1_fatal", "t1_inter",
+						"t1_rail", "t1_sour", "t1_surprise", "t2_dpred", "t2_rancor", "t2_rogue", "t2_trip",
+						"t2_wedge", "t3_bounty", "t3_byss", "t3_hevil", "t3_rift", "t3_stamp", "taspir1", "taspir2",
+						"vjun1", "vjun2", "vjun3", "yavin1", "yavin1b", "yavin2" };
+
+	// Not including cutscene-only maps (because the player isn't in control so it doesn't matter)
+	char* swglmaps[] = { 
+						 "ep1_dotf_obi",  "ep1_dotf_qui", "ep1_dotf_qui_3", "ep1_dotf_qui_4", "ep1_dotf_maul", "ep1_dotf_maul_3", "ep1_dotf_maul_7", "ep1_dotf_maul_8",
+						 "ep3_ok_anakin_2", "ep3_ok_anakin_3", "ep3_ok_anakin_4", "ep3_ok_anakin_5", "ep3_ok_anakin_r1", "ep3_ok_anakin_r2", "ep3_ok_anakin_r3", "ep3_ok_anakin_r4", "ep3_ok_anakin_r5", "ep3_ok_anakin_r6", "ep3_ok_anakin_r7", "ep3_ok_anakin_r8",
+						 "ep3_ok_drallig_1", "ep3_ok_drallig_2", "ep3_ok_drallig_3", "ep3_ok_drallig_4",
+						 "ep3_ok_clone_1", "ep3_ok_clone_2", "ep3_ok_clone_3", "ep3_ok_clone_4",
+						 "ep3_fotr_windu", "ep3_fotr_palpatine",
+						 "ep4_hfd_stormie", "ep4_dr_ben", "ep4_dr_luke",
+						 "ep6_fvs_luke", "ep6_fvs_vader", "ep6_fvs_palpatine",
+						 "ep8_tlj_kylo",
+						 "kotor_sf_revan", "kotor_ttc_meetra", "order66_maul", "order66_quiobi", "order66_revan", "swtor_fe_hunter", "swtor_fe_jedi", "swtor_fe_sith", "swtor_fe_trooper", "tcw_yhbar_sidious_2"};
+
+	const char* info = CG_ConfigString(CS_SERVERINFO);
+	const char* s = Info_ValueForKey(info, "mapname");
+
+	for (int i = 0; i < (sizeof(jk2maps) / sizeof(jk2maps[0])); i++)
+	{
+		if (strcmp(s, jk2maps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(jkamaps) / sizeof(jkamaps[0])); i++)
+	{
+		if (strcmp(s, jkamaps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	for (int i = 0; i < (sizeof(swglmaps) / sizeof(swglmaps[0])); i++)
+	{
+		if (strcmp(s, swglmaps[i]) == 0)
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
 }
 
 

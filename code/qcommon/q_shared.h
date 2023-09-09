@@ -58,6 +58,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma warning(disable : 4996)		// This function or variable may be unsafe.
 
+#pragma warning(disable : 5208)    /////// Jace Solaris
+
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
@@ -74,17 +76,19 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define HOMEPATH_NAME_WIN "OpenJO"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 #else
-#define PRODUCT_NAME			"openjk_sp"
+#define PRODUCT_NAME			"SWGLSPconfig"
 
-#define CLIENT_WINDOW_TITLE "OpenJK (SP)"
-#define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
-#define HOMEPATH_NAME_UNIX "openjk"
-#define HOMEPATH_NAME_WIN "OpenJK"
+#define CLIENT_WINDOW_TITLE "Star Wars: Galactic Legacy SP"
+#define CLIENT_CONSOLE_TITLE "Star Wars: Galactic Legacy SP Console"
+#define HOMEPATH_NAME_UNIX "SWGL"
+#define HOMEPATH_NAME_WIN "SWGL"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 #endif
 
 #define	BASEGAME "base"
-#define OPENJKGAME "OpenJK"
+#define OPENJKGAME "SWGL"
+
+#define SHOTS_TOGGLEBIT 0x00000080
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
@@ -323,11 +327,17 @@ typedef enum
 	SABER_YELLOW,
 	SABER_GREEN,
 	SABER_BLUE,
-	SABER_PURPLE
-
+	SABER_PURPLE,
+	SABER_UNSTABLE_RED,
+	SABER_BLACK,
+	SABER_DARKSABER,
+	SABER_RGB = (1 << 24)
 } saber_colors_t;
 
 #define MAX_BATTERIES	2500
+
+#define randoms()	((rand () & 0x7fff) / ((float)0x7fff))
+#define crandoms()	(2.0 * (randoms() - 0.5))
 
 #define ENUM2STRING(arg)   { #arg,arg }
 
@@ -368,6 +378,8 @@ qboolean COM_ParseVec4( const char **buffer, vec4_t *c);
 
 void	COM_MatchToken( char**buf_p, char *match );
 
+
+int Q_parseSaberColor(const char* p, float* color);/////// Jace Solaris
 void SkipBracedSection (const char **program);
 void SkipRestOfLine ( const char **data );
 
@@ -618,7 +630,7 @@ typedef struct {
 #define	MAX_CLIENTS			1 // 128		// absolute limit
 #define MAX_TERRAINS		1 //32
 
-#define	GENTITYNUM_BITS		10		// don't need to send any more
+#define	GENTITYNUM_BITS		12		// don't need to send any more
 #define	MAX_GENTITIES		(1<<GENTITYNUM_BITS)
 
 // entitynums are communicated with GENTITY_BITS, so any reserved
@@ -652,7 +664,7 @@ typedef struct {
 /*
 Ghoul2 Insert Start
 */
-#define	MAX_CHARSKINS		64		// character skins
+#define	MAX_CHARSKINS		256		// character skins
 /*
 Ghoul2 Insert End
 */
@@ -660,7 +672,7 @@ Ghoul2 Insert End
 #ifdef JK2_MODE
 #define MAX_CONFIGSTRINGS (1024)
 #else
-#define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
+#define	MAX_CONFIGSTRINGS	1600//1024 //rww - I had to up this for terrains
 #endif // JK2_MODE
 
 // these are the only configstrings that the system reserves, all the
@@ -756,6 +768,18 @@ typedef enum
 	FP_ABSORB,//duration - protect against dark force powers (grip, lightning, drain - maybe push/pull, too?)
 	FP_DRAIN,//hold/duration - drain force power for health
 	FP_SEE,//duration - detect/see hidden enemies
+	
+
+	// SWGL Powers
+	// Light Side
+	FP_STASIS,//Duration
+	FP_BLAST,//Instant
+	FP_GRASP,//hold/duration
+
+	// Dark Side
+	FP_DESTRUCTION,
+	FP_LIGHTNING_STRIKE,
+	FP_FEAR,
 #endif // !JK2_MODE
 
 	NUM_FORCE_POWERS
@@ -790,7 +814,8 @@ typedef enum
 #define	MAX_PERSISTANT			16
 
 #define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				32
+#define	MAX_WEAPONS				64
+#define MAX_WEAPONBITS			1 + (MAX_WEAPONS - 1)/32
 #define MAX_AMMO				10
 #define MAX_INVENTORY			15		// See INV_MAX
 #define MAX_SECURITY_KEYS		5
@@ -822,8 +847,8 @@ typedef struct
 	int		inAction;	// controls whether should we even consider starting one
 	int		duration;	// how long each trail seg stays in existence
 	int		lastTime;	// time a saber segement was last stored
-	vec3_t	base;
-	vec3_t	tip;
+	vec3_t	base, dualbase;
+	vec3_t	tip, dualtip;
 
 	// Marks stuff
 	qboolean	haveOldPos[2];
@@ -839,7 +864,9 @@ typedef struct
 		saved_game.write<int32_t>(duration);
 		saved_game.write<int32_t>(lastTime);
 		saved_game.write<float>(base);
+		saved_game.write<float>(dualbase);
 		saved_game.write<float>(tip);
+		saved_game.write<float>(dualtip);
 		saved_game.write<int32_t>(haveOldPos);
 		saved_game.write<float>(oldPos);
 		saved_game.write<float>(oldNormal);
@@ -852,7 +879,9 @@ typedef struct
 		saved_game.read<int32_t>(duration);
 		saved_game.read<int32_t>(lastTime);
 		saved_game.read<float>(base);
+		saved_game.read<float>(dualbase);
 		saved_game.read<float>(tip);
+		saved_game.read<float>(dualtip);
 		saved_game.read<int32_t>(haveOldPos);
 		saved_game.read<float>(oldPos);
 		saved_game.read<float>(oldNormal);
@@ -1635,6 +1664,7 @@ public:
 	int			ammo[MAX_AMMO];
 	int			inventory[MAX_INVENTORY];							// Count of each inventory item.
 	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types
+	char		weapons[MAX_WEAPONS];
 
 	vec3_t		serverViewOrg;
 
@@ -1851,6 +1881,7 @@ public:
 	float		forceJumpZStart;					//So when you land, you don't get hurt as much
 	float		forceJumpCharge;					//you're current forceJump charge-up level, increases the longer you hold the force jump button down
 	int			forceGripEntityNum;					//what entity I'm gripping
+	int			forceStasisEntityNum;
 	vec3_t		forceGripOrg;						//where the gripped ent should be lifted to
 
 #ifndef JK2_MODE
@@ -1896,7 +1927,18 @@ public:
 	//NOTE: not really used in SP, just for Fighter Vehicle damage stuff
 	int			brokenLimbs;
 	int			electrifyTime;
+	int			stasisTime;
+	int			stasisJediTime;
+	int			stunDamage;				// Amount of stun damage to be given
+	int			stunTime;				// When to apply stun damage
+
+	int  		PlayerEffectFlags;
 #endif // !JK2_MODE
+	int			shotsRemaining;
+
+	qboolean	tertiaryMode;
+	int8_t		firing_attack;
+	int8_t		prev_firing_attack;
 
 
 	void sg_export(
@@ -1947,6 +1989,7 @@ public:
 		saved_game.write<int32_t>(ammo);
 		saved_game.write<int32_t>(inventory);
 		saved_game.write<int8_t>(security_key_message);
+		saved_game.write<int8_t>(weapons);
 		saved_game.write<float>(serverViewOrg);
 		saved_game.write<int32_t>(saberInFlight);
 
@@ -2028,6 +2071,7 @@ public:
 		saved_game.write<float>(forceJumpZStart);
 		saved_game.write<float>(forceJumpCharge);
 		saved_game.write<int32_t>(forceGripEntityNum);
+		saved_game.write<int32_t>(forceStasisEntityNum);
 		saved_game.write<float>(forceGripOrg);
 
 #ifndef JK2_MODE
@@ -2065,7 +2109,12 @@ public:
 		saved_game.write<int32_t>(vehTurnaroundTime);
 		saved_game.write<int32_t>(brokenLimbs);
 		saved_game.write<int32_t>(electrifyTime);
+		saved_game.write<int32_t>(stasisTime);
 #endif // !JK2_MODE
+		saved_game.write<int32_t>(shotsRemaining);
+		saved_game.write<int32_t>(tertiaryMode);
+		saved_game.write<int8_t>(firing_attack);
+		saved_game.write<int8_t>(prev_firing_attack);
 	}
 
 	void sg_import(
@@ -2116,6 +2165,7 @@ public:
 		saved_game.read<int32_t>(ammo);
 		saved_game.read<int32_t>(inventory);
 		saved_game.read<int8_t>(security_key_message);
+		saved_game.read<int8_t>(weapons);
 		saved_game.read<float>(serverViewOrg);
 		saved_game.read<int32_t>(saberInFlight);
 
@@ -2197,6 +2247,7 @@ public:
 		saved_game.read<float>(forceJumpZStart);
 		saved_game.read<float>(forceJumpCharge);
 		saved_game.read<int32_t>(forceGripEntityNum);
+		saved_game.read<int32_t>(forceStasisEntityNum);
 		saved_game.read<float>(forceGripOrg);
 
 #ifndef JK2_MODE
@@ -2234,7 +2285,12 @@ public:
 		saved_game.read<int32_t>(vehTurnaroundTime);
 		saved_game.read<int32_t>(brokenLimbs);
 		saved_game.read<int32_t>(electrifyTime);
+		saved_game.read<int32_t>(stasisTime);
 #endif // !JK2_MODE
+		saved_game.read<int32_t>(shotsRemaining);
+		saved_game.read<int32_t>(tertiaryMode);
+		saved_game.read<int8_t>(firing_attack);
+		saved_game.read<int8_t>(prev_firing_attack);
 	}
 }; // PlayerStateBase
 
@@ -2262,6 +2318,8 @@ using playerState_t = PlayerStateBase<saberInfo_t>;
 
 #define	BUTTON_FORCE_FOCUS	256			// any key whatsoever
 
+#define BUTTON_FORCEGRASP	512			//
+
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set
 
@@ -2280,6 +2338,12 @@ typedef enum
 	GENCMD_FORCE_ABSORB,
 	GENCMD_FORCE_DRAIN,
 	GENCMD_FORCE_SEEING,
+	GENCMD_FORCE_STASIS,
+	GENCMD_FORCE_BLAST,
+	GENCMD_FORCE_GRASP,	
+	GENCMD_FORCE_DESTRUCTION,
+	GENCMD_FORCE_LIGHTNING_STRIKE,
+	GENCMD_FORCE_FEAR,
 } genCmds_t;
 
 
@@ -2749,6 +2813,13 @@ typedef enum
 	eForceReload_ALL
 
 } ForceReload_e;
+
+typedef enum
+{
+	PEF_BURNING,
+	PEF_FREEZING,
+
+} PlayerEffectFlags_e;
 
 qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte );
 void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte );

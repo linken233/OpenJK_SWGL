@@ -155,6 +155,10 @@ void CG_MissionFailed(void)
 				text = "@SP_INGAME_MISSIONFAILED_TURNED";
 					break;
 
+			case MISSIONFAILED_QUEEN:
+				text = "@SP_INGAME_MISSIONFAILED_QUEEN";
+				break;
+
 			default:
 				text = "@SP_INGAME_MISSIONFAILED_UNKNOWN";
 					break;
@@ -236,7 +240,10 @@ w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 0.8f);
 	if ( wpn )
 	{
 		gitem_t	*wItem= FindItemForWeapon( (weapon_t)wpn);
-		cgi_SP_GetStringTextString( va("SP_INGAME_%s",wItem->classname ), text, sizeof( text ));
+		if (!cgi_SP_GetStringTextString( va("SP_INGAME_%s",wItem->classname ), text, sizeof( text )))
+		{
+			cgi_SP_GetStringTextString( va("SPMOD_INGAME_%s",wItem->classname ), text, sizeof( text ));
+		}
 	//	cgi_R_Font_DrawString(x+w, y, va("%d",wpn), colorTable[CT_WHITE], cgs.media.qhFontSmall, -1, 0.8f);
 		cgi_R_Font_DrawString(x+w, y, text, colorTable[CT_WHITE], cgs.media.qhFontSmall, -1, 0.8f);
 	}

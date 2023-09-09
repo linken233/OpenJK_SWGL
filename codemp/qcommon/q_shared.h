@@ -27,16 +27,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#define PRODUCT_NAME			"openjk"
+#define PRODUCT_NAME			"SWGLMPconfig"
 
-#define CLIENT_WINDOW_TITLE "OpenJK (MP)"
-#define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
-#define HOMEPATH_NAME_UNIX "openjk"
-#define HOMEPATH_NAME_WIN "OpenJK"
+#define CLIENT_WINDOW_TITLE "Star Wars: Galactic Legacy MP"
+#define CLIENT_CONSOLE_TITLE "Star Wars: Galactic Legacy MP Console"
+#define HOMEPATH_NAME_UNIX "SWGL"
+#define HOMEPATH_NAME_WIN "SWGL"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
-#define OPENJKGAME "OpenJK"
+#define OPENJKGAME "SWGL"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
@@ -183,7 +183,7 @@ typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, cli
 #define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
 #define	MAX_TOKEN_CHARS		1024	// max length of an individual token
 
-#define	MAX_INFO_STRING		1024
+#define	MAX_INFO_STRING		4096
 #define	MAX_INFO_KEY		1024
 #define	MAX_INFO_VALUE		1024
 
@@ -358,6 +358,9 @@ typedef enum
 	SABER_GREEN,
 	SABER_BLUE,
 	SABER_PURPLE,
+	SABER_RGB,
+	SABER_UNSTABLE_RED,
+	SABER_BLACK,
 	NUM_SABER_COLORS
 } saber_colors_t;
 

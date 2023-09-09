@@ -36,6 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_music.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <ctime>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -45,6 +46,8 @@ static void S_SoundList_f(void);
 static void S_Music_f(void);
 static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
+
+static void S_MenuMusic_f(void);
 
 void S_Update_();
 void S_StopAllSounds(void);
@@ -483,6 +486,8 @@ void S_Init( void ) {
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
 	Cmd_AddCommand("mp3_calcvols", S_MP3_CalcVols_f);
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
+
+	Cmd_AddCommand("menumusic", S_MenuMusic_f);
 
 #ifdef USE_OPENAL
 	cvar_t *cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
@@ -3713,6 +3718,133 @@ static void S_Music_f( void ) {
 		Com_Printf ("music <musicfile> [loopfile]\n");
 		return;
 	}
+}
+
+static void S_MenuMusic_f(void) 
+{
+	if (atoi(Cvar_VariableString("disableMusicRepeat")) != 1) 
+	{
+		std::time_t tp = std::time(NULL);
+
+		std::tm* ts = std::localtime(&tp);
+
+		// April Fools day gets a special treat :)
+		if (ts->tm_mon == 3 && ts->tm_mday == 1)
+		{
+			// Using Q_irand(0, 1) always kept giving us 0.
+			// Idk why, so I guess we will use rand().
+			qboolean is_feelin_good_tonight = (qboolean)(rand() % 2);
+
+			if (is_feelin_good_tonight)
+			{
+				S_StartBackgroundTrack("music/imhansolo.mp3", "music/imhansolo.mp3", qfalse);
+			}
+			else
+			{
+				S_StartBackgroundTrack("music/empiretoday.mp3", "music/empiretoday.mp3", qfalse);
+			}
+
+			return;
+		}
+
+		// Using Q_irand(0, 21) always kept giving us 9.
+		// Idk why, so I guess we will use rand().
+		int music_pick = rand() % 28;
+
+		switch (music_pick)
+		{
+		case 0:
+			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
+			break;
+		case 1:
+			S_StartBackgroundTrack("music/sp/menu1.mp3", "music/sp/menu1.mp3", qfalse);
+			break;
+		case 2:
+			S_StartBackgroundTrack("music/sp/menu2.mp3", "music/sp/menu2.mp3", qfalse);
+			break;
+		case 3:
+			S_StartBackgroundTrack("music/sp/menu3.mp3", "music/sp/menu3.mp3", qfalse);
+			break;
+		case 4:
+			S_StartBackgroundTrack("music/sp/menu4.mp3", "music/sp/menu4.mp3", qfalse);
+			break;
+		case 5:
+			S_StartBackgroundTrack("music/sp/menu5.mp3", "music/sp/menu5.mp3", qfalse);
+			break;
+		case 6:
+			S_StartBackgroundTrack("music/sp/menu6.mp3", "music/sp/menu6.mp3", qfalse);
+			break;
+		case 7:
+			S_StartBackgroundTrack("music/sp/menu7.mp3", "music/sp/menu7.mp3", qfalse);
+			break;
+		case 8:
+			S_StartBackgroundTrack("music/sp/menu8.mp3", "music/sp/menu8.mp3", qfalse);
+			break;
+		case 9:
+			S_StartBackgroundTrack("music/sp/menu9.mp3", "music/sp/menu9.mp3", qfalse);
+			break;
+		case 10:
+			S_StartBackgroundTrack("music/sp/menu10.mp3", "music/sp/menu10.mp3", qfalse);
+			break;
+		case 11:
+			S_StartBackgroundTrack("music/sp/menu11.mp3", "music/sp/menu11.mp3", qfalse);
+			break;
+		case 12:
+			S_StartBackgroundTrack("music/sp/menu12.mp3", "music/sp/menu12.mp3", qfalse);
+			break;
+		case 13:
+			S_StartBackgroundTrack("music/sp/menu13.mp3", "music/sp/menu13.mp3", qfalse);
+			break;
+		case 14:
+			S_StartBackgroundTrack("music/sp/menu14.mp3", "music/sp/menu14.mp3", qfalse);
+			break;
+		case 15:
+			S_StartBackgroundTrack("music/sp/menu15.mp3", "music/sp/menu15.mp3", qfalse);
+			break;
+		case 16:
+			S_StartBackgroundTrack("music/sp/menu16.mp3", "music/sp/menu16.mp3", qfalse);
+			break;
+		case 17:
+			S_StartBackgroundTrack("music/sp/menu17.mp3", "music/sp/menu17.mp3", qfalse);
+			break;
+		case 18:
+			S_StartBackgroundTrack("music/sp/menu18.mp3", "music/sp/menu18.mp3", qfalse);
+			break;
+		case 19:
+			S_StartBackgroundTrack("music/sp/menu19.mp3", "music/sp/menu19.mp3", qfalse);
+			break;
+		case 20:
+			S_StartBackgroundTrack("music/sp/menu20.mp3", "music/sp/menu20.mp3", qfalse);
+			break;
+		case 21:
+			S_StartBackgroundTrack("music/sp/menu21.mp3", "music/sp/menu21.mp3", qfalse);
+			break;
+		case 22:
+			S_StartBackgroundTrack("music/sp/menu22.mp3", "music/sp/menu22.mp3", qfalse);
+			break;
+		case 23:
+			S_StartBackgroundTrack("music/sp/menu23.mp3", "music/sp/menu23.mp3", qfalse);
+			break;
+		case 24:
+			S_StartBackgroundTrack("music/sp/menu24.mp3", "music/sp/menu24.mp3", qfalse);
+			break;
+		case 25:
+			S_StartBackgroundTrack("music/sp/menu25.mp3", "music/sp/menu25.mp3", qfalse);
+			break;
+		case 26:
+			S_StartBackgroundTrack("music/sp/menu26.mp3", "music/sp/menu26.mp3", qfalse);
+			break;
+		case 27:
+			S_StartBackgroundTrack("music/sp/menu27.mp3", "music/sp/menu27.mp3", qfalse);
+			break;
+		default:
+			S_StartBackgroundTrack("music/sp/menu0.mp3", "music/sp/menu0.mp3", qfalse);
+			break;
+		}
+	}
+
+	return;
+		
 }
 
 static void S_StopMusic_f( void ) {

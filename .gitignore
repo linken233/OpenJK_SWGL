@@ -123,6 +123,11 @@ UpgradeLog*.XML
 # Visual Studio Code
 .vscode
 
+#################
+## Visual Studio Code
+#################
+*.vscode
+
 
 ############
 ## Windows

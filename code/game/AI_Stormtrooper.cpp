@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
+#include "NPC_SWGL.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
 
@@ -111,7 +112,7 @@ void Saboteur_Cloak( gentity_t *self )
 	{//FIXME: need to have this timer set once first?
 		if ( TIMER_Done( self, "nocloak" ) )
 		{//not sitting around waiting to cloak again
-			if ( !(self->NPC->aiFlags&NPCAI_SHIELDS) )
+			if ( !(self->NPC->aiFlags&NPCAI_SHIELDS) && (Q_stricmp("ep7_luke", self->NPC_type) && Q_stricmp("ep8_luke", self->NPC_type)))
 			{//not allowed to cloak, actually
 				Saboteur_Decloak( self );
 			}
@@ -121,7 +122,8 @@ void Saboteur_Cloak( gentity_t *self )
 				self->client->ps.powerups[PW_UNCLOAKING] = level.time + 2000;
 				//FIXME: debounce attacks?
 				//FIXME: temp sound
-				G_SoundOnEnt( self, CHAN_ITEM, "sound/chars/shadowtrooper/cloak.wav" );
+				if(Q_stricmp("ep7_luke", self->NPC_type) && Q_stricmp("ep8_luke", self->NPC_type))
+					G_SoundOnEnt( self, CHAN_ITEM, "sound/chars/shadowtrooper/cloak.wav" );
 			}
 		}
 	}
@@ -202,6 +204,44 @@ enum
 	SPEECH_YELL,
 	SPEECH_PUSHED
 };
+
+qboolean NPC_IsGunner(gentity_t* self)
+{
+	switch (self->client->NPC_class)
+	{
+	case CLASS_BESPIN_COP:
+	case CLASS_COMMANDO:
+	case CLASS_GALAK:
+	case CLASS_GRAN:
+	case CLASS_IMPERIAL:
+	case CLASS_IMPWORKER:
+	case CLASS_JAN:
+	case CLASS_LANDO:
+	case CLASS_GALAKMECH:
+	case CLASS_MONMOTHA:
+	case CLASS_PRISONER:
+	case CLASS_REBEL:
+	case CLASS_REELO:
+	case CLASS_RODIAN:
+	case CLASS_STORMTROOPER:
+	case CLASS_SWAMPTROOPER:
+	case CLASS_SABOTEUR:
+	case CLASS_TRANDOSHAN:
+	case CLASS_UGNAUGHT:
+	case CLASS_JAWA:
+	case CLASS_WEEQUAY:
+	case CLASS_BOBAFETT:
+	case CLASS_MANDALORIAN:
+	case CLASS_JANGO:
+	case CLASS_TUSKEN:
+		return qtrue;
+		break;
+	default:
+		break;
+	}
+
+	return qfalse;
+}
 
 static void ST_Speech( gentity_t *self, int speechType, float failChance )
 {
@@ -1267,7 +1307,9 @@ void NPC_BSST_Patrol( void )
 				ST_Speech( NPC, SPEECH_COVER, 0 );
 				return;
 			}
-			else if (NPC->client->NPC_class==CLASS_BOBAFETT)
+			else if (NPC->client->NPC_class == CLASS_BOBAFETT || 
+				NPC->client->NPC_class == CLASS_MANDALORIAN || 
+				NPC->client->NPC_class == CLASS_JANGO)
 			{
 				//NPCInfo->lastAlertID = level.alertEvents[eventID].ID;
 				if ( !level.alertEvents[alertEvent].owner ||
@@ -2617,7 +2659,7 @@ void NPC_BSST_Attack( void )
 
 	if ( NPC->enemy && NPC->enemy->enemy )
 	{
-		if ( NPC->enemy->s.weapon == WP_SABER && NPC->enemy->enemy->s.weapon == WP_SABER )
+		if ( Q_stricmp(HAVOC_MAJOR, NPC->NPC_type) && NPC->enemy->s.weapon == WP_SABER && NPC->enemy->enemy->s.weapon == WP_SABER)
 		{//don't shoot at an enemy jedi who is fighting another jedi, for fear of injuring one or causing rogue blaster deflections (a la Obi Wan/Vader duel at end of ANH)
 			shoot = qfalse;
 		}

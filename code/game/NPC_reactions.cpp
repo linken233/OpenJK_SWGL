@@ -350,7 +350,14 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 				{
 					pain_anim = PM_PickAnim( self, BOTH_PAIN1, BOTH_PAIN18 );
 				}
-				self->client->ps.saberAnimLevel = SS_FAST;//next attack must be a quick attack
+				if (self->client->ps.saberStylesKnown & (1 << SS_FAST))
+				{
+					self->client->ps.saberAnimLevel = SS_FAST;//next attack must be a quick attack
+				}
+				if (self->client->ps.saber[0].type == SABER_STAFF)
+				{
+					self->client->ps.saberAnimLevel = SS_STAFF;
+				}
 				self->client->ps.saberMove = LS_READY;//don't finish whatever saber move you may have been in
 				int parts = SETANIM_BOTH;
 				if ( PM_CrouchAnim( self->client->ps.legsAnim ) || PM_InCartwheel( self->client->ps.legsAnim ) )
@@ -569,7 +576,7 @@ void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const ve
 		G_UseTargets2(self, other, self->paintarget);
 	}
 
-	if (self->client && self->client->NPC_class==CLASS_BOBAFETT)
+	if (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDALORIAN || self->client->NPC_class == CLASS_JANGO))
 	{
 		Boba_Pain( self, inflictor, damage, mod);
 	}

@@ -39,18 +39,12 @@ static	shader_t		shader;
 static	texModInfo_t	texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
 
 // Hash value (generated using the generateHashValueForText function) for the original
-// retail JK2/JKA shader for gfx/2d/wedge.
-#ifdef JK2_MODE
-#define RETAIL_ROCKET_WEDGE_SHADER_HASH (1193966)
-#else
+// retail JKA shader for gfx/2d/wedge.
 #define RETAIL_ROCKET_WEDGE_SHADER_HASH (1217042)
-#endif
 
-#ifndef JK2_MODE
 // Hash value (generated using the generateHashValueForText function) for the original
 // retail JKA shader for gfx/menus/radar/arrow_w.
 #define RETAIL_ARROW_W_SHADER_HASH (1650186)
-#endif
 
 
 #define FILE_HASH_SIZE		1024
@@ -2455,7 +2449,7 @@ Ghoul2 Insert End
 
 	shader.explicitlyDefined = true;
 
-	// The basejk2/basejka rocket lock wedge shader uses the incorrect blending mode.
+	// The basejka rocket lock wedge shader uses the incorrect blending mode.
 	// It only worked because the shader state was not being set, and relied
 	// on previous state to be multiplied by alpha. Since fixing RB_RotatePic,
 	// the shader needs to be fixed here to render correctly.
@@ -2471,7 +2465,6 @@ Ghoul2 Insert End
 		stages[0].stateBits |= GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	}
 
-#ifndef JK2_MODE
 	// The basejka radar arrow contains an incorrect rgbGen of identity
 	// It only worked because the original code didn't check shaders at all,
 	// thus setcolor worked fine but with fixing RB_RotatePic it no longer
@@ -2486,7 +2479,6 @@ Ghoul2 Insert End
 		stages[0].rgbGen = CGEN_VERTEX;
 		stages[0].alphaGen = AGEN_VERTEX;
 	}
-#endif
 
 	COM_EndParseSession();
 	return qtrue;
@@ -3380,7 +3372,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 		return lightmapIndex;
 
 	// bail if no world dir
-	if( tr.worldDir[0] == '\0' )
+	if( tr.worldDir[0] == '\0')
 	{
 		return lightmapsVertex;
 	}

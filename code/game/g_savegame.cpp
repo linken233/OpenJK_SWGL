@@ -74,6 +74,15 @@ static const save_field_t savefields_gEntity[] =
 	{strFOFS(NPC_targetname),	F_STRING},
 	{strFOFS(NPC_target),		F_STRING},
 	{strFOFS(ownername),		F_STRING},
+	{strFOFS(NPC_skin),			F_STRING},
+	{strFOFS(NPC_team),			F_STRING},
+	{strFOFS(NPC_Weapon),		F_STRING},
+	{strFOFS(NPC_SaberOne),		F_STRING},
+	{strFOFS(NPC_SaberTwo),		F_STRING},
+	{strFOFS(NPC_SaberOneColor),F_STRING},
+	{strFOFS(NPC_SaberTwoColor),F_STRING},
+	{strFOFS(NPC_LightningColor),F_STRING},
+	{strFOFS(NPC_LightningVictim),F_STRING},
 	{strFOFS(lastEnemy),		F_GENTITY},
 	{strFOFS(behaviorSet),		F_BEHAVIORSET},
 	{strFOFS(script_targetname),F_STRING},
@@ -1146,6 +1155,10 @@ static void ReadGEntities(qboolean qbAutosave)
 		if (pEnt->m_pVehicle)	// will be qtrue/qfalse
 		{
 			Vehicle_t tempVehicle;
+
+			// initialize the vehicle cache g_vehicleInfo
+			// Calling this function fixes the vehicle crashing issue
+			BG_VehicleGetIndex(pEnt->NPC_type);
 
 			EvaluateFields(savefields_gVHIC, &tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'));
 
