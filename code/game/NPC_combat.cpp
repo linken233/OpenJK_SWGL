@@ -329,6 +329,7 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 			attDelay -= Q_irand( 500, 1500 );
 			break;
 		case WP_DISRUPTOR://sniper's don't delay?
+		case WP_CIS_SNIPER:
 			return;
 			break;
 		case WP_THERMAL://grenade-throwing has a built-in delay
@@ -764,6 +765,7 @@ void ChangeWeapon(gentity_t *ent, int newWeapon)
 		break;
 
 	case WP_DISRUPTOR:
+	case WP_CIS_SNIPER:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
 		if (ent->NPC->scriptFlags & SCF_ALT_FIRE)
 		{
@@ -1537,6 +1539,7 @@ float NPC_MaxDistSquaredForWeapon (void)
 		break;
 
 	case WP_DISRUPTOR://disruptor
+	case WP_CIS_SNIPER:
 	case WP_TUSKEN_RIFLE:
 		if ( NPCInfo->scriptFlags & SCF_ALT_FIRE )
 		{

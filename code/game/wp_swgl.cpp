@@ -951,3 +951,132 @@ void WP_FireSBD(gentity_t *ent)
 		missile->bounceCount = 8;
 	}
 }
+
+
+//---------------------------------------------------------
+// E-5s Sniper Rifle
+//---------------------------------------------------------
+void WP_FireCISSniper(gentity_t* ent, qboolean alt_fire)
+{
+	vec3_t	dir, angs;
+	qboolean scoped = is_player_scoped(ent);
+
+	vectoangles(forwardVec, angs);
+	is_player_alt_firing(ent, WP_CIS_SNIPER, &alt_fire);
+
+	if (ent->client && ent->client->NPC_class == CLASS_VEHICLE)
+	{//no inherent aim screw up
+	}
+	else if (scoped)
+	{
+		// angs[PITCH] += Q_flrand(-0.5f, 0.5f) * 0.01;
+		// angs[YAW] += Q_flrand(-0.25f, 0.25f) * 0.01;
+
+		AngleVectors(ent->client->renderInfo.eyeAngles, forwardVec, NULL, NULL);
+		vectoangles(forwardVec, angs);
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_ALT_SPREAD;
+		angs[YAW] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_ALT_SPREAD;
+	}
+	else if (!(ent->client->ps.forcePowersActive & (1 << FP_SEE))
+		|| ent->client->ps.forcePowerLevel[FP_SEE] < FORCE_LEVEL_2)
+	{//force sight 2+ gives perfect aim
+		// Troopers use their aim values as well as the gun's inherent inaccuracy
+		// so check for all classes of stormtroopers and anyone else that has aim error
+		if (ent->client && ent->NPC &&
+			(ent->client->NPC_class == CLASS_STORMTROOPER ||
+				ent->client->NPC_class == CLASS_SWAMPTROOPER))
+		{
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_NPC_SPREAD;
+			angs[YAW] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_NPC_SPREAD;
+		}
+		else
+		{
+			// add some slop to the main-fire direction if we're not in scope
+			if (!scoped)
+			{
+				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_MAIN_SPREAD;
+				angs[YAW] += Q_flrand(-1.0f, 1.0f) * CIS_SNIPER_MAIN_SPREAD;
+			}
+		}
+	}
+
+	if (scoped)
+	{
+		AngleVectors(angs, forwardVec, NULL, NULL);
+		WP_FireCISSniperMissile(ent, ent->client->renderInfo.eyePoint, forwardVec, scoped);
+	}
+	else
+	{
+		AngleVectors(angs, dir, NULL, NULL);
+		// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
+		WP_FireCISSniperMissile(ent, muzzle, dir, scoped);
+	}
+}
+
+//---------------
+//	E-5s Sniper Rifle
+//---------------
+
+//---------------------------------------------------------
+void WP_FireCISSniperMissile(gentity_t* ent, vec3_t start, vec3_t dir, qboolean scoped)
+//---------------------------------------------------------
+{
+	int velocity = CIS_SNIPER_VELOCITY;;
+	int	damage = weaponData[WP_CIS_SNIPER].damage;
+
+	// If an enemy is shooting at us, lower the velocity so you have a chance to evade
+	if (ent->client && ent->client->ps.clientNum != 0 && (ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDALORIAN && ent->client->NPC_class != CLASS_JANGO))
+	{
+		if (g_spskill->integer < 2)
+		{
+			//velocity *= CIS_SNIPER_NPC_VEL_CUT;
+		}
+		else
+		{
+			//velocity *= CIS_SNIPER_NPC_HARD_VEL_CUT;
+		}
+	}
+	
+
+	WP_TraceSetStart(ent, start, vec3_origin, vec3_origin);//make sure our start point isn't on the other side of a wall
+
+	WP_MissileTargetHint(ent, start, dir);
+
+	gentity_t* missile = CreateMissile(start, dir, velocity, 10000, ent);
+
+	missile->classname = "blaster_proj";
+	missile->s.weapon = WP_CIS_SNIPER;
+
+	if (ent != player)
+	{
+		// Do the damages
+		if (g_spskill->integer == 0)
+		{
+			damage = CIS_SNIPER_NPC_DAMAGE_EASY;
+		}
+		else if (g_spskill->integer == 1)
+		{
+			damage = CIS_SNIPER_NPC_DAMAGE_NORMAL;
+		}
+		else
+		{
+			damage = CIS_SNIPER_NPC_DAMAGE_HARD;
+		}
+	}
+	else
+	{
+		// Being scoped should improve damage
+		if (scoped)
+		{
+			damage = CIS_SNIPER_SCOPE_DAMAGE;
+		}
+	}	
+
+	missile->damage = damage;
+	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+	missile->methodOfDeath = MOD_CIS_SNIPER;
+	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+	// we don't want it to bounce forever
+	missile->bounceCount = 8;
+}

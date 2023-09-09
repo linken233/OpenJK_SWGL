@@ -14113,6 +14113,7 @@ static void PM_Weapon( void )
 				break;
 
 			case WP_DISRUPTOR:
+			case WP_CIS_SNIPER:
 				if ( ((pm->ps->clientNum >= MAX_CLIENTS&&!PM_ControlledByPlayer())&& pm->gent && pm->gent->NPC && (pm->gent->NPC->scriptFlags&SCF_ALT_FIRE)) ||
 					((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.zoomMode == 2 ) )
 				{//NPC or player in alt-fire, sniper mode
@@ -14961,6 +14962,10 @@ void PM_AdjustAttackStates( pmove_t *pm )
 						break;
 					case ST_F11D:
 						cg.zoomMode = ST_F11D;
+						cg_zoomFov = 25.0f;
+						break;
+					case ST_E5:
+						cg.zoomMode = ST_E5;
 						cg_zoomFov = 25.0f;
 						break;
 				}

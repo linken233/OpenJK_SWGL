@@ -2376,6 +2376,10 @@ static void CG_DrawZoomMask( void )
 				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/f11dMask");
 				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/f11dInsert");
 				break;
+			case ST_E5:
+				cgs.media.scopeTypeMask = cgi_R_RegisterShader("gfx/2d/cis_cropcircle2");
+				cgs.media.scopeTypeInsert = cgi_R_RegisterShader("gfx/2d/f11dInsert");
+				break;
 		}
 
 		// I probably shouldn't hard code this, but oh well.

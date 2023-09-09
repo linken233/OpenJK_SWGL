@@ -6033,6 +6033,7 @@ void PM_TorsoAnimation( void )
 					//PM_SetAnim(pm,SETANIM_LEGS,BOTH_ATTACK2,SETANIM_FLAG_NORMAL);
 					break;
 				case WP_DISRUPTOR:
+				case WP_CIS_SNIPER:
 				case WP_TUSKEN_RIFLE:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING
@@ -6219,6 +6220,7 @@ void PM_TorsoAnimation( void )
 				&& pm->ps->weapon != WP_CLONECOMMANDO
 				&& pm->ps->weapon != WP_REBELRIFLE
 				&& pm->ps->weapon != WP_BOBA
+				&& pm->ps->weapon != WP_CIS_SNIPER
 				&& ( PM_RunningAnim( pm->ps->legsAnim )
 					|| (PM_WalkingAnim( pm->ps->legsAnim ) && (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()))
 					|| PM_JumpingAnim( pm->ps->legsAnim )
@@ -6360,6 +6362,7 @@ void PM_TorsoAnimation( void )
 					break;
 
 				case WP_DISRUPTOR:
+				case WP_CIS_SNIPER:
 				case WP_TUSKEN_RIFLE:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING

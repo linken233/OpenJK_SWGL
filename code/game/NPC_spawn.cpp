@@ -743,6 +743,7 @@ void NPC_SetMiscDefaultData(gentity_t *ent)
 				case WP_BRYAR_PISTOL:
 					break;
 				case WP_DISRUPTOR:
+				case WP_CIS_SNIPER:
 					//Sniper
 					//ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
 					break;

@@ -170,7 +170,8 @@ qboolean playerUsableWeapons[WP_NUM_WEAPONS] =
 	qtrue,//WP_CLONECOMMANDO,
 	qtrue,//WP_REBELRIFLE,
 	qtrue,//WP_BOBA
-	qtrue//WP_SBD
+	qtrue,//WP_SBD
+	qtrue//WP_CIS_SNIPER
 
 	//# #eol
 	//WP_NUM_WEAPONS
@@ -304,7 +305,8 @@ const int defaultDamage[] = {
 	CLONECOMMANDO_DAMAGE,		// WP_CLONECOMMANDO
 	REBELRIFLE_DAMAGE,			// WP_REBELRIFLE
 	BOBA_DAMAGE,				// WP_BOBA
-	SBD_DAMAGE					// WP_SBD
+	SBD_DAMAGE,					// WP_SBD
+	CIS_SNIPER_DAMAGE			// WP_CIS_SNIPER
 };
 
 const int defaultAltDamage[] = {
@@ -348,7 +350,8 @@ const int defaultAltDamage[] = {
 	CLONECOMMANDO_ALT_DAMAGE,// WP_CLONECOMMANDO
 	REBELRIFLE_SCOPE_DAMAGE,// WP_REBELRIFLE
 	BOBA_SCOPE_DAMAGE,		// WP_BOBA
-	0						// WP_SBD
+	0,						// WP_SBD
+	CIS_SNIPER_SCOPE_DAMAGE
 };
 
 const int defaultSplashDamage[] = {
@@ -392,7 +395,8 @@ const int defaultSplashDamage[] = {
 	0,				   				// WP_CLONECOMMANDO
 	0,						   	 	// WP_REBELRIFLE
 	0,				   				// WP_BOBA
-	0				   				// WP_SBD
+	0,				   				// WP_SBD
+	0				   				// WP_CIS_SNIPER
 };
 
 const float defaultSplashRadius[] = {
@@ -436,7 +440,8 @@ const float defaultSplashRadius[] = {
 	0.0f,							// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
 	0.0f,							// WP_BOBA
-	0.0f							// WP_SBD
+	0.0f,							// WP_SBD
+	0.0f							// WP_CIS_SNIPER
 };
 
 const int defaultAltSplashDamage[] = {
@@ -480,7 +485,8 @@ const int defaultAltSplashDamage[] = {
 	CLONECOMMANDO_ALT_SPLASH_DAMAGE,// WP_CLONECOMMANDO
 	0,				   				// WP_REBELRIFLE
 	0,				   				// WP_BOBA
-	0				   				// WP_SBD
+	0,				   				// WP_SBD
+	0				   				// WP_CIS_SNIPER
 };
 
 const float defaultAltSplashRadius[] = {
@@ -524,7 +530,8 @@ const float defaultAltSplashRadius[] = {
 	CLONECOMMANDO_ALT_SPLASH_RADIUS,// WP_CLONECOMMANDO
 	0.0f,							// WP_REBELRIFLE
 	0.0f,							// WP_BOBA
-	0.0f							// WP_SBD
+	0.0f,							// WP_SBD
+	0.0f							// WP_CIS_SNIPER
 };
 
 wpnParms_t WpnParms[] =
@@ -690,6 +697,8 @@ void WPN_WeaponType( const char **holdBuf)
 		weaponNum = WP_BOBA;
 	else if (!Q_stricmp(tokenStr, "WP_SBD"))
 		weaponNum = WP_SBD;
+	else if (!Q_stricmp(tokenStr, "WP_CIS_SNIPER"))
+		weaponNum = WP_CIS_SNIPER;
 	else
 	{
 		weaponNum = 0;
@@ -1695,7 +1704,7 @@ void WPN_ScopeType(const char **holdBuf)
 	// This is for cg.zoommode.
 	tokenInt += 3;
 
-    if ((tokenInt < ST_A280) || (tokenInt > ST_F11D ))
+    if ((tokenInt < ST_A280) || (tokenInt > ST_E5 ))
     {
         gi.Printf(S_COLOR_YELLOW"WARNING: bad scopeType in external weapon data '%d'\n", tokenInt);
         return;

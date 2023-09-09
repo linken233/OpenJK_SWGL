@@ -251,6 +251,7 @@ gentity_t *TossClientItems( gentity_t *self )
 					dropped->count = 15;
 					break;
 				case WP_DISRUPTOR:
+				case WP_CIS_SNIPER:
 					dropped->count = 20;
 					break;
 				case WP_BOWCASTER:
@@ -5475,6 +5476,10 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_BOBA_ALT:
 			weapon = WP_BOBA;
 			break;
+		case MOD_CIS_SNIPER:
+		case MOD_CIS_SNIPER_ALT:
+			weapon = WP_CIS_SNIPER;
+			break;
 		}
 	}
 	if ( weapon != WP_NONE )
@@ -6068,6 +6073,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_BOBA:
 				case MOD_BOBA_ALT:
 				case MOD_SBD:
+				case MOD_CIS_SNIPER:
+				case MOD_CIS_SNIPER_ALT:
 				case MOD_REPEATER:
 				case MOD_FLECHETTE:
 				case MOD_WATER:

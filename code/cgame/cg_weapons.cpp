@@ -512,6 +512,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 	case WP_REBELRIFLE:
 	case WP_BOBA:
 	case WP_SBD:
+	case WP_CIS_SNIPER:
 		cgs.effects.blasterShotEffect			= theFxScheduler.RegisterEffect( "blaster/shot" );
 													theFxScheduler.RegisterEffect( "blaster/NPCshot" );
 //		cgs.effects.blasterOverchargeEffect		= theFxScheduler.RegisterEffect( "blaster/overcharge" );
@@ -1597,6 +1598,7 @@ const char *weaponDesc[WP_NUM_WEAPONS - 1] =
 "REBELRIFLE_DESC",
 "BOBA_DESC",
 "SBD_DESC",
+"CIS_SNIPER_DESC",
 };
 
 const char *dynWpnDesc[DYN_WP_NUM_WEAPONS-1] =
@@ -3512,6 +3514,7 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 	case WP_REBELRIFLE:
 	case WP_BOBA:
 	case WP_SBD:
+	case WP_CIS_SNIPER:
 		FX_BlasterWeaponHitWall( origin, dir );
 		break;
 
@@ -3693,6 +3696,7 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 	case WP_REBELRIFLE:
 	case WP_BOBA:
 	case WP_SBD:
+	case WP_CIS_SNIPER:
 		FX_BlasterWeaponHitPlayer(other, origin, dir, humanoid);
 		break;
 

@@ -80,7 +80,8 @@ float weaponSpeed[WP_NUM_WEAPONS][2] =
 	{ CLONECOMMANDO_VELOCITY, CLONECOMMANDO_VELOCITY },// WP_CLONECOMMANDO
 	{ REBELRIFLE_VELOCITY, REBELRIFLE_VELOCITY },// WP_REBELRIFLE
 	{ BOBA_VELOCITY, BOBA_VELOCITY },// WP_BOBA
-	{ SBD_VELOCITY, SBD_VELOCITY }// WP_SBD
+	{ SBD_VELOCITY, SBD_VELOCITY },// WP_SBD
+	{ CIS_SNIPER_VELOCITY, CIS_SNIPER_VELOCITY }// WP_CIS_SNIPER
 };
 
 float WP_SpeedOfMissileForWeapon( int wp, qboolean alt_fire )
@@ -358,6 +359,8 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		case MOD_BOBA:
 		case MOD_BOBA_ALT:
 		case MOD_SBD:
+		case MOD_CIS_SNIPER:
+		case MOD_CIS_SNIPER_ALT:
 		case MOD_DISRUPTOR:
 		case MOD_SNIPER:
 		case MOD_BOWCASTER:
@@ -406,6 +409,7 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		case WP_REBELRIFLE:
 		case WP_BOBA:
 		case WP_SBD:
+		case WP_CIS_SNIPER:
 			return qtrue;
 			break;
 		//non-alt standard
@@ -511,6 +515,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t forwardVec, vec3_t right, vec
 	case WP_REBELRIFLE:
 	case WP_BOBA:
 	case WP_SBD:
+	case WP_CIS_SNIPER:
 		ViewHeightFix(ent);
 		muzzlePoint[2] += ent->client->ps.viewheight;//By eyes
 		muzzlePoint[2] -= 1;
@@ -597,7 +602,8 @@ vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] =
 	{12,	6,		-6  },  // WP_CLONECOMMANDO,
 	{12,	6,		-6  },  // WP_REBELRIFLE,
 	{12,	6,		-6	},	// WP_BOBA,
-	{12,	6,		-6	}	// WP_SBD,
+	{12,	6,		-6	},	// WP_SBD,
+	{12,	6,		-6	}	// WP_CIS_SNIPER,
 };
 
 void WP_RocketLock( gentity_t *ent, float lockDist )
@@ -1232,7 +1238,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	}
 
 	// set aiming directions
-	if ( ent->s.weapon == WP_DISRUPTOR && alt_fire )
+	if ( (ent->s.weapon == WP_DISRUPTOR || ent->s.weapon == WP_CIS_SNIPER) && alt_fire )
 	{
 		if ( ent->NPC )
 		{
@@ -1594,6 +1600,9 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		{
 			WP_FireSBD(ent);
 		}
+		break;
+	case WP_CIS_SNIPER:
+		WP_FireCISSniper(ent, alt_fire);
 		break;
 
 	case WP_TUSKEN_STAFF:

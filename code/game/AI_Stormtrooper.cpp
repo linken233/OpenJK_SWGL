@@ -2406,7 +2406,7 @@ void NPC_BSST_Attack( void )
 	}
 	else if ( enemyDist > 65536 )//256 squared
 	{
-		if ( NPC->client->ps.weapon == WP_DISRUPTOR )
+		if ( NPC->client->ps.weapon == WP_DISRUPTOR || NPC->client->ps.weapon == WP_CIS_SNIPER)
 		{//sniping...
 			if ( !(NPCInfo->scriptFlags&SCF_ALT_FIRE) )
 			{//use primary fire

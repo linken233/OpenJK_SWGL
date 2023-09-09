@@ -103,59 +103,59 @@ static void IT_Name(const char **holdBuf)
 	}
 
 
-	if (!Q_stricmp(tokenStr,"ITM_NONE"))
+	if (!Q_stricmp(tokenStr, "ITM_NONE"))
 		itemNum = ITM_NONE;
-	else if (!Q_stricmp(tokenStr,"ITM_STUN_BATON_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_STUN_BATON_PICKUP"))
 		itemNum = ITM_STUN_BATON_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_SABER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_SABER_PICKUP"))
 		itemNum = ITM_SABER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_BRYAR_PISTOL_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_BRYAR_PISTOL_PICKUP"))
 		itemNum = ITM_BRYAR_PISTOL_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_BLASTER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_BLASTER_PICKUP"))
 		itemNum = ITM_BLASTER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_DISRUPTOR_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_DISRUPTOR_PICKUP"))
 		itemNum = ITM_DISRUPTOR_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_BOWCASTER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_BOWCASTER_PICKUP"))
 		itemNum = ITM_BOWCASTER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_REPEATER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_REPEATER_PICKUP"))
 		itemNum = ITM_REPEATER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_DEMP2_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_DEMP2_PICKUP"))
 		itemNum = ITM_DEMP2_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_FLECHETTE_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_FLECHETTE_PICKUP"))
 		itemNum = ITM_FLECHETTE_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_ROCKET_LAUNCHER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_ROCKET_LAUNCHER_PICKUP"))
 		itemNum = ITM_ROCKET_LAUNCHER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_THERMAL_DET_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_THERMAL_DET_PICKUP"))
 		itemNum = ITM_THERMAL_DET_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_TRIP_MINE_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_TRIP_MINE_PICKUP"))
 		itemNum = ITM_TRIP_MINE_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_DET_PACK_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_DET_PACK_PICKUP"))
 		itemNum = ITM_DET_PACK_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_BOT_LASER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_BOT_LASER_PICKUP"))
 		itemNum = ITM_BOT_LASER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_EMPLACED_GUN_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_EMPLACED_GUN_PICKUP"))
 		itemNum = ITM_EMPLACED_GUN_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_TURRET_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_TURRET_PICKUP"))
 		itemNum = ITM_TURRET_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_MELEE"))
+	else if (!Q_stricmp(tokenStr, "ITM_MELEE"))
 		itemNum = ITM_MELEE;
-	else if (!Q_stricmp(tokenStr,"ITM_ATST_MAIN_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_ATST_MAIN_PICKUP"))
 		itemNum = ITM_ATST_MAIN_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_ATST_SIDE_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_ATST_SIDE_PICKUP"))
 		itemNum = ITM_ATST_SIDE_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_TIE_FIGHTER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_TIE_FIGHTER_PICKUP"))
 		itemNum = ITM_TIE_FIGHTER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_RAPID_FIRE_CONC_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_RAPID_FIRE_CONC_PICKUP"))
 		itemNum = ITM_RAPID_FIRE_CONC_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_JAWA_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_JAWA_PICKUP"))
 		itemNum = ITM_JAWA_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_TUSKEN_RIFLE_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_TUSKEN_RIFLE_PICKUP"))
 		itemNum = ITM_TUSKEN_RIFLE_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_TUSKEN_STAFF_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_TUSKEN_STAFF_PICKUP"))
 		itemNum = ITM_TUSKEN_STAFF_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_SCEPTER_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_SCEPTER_PICKUP"))
 		itemNum = ITM_SCEPTER_PICKUP;
-	else if (!Q_stricmp(tokenStr,"ITM_NOGHRI_STICK_PICKUP"))
+	else if (!Q_stricmp(tokenStr, "ITM_NOGHRI_STICK_PICKUP"))
 		itemNum = ITM_NOGHRI_STICK_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_THEFIRSTORDER_PICKUP"))
 		itemNum = ITM_THEFIRSTORDER_PICKUP;
@@ -169,6 +169,8 @@ static void IT_Name(const char **holdBuf)
 		itemNum = ITM_BOBA_PICKUP;
 	else if (!Q_stricmp(tokenStr, "ITM_SBD_PICKUP"))
 		itemNum = ITM_SBD_PICKUP;
+	else if (!Q_stricmp(tokenStr, "ITM_CIS_SNIPER_PICKUP"))
+		itemNum = ITM_CIS_SNIPER_PICKUP;
 
 	else if (!Q_stricmp(tokenStr, "ITM_REY_PICKUP"))
 		itemNum = ITM_REY_PICKUP;
@@ -412,6 +414,8 @@ static void IT_Tag(const char **holdBuf)
 		tag = WP_BOBA;
 	else if (!Q_stricmp(tokenStr, "WP_SBD"))
 		tag = WP_SBD;
+	else if (!Q_stricmp(tokenStr, "WP_CIS_SNIPER"))
+		tag = WP_CIS_SNIPER;
 	else if (!Q_stricmp(tokenStr,"AMMO_FORCE"))
 		tag = AMMO_FORCE;
 	else if (!Q_stricmp(tokenStr,"AMMO_BLASTER"))

@@ -85,6 +85,7 @@ typedef enum //# weapon_e
 	WP_REBELRIFLE,
 	WP_BOBA,
 	WP_SBD,
+	WP_CIS_SNIPER,
 
 	//# #eol
 	// Make sure to update MAX_NUM_WEAPONS
@@ -163,7 +164,8 @@ enum scopeType
 	ST_A280 = 4,
 	ST_DC17M,
 	ST_EE3,
-	ST_F11D
+	ST_F11D,
+	ST_E5
 };
 
 
@@ -579,6 +581,20 @@ typedef struct dynamicWpnData_s
 #define SBD_NPC_DAMAGE_HARD		8
 #define SBD_LEFT_SHOT			-3.0f
 #define SBD_RIGHT_SHOT			5.0f
+
+// E-5s Sniper Rifle
+//---------
+#define CIS_SNIPER_MAIN_SPREAD			0.8f
+#define CIS_SNIPER_ALT_SPREAD			0.2f
+#define CIS_SNIPER_NPC_SPREAD			0.5f
+#define CIS_SNIPER_VELOCITY 			4000
+#define CIS_SNIPER_NPC_VEL_CUT			0.5f
+#define CIS_SNIPER_NPC_HARD_VEL_CUT 	0.7f
+#define CIS_SNIPER_DAMAGE				15
+#define CIS_SNIPER_SCOPE_DAMAGE 		25
+#define CIS_SNIPER_NPC_DAMAGE_EASY		6
+#define CIS_SNIPER_NPC_DAMAGE_NORMAL	12
+#define CIS_SNIPER_NPC_DAMAGE_HARD		16
 
 
 #endif//#ifndef __WEAPONS_H__

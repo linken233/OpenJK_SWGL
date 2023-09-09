@@ -645,6 +645,8 @@ typedef enum {
 	MOD_BOBA,
 	MOD_BOBA_ALT,
 	MOD_SBD,
+	MOD_CIS_SNIPER,
+	MOD_CIS_SNIPER_ALT,
 
 // world / generic
 	MOD_ELECTROCUTE,
