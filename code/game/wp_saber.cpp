@@ -435,7 +435,7 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, i
 		return;
 	}
 
-	if ( ent && ent->client && ent->client->NPC_class == CLASS_GALAKMECH )
+	if ( ent && ent->client && (ent->client->NPC_class == CLASS_GALAKMECH || ent->client->ps.weapon == WP_SBD) )
 	{//hack for galakmech, no weaponmodel
 		ent->weaponModel[0] = ent->weaponModel[1] = -1;
 		return;

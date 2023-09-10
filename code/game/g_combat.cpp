@@ -120,6 +120,17 @@ void AddScore( gentity_t *ent, int score ) {
 	ent->client->ps.persistant[PERS_SCORE] += score;
 }
 
+static qboolean IsWeaponDroppable(int weapon)
+{
+	switch (weapon)
+	{
+		case WP_SBD:
+			return qfalse;
+		default:
+			return qtrue;
+	}
+}
+
 /*
 =================
 TossClientItems
@@ -136,7 +147,6 @@ gentity_t *TossClientItems( gentity_t *self )
 	gentity_t	*dropped2 = NULL;
 	gitem_t		*item = NULL;
 	int			weapon;
-	qboolean 	is_pistol = qfalse;
 
 	if ( self->client->NPC_class == CLASS_SEEKER
 		|| self->client->NPC_class == CLASS_REMOTE
@@ -150,10 +160,6 @@ gentity_t *TossClientItems( gentity_t *self )
 
 	// drop the weapon if not a saber or enemy-only weapon
 	weapon = self->s.weapon;
-	is_pistol = (qboolean)(self->weaponModel[1] > 0 && (weapon == WP_BLASTER_PISTOL
-							|| weapon == WP_REY
-							|| weapon == WP_JANGO
-							|| weapon == WP_CLONEPISTOL));
 
 	if ( weapon == WP_SABER )
 	{
@@ -209,9 +215,17 @@ gentity_t *TossClientItems( gentity_t *self )
 		}
 		else
 		{// find the item type for this weapon
-			item = FindItemForWeapon( (weapon_t) weapon );
+			if (self->client->ps.dynWpnVals[weapon])
+			{
+				int dynWpnNum = CG_GetDynWpnNum(weapon, self->client->ps.dynWpnVals[weapon]);
+				item = FindItemForDynWeapon((dynamicWeapon_t)dynWpnNum);
+			}
+			else
+			{
+				item = FindItemForWeapon( (weapon_t) weapon );
+			}
 		}
-		if ( item && !dropped )
+		if ( item && !dropped && IsWeaponDroppable(weapon) )
 		{
 			// spawn the item
 			dropped = Drop_Item( self, item, 0, qtrue );
@@ -237,6 +251,7 @@ gentity_t *TossClientItems( gentity_t *self )
 					dropped->count = 15;
 					break;
 				case WP_DISRUPTOR:
+				case WP_CIS_SNIPER:
 					dropped->count = 20;
 					break;
 				case WP_BOWCASTER:
@@ -275,17 +290,11 @@ gentity_t *TossClientItems( gentity_t *self )
 				case WP_NOGHRI_STICK:
 					dropped->count = 15;
 					break;
-				case WP_BATTLEDROID:
 				case WP_THEFIRSTORDER:
 				case WP_CLONECARBINE:
-				case WP_REBELBLASTER:
-				case WP_CLONERIFLE:
 				case WP_CLONECOMMANDO:
 				case WP_REBELRIFLE:
-				case WP_REY:
-				case WP_JANGO:
 				case WP_BOBA:
-				case WP_CLONEPISTOL:
 					dropped->count = 50;
 					break;
 				default:
@@ -303,7 +312,7 @@ gentity_t *TossClientItems( gentity_t *self )
 			}
 		}
 
-		if (item && !dropped2 && is_pistol)
+		if (item && !dropped2 && self->weaponModel[1] > 0 && CG_IsWeaponPistol(self))
 		{
 			dropped2 = Drop_Item(self, item, 45, qtrue);
 			dropped2->e_ThinkFunc = thinkF_NULL;
@@ -319,11 +328,6 @@ gentity_t *TossClientItems( gentity_t *self )
 				{
 					case WP_BLASTER_PISTOL:
 						dropped2->count = 20;
-						break;
-					case WP_REY:
-					case WP_JANGO:
-					case WP_CLONEPISTOL:
-						dropped2->count = 50;
 						break;
 					default:
 						dropped2->count = 0;
@@ -5456,16 +5460,9 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_BLASTER:
 		case MOD_BLASTER_ALT:
 			weapon = WP_BLASTER;
-			weapon = WP_THEFIRSTORDER;
-			weapon = WP_CLONECARBINE;
 			break;
-		case MOD_CLONERIFLE:
-		case MOD_CLONERIFLE_ALT:
-			weapon = WP_CLONERIFLE;
-			break;
-		case MOD_REBELBLASTER:
-		case MOD_REBELBLASTER_ALT:
-			weapon = WP_REBELBLASTER;
+		case MOD_SBD:
+			weapon = WP_SBD;
 			break;
 		case MOD_CLONECOMMANDO:
 		case MOD_CLONECOMMANDO_ALT:
@@ -5475,21 +5472,13 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 		case MOD_REBELRIFLE_ALT:
 			weapon = WP_REBELRIFLE;
 			break;
-		case MOD_REY:
-		case MOD_REY_ALT:
-			weapon = WP_REY;
-			break;
-		case MOD_CLONEPISTOL:
-		case MOD_CLONEPISTOL_ALT:
-			weapon = WP_CLONEPISTOL;
-			break;
-		case MOD_JANGO:
-		case MOD_JANGO_ALT:
-			weapon = WP_JANGO;
-			break;
 		case MOD_BOBA:
 		case MOD_BOBA_ALT:
 			weapon = WP_BOBA;
+			break;
+		case MOD_CIS_SNIPER:
+		case MOD_CIS_SNIPER_ALT:
+			weapon = WP_CIS_SNIPER;
 			break;
 		}
 	}
@@ -6020,22 +6009,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_BLASTER:
 				case MOD_BLASTER_ALT:
 				case MOD_REPEATER:
-				case MOD_REBELBLASTER:
-				case MOD_REBELBLASTER_ALT
-				case MOD_CLONERIFLE:
-				case MOD_CLONERIFLE_ALT
-				case MOD_CLONECOMMANDO:
-				case MOD_CLONECOMMANDO_ALT
-				case MOD_REBELRIFLE:
-				case MOD_REBELRIFLE_ALT
-				case MOD_REY:
-				case MOD_REY_ALT
-				case MOD_JANGO:
-				case MOD_JANGO_ALT
-				case MOD_BOBA:
-				case MOD_BOBA_ALT
-				case MOD_CLONEPISTOL:
-				case MOD_CLONEPISTOL_ALT
 				case MOD_FLECHETTE:
 				case MOD_WATER:
 				case MOD_SLIME:
@@ -6093,22 +6066,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_BRYAR_ALT:
 				case MOD_BLASTER:
 				case MOD_BLASTER_ALT:
-				case MOD_REBELBLASTER:
-				case MOD_REBELBLASTER_ALT:
-				case MOD_CLONERIFLE:
-				case MOD_CLONERIFLE_ALT:
 				case MOD_CLONECOMMANDO:
 				case MOD_CLONECOMMANDO_ALT:
 				case MOD_REBELRIFLE:
 				case MOD_REBELRIFLE_ALT:
-				case MOD_REY:
-				case MOD_REY_ALT:
-				case MOD_CLONEPISTOL:
-				case MOD_CLONEPISTOL_ALT:
-				case MOD_JANGO:
-				case MOD_JANGO_ALT:
 				case MOD_BOBA:
 				case MOD_BOBA_ALT:
+				case MOD_SBD:
+				case MOD_CIS_SNIPER:
+				case MOD_CIS_SNIPER_ALT:
 				case MOD_REPEATER:
 				case MOD_FLECHETTE:
 				case MOD_WATER:
@@ -7072,7 +7038,7 @@ int KnightfallDamage(int damage, gentity_t* attacker, gentity_t* targ, int mod)
 		if (attacker->client->playerTeam == targ->client->playerTeam)
 			damage = 0;
 		// 2x damage from clones to Jedi (so they're actually helpful)
-		else if ((mod == MOD_CLONERIFLE || mod == MOD_CLONERIFLE_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
+		else if ((mod == MOD_BLASTER || mod == MOD_BLASTER_ALT) && targ->client->NPC_class == CLASS_JEDI && !IsKnightfallBoss(targ))
 			damage *= 2.0f;
 		}
 		else if (IsKnightfallBoss(attacker) && targ != player)

@@ -1588,6 +1588,7 @@ public:
 }; // saberInfoRetail_t
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
+#define MAX_NUM_WEAPONS 36
 
 // playerState_t is the information needed by both the client and server
 // to predict player motion and actions
@@ -1644,6 +1645,7 @@ public:
 
 	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
 	int			weapon;			// copied to entityState_t->weapon
+	int			dynWpnVals[MAX_NUM_WEAPONS];
 	int			weaponstate;
 
 	int			batteryCharge;
@@ -1974,6 +1976,7 @@ public:
 		saved_game.write<int32_t>(externalEventTime);
 		saved_game.write<int32_t>(clientNum);
 		saved_game.write<int32_t>(weapon);
+		saved_game.write<int32_t>(dynWpnVals);
 		saved_game.write<int32_t>(weaponstate);
 		saved_game.write<int32_t>(batteryCharge);
 		saved_game.write<float>(viewangles);
@@ -2150,6 +2153,7 @@ public:
 		saved_game.read<int32_t>(externalEventTime);
 		saved_game.read<int32_t>(clientNum);
 		saved_game.read<int32_t>(weapon);
+		saved_game.read<int32_t>(dynWpnVals);
 		saved_game.read<int32_t>(weaponstate);
 		saved_game.read<int32_t>(batteryCharge);
 		saved_game.read<float>(viewangles);

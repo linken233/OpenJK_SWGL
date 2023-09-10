@@ -173,17 +173,26 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TUSKEN_STAFF),
 	ENUM2STRING(WP_SCEPTER),
 	ENUM2STRING(WP_NOGHRI_STICK),
-	ENUM2STRING(WP_BATTLEDROID),
 	ENUM2STRING(WP_THEFIRSTORDER),
 	ENUM2STRING(WP_CLONECARBINE),
-	ENUM2STRING(WP_REBELBLASTER),
-	ENUM2STRING(WP_CLONERIFLE),
 	ENUM2STRING(WP_CLONECOMMANDO),
 	ENUM2STRING(WP_REBELRIFLE),
-	ENUM2STRING(WP_REY),
-	ENUM2STRING(WP_JANGO),
 	ENUM2STRING(WP_BOBA),
-	ENUM2STRING(WP_CLONEPISTOL),
+	ENUM2STRING(WP_SBD),
+	ENUM2STRING(WP_CIS_SNIPER),
+	{ "", 0 }
+};
+
+stringID_table_t DynWPTable[] =
+{
+	{ "NULL", DYN_WP_NONE },
+	ENUM2STRING(DYN_WP_NONE),
+	ENUM2STRING(DYN_WP_REY),
+	ENUM2STRING(DYN_WP_BATTLEDROID),
+	ENUM2STRING(DYN_WP_JANGO),
+	ENUM2STRING(DYN_WP_REBELBLASTER),
+	ENUM2STRING(DYN_WP_CLONERIFLE),
+	ENUM2STRING(DYN_WP_CLONEPISTOL),
 	{ "", 0 }
 };
 
@@ -3429,6 +3438,15 @@ static void Q3_SetWeapon (int entID, const char *wp_name)
 	}
 	else
 		wp = GetIDForString( WPTable, wp_name );
+
+	int dynWpnNum = GetIDForString(DynWPTable, wp_name);
+
+	// The weapon read is a dynamic weapon.
+	if (wp == -1 && dynWpnNum >= 0)
+	{
+		wp = CG_GetBaseWpnFromDynWpn(dynWpnNum);
+		NPC->client->ps.dynWpnVals[wp] = CG_GetDynWpnValue(wp, dynWpnNum);
+	}
 
 	if ( !self )
 	{

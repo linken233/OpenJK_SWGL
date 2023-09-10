@@ -444,12 +444,6 @@ void Svcmd_SaberAttackCycle_f( void )
 		G_Sound(self, G_SoundIndex("sound/vehicles/common/linkweaps.wav"));
 	}
 
-	// If you are scoped and switched to tertiaryMode, you should be no longer scoped.
-	if (self->s.weapon == WP_CLONECOMMANDO && self->client->ps.tertiaryMode && cg.zoomMode >= ST_A280)
-	{
-		cg.zoomMode = 0;
-	}
-
 	if ( self->client->ps.dualSabers )
 	{//can't cycle styles with dualSabers, so just toggle second saber on/off
 		if ( WP_SaberCanTurnOffSomeBlades( &self->client->ps.saber[1] ) )

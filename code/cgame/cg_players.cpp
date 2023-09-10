@@ -1671,7 +1671,7 @@ static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 
 	if ( !client
 		|| cg_drawBreath.integer == 0
-		|| (!cg.renderingThirdPerson && !((cg_trueguns.integer || CG_PlayerIsDualWielding(client->ps.weapon)) || client->ps.weapon == WP_MELEE || client->ps.weapon == WP_SABER ))
+		|| (!cg.renderingThirdPerson && !((cg_trueguns.integer || CG_ChangeFirstPersonView()) || client->ps.weapon == WP_MELEE || client->ps.weapon == WP_SABER ))
 		|| client->ps.pm_type == PM_DEAD
 		|| client->breathPuffTime > cg.time )
 	{
@@ -3057,7 +3057,7 @@ static void CG_PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t torso[3], v
 	int			i;
 	qboolean	looking = qfalse, talking = qfalse;
 
-	if ( (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_PlayerIsDualWielding(cent->gent->client->ps.weapon)) && !cg.zoomMode) || cent->gent->client->ps.weapon == WP_SABER || cent->gent->client->ps.weapon == WP_MELEE) && cent->gent && cent->gent->s.number == 0 )
+	if ( (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode) || cent->gent->client->ps.weapon == WP_SABER || cent->gent->client->ps.weapon == WP_MELEE) && cent->gent && cent->gent->s.number == 0 )
 	{
 		// If we are rendering third person, we should just force the player body to always fully face
 		//	whatever way they are looking, otherwise, you can end up with gun shots coming off of the
@@ -7902,6 +7902,42 @@ void SmoothTrueView(vec3_t eyeAngles)
 }
 
 /*
+====================
+CG_GetMuzzleEffectID
+====================
+*/
+static int CG_GetMuzzleEffectID(gentity_t *ent)
+{
+	int weaponNum = ent->client->ps.weapon;
+	int dynWpnVal = ent->client->ps.dynWpnVals[weaponNum];
+
+	if (CG_IsDefaultWeaponModel(dynWpnVal))
+	{
+		return weaponData[weaponNum].mMuzzleEffectID;
+	}
+
+	return dynamicWpnData[CG_GetDynWpnNum(weaponNum, dynWpnVal)].mMuzzleEffectID;
+}
+
+/*
+=======================
+CG_GetAltMuzzleEffectID
+=======================
+*/
+static int CG_GetAltMuzzleEffectID(gentity_t *ent)
+{
+	int weaponNum = ent->client->ps.weapon;
+	int dynWpnVal = ent->client->ps.dynWpnVals[weaponNum];
+
+	if (CG_IsDefaultWeaponModel(dynWpnVal))
+	{
+		return weaponData[weaponNum].mAltMuzzleEffectID;
+	}
+
+	return dynamicWpnData[CG_GetDynWpnNum(weaponNum, dynWpnVal)].mAltMuzzleEffectID;
+}
+
+/*
 ===============
 CG_Player
 
@@ -7989,7 +8025,7 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
-	if(cent->currentState.number == 0 && !cg.renderingThirdPerson && (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) || cg.zoomMode))//!cg_thirdPerson.integer )
+	if(cent->currentState.number == 0 && !cg.renderingThirdPerson && (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) || cg.zoomMode))//!cg_thirdPerson.integer )
 	{
 		calcedMp = qtrue;
 	}
@@ -8040,7 +8076,7 @@ Ghoul2 Insert Start
 			{//no viewentity
 				if ( cent->currentState.number == cg.snap->ps.clientNum )
 				{//I am the player
-					if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+					if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 					{//not using saber or fists
 						ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 					}
@@ -8048,7 +8084,7 @@ Ghoul2 Insert Start
 			}
 			else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 			{//I am the view entity
-				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using first person saber test or, if so, not using saber
 					ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -8369,7 +8405,7 @@ Ghoul2 Insert Start
 		if ( cent->currentState.number != 0
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
-			|| ( (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode )
+			|| ( (cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode )
 			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
 			)
 		{//in some third person mode or NPC
@@ -8424,7 +8460,7 @@ Ghoul2 Insert Start
 		//Restrict True View Model changes to the player and do the True View camera view work.
 		if (cg.snap && cent->currentState.number == cg.snap->ps.viewEntity && cg_truebobbing.integer)
 		{
-			if ( !cg.renderingThirdPerson && ((cg_trueguns.integer || CG_PlayerIsDualWielding(cent->currentState.weapon)) || cent->currentState.weapon == WP_SABER
+			if ( !cg.renderingThirdPerson && ((cg_trueguns.integer || CG_ChangeFirstPersonView()) || cent->currentState.weapon == WP_SABER
 											  || cent->currentState.weapon == WP_MELEE) && !cg.zoomMode)
 			{
 				//<True View varibles
@@ -8702,7 +8738,7 @@ SkipTrueView:
 			|| cg.renderingThirdPerson
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0
 			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )  //First person saber
-			|| ( (cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode )
+			|| ( (cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode )
 			)
 		{//if NPC, third person, or dead, unless using saber
 			//Get eyePoint & eyeAngles
@@ -8771,10 +8807,6 @@ SkipTrueView:
 			//NOTE: I'm only doing this for the saboteur right now - AT-STs might need this... others?
 			vec3_t oldMP = {0,0,0};
 			vec3_t oldMD = {0,0,0};
-			qboolean is_pistol = (qboolean)(cent->gent->s.weapon == WP_BLASTER_PISTOL
-											|| cent->gent->s.weapon == WP_REY
-											|| cent->gent->s.weapon == WP_JANGO
-											|| cent->gent->s.weapon == WP_CLONEPISTOL);
 
 			if( !calcedMp )
 			{
@@ -8829,7 +8861,7 @@ SkipTrueView:
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, cent->gent->client->renderInfo.muzzlePoint );
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, cent->gent->client->renderInfo.muzzleDir );
 				}
-				else if ( cent->gent && cent->gent->client && cent->gent->client->NPC_class == CLASS_GALAKMECH )
+				else if ( cent->gent && cent->gent->client && (cent->gent->client->NPC_class == CLASS_GALAKMECH || cent->gent->client->ps.weapon == WP_SBD) )
 				{
 					int bolt = -1;
 					if ( cent->gent->lockCount )
@@ -8890,7 +8922,7 @@ SkipTrueView:
 					&& cent->gent->client->NPC_class == CLASS_REBORN//cultist
 					&& cent->gent->NPC->rank >= RANK_LT_COMM//commando
 					*/
-					&& is_pistol//using pistol
+					&& CG_IsWeaponPistol(cent->gent)//using pistol
 					&& cent->gent->weaponModel[1] )//one in each hand
 				{
 
@@ -8987,7 +9019,7 @@ SkipTrueView:
 				{
 					if (firing_attack & ALT_ATTACK)
 					{
-						effect = &wData->mAltMuzzleEffect[0];
+						effect = CG_GetAltMuzzleEffect(cent->gent);
 					}
 					else if (firing_attack & TERTIARY_ATTACK)
 					{
@@ -8996,7 +9028,7 @@ SkipTrueView:
 					else
 					{	
 						// We need to make sure that the base guns also get their sound.
-						effect = &wData->mMuzzleEffect[0];
+						effect = CG_GetMuzzleEffect(cent->gent);
 					}
 				}
 
@@ -9005,13 +9037,13 @@ SkipTrueView:
 					// We're alt-firing, so see if we need to override with a custom alt-fire effect
 					if ( wData->mAltMuzzleEffect[0] )
 					{
-						effect = &wData->mAltMuzzleEffect[0];
+						effect = CG_GetAltMuzzleEffect(cent->gent);
 					}
 				}
 
 				if (/*( cent->currentState.eFlags & EF_FIRING || cent->currentState.eFlags & EF_ALT_FIRING ) &&*/ effect )
 				{
-					if ( (cent->gent && cent->gent->NPC) || CG_PlayerIsDualWielding(cg.snap->ps.weapon) )
+					if ( (cent->gent && cent->gent->NPC) || CG_ChangeFirstPersonView() )
 					{
 						if ( !VectorCompare( oldMP, vec3_origin )
 							&& !VectorCompare( oldMD, vec3_origin ) )
@@ -9261,7 +9293,7 @@ Ghoul2 Insert End
 		{//no viewentity
 			if ( cent->currentState.number == cg.snap->ps.clientNum )
 			{//I am the player
-				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+				if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 				{//not using saber or fists
 					renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -9269,7 +9301,7 @@ Ghoul2 Insert End
 		}
 		else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 		{//I am the view entity
-			if ( cg.zoomMode || (!(cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
+			if ( cg.zoomMode || (!(cg_trueguns.integer || CG_ChangeFirstPersonView()) && cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE) || (cg.snap->ps.weapon == WP_SABER && cg_truesaberonly.integer) )
 			{//not using saber or fists
 				renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 			}
@@ -9544,7 +9576,7 @@ Ghoul2 Insert End
 				// Try and get a default muzzle so we have one to fall back on
 				if ( wData->mMuzzleEffectID )
 				{
-					effect = wData->mMuzzleEffectID;
+					effect = CG_GetMuzzleEffectID(cent->gent);
 				}
 
 				if (wData->mTertiaryMuzzleEffectID)
@@ -9557,7 +9589,7 @@ Ghoul2 Insert End
 					// We're alt-firing, so see if we need to override with a custom alt-fire effect
 					if ( wData->mAltMuzzleEffectID )
 					{
-						effect = wData->mAltMuzzleEffectID;
+						effect = CG_GetAltMuzzleEffectID(cent->gent);
 					}
 				}
 
@@ -9616,13 +9648,12 @@ Ghoul2 Insert End
 	}
 
 	//FIXME: for debug, allow to draw a cone of the NPC's FOV...
-	if ( cent->currentState.number == 0 && (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_PlayerIsDualWielding(cg.snap->ps.weapon)) && !cg.zoomMode)) )
+	if ( cent->currentState.number == 0 && (cg.renderingThirdPerson || ((cg_trueguns.integer || CG_ChangeFirstPersonView()) && !cg.zoomMode)) )
 	{
 		playerState_t *ps = &cg.predicted_player_state;
 
 		if (( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BRYAR_PISTOL )
 			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_BLASTER_PISTOL )
-			|| ( ps->weaponstate == WEAPON_CHARGING_ALT && ps->weapon == WP_REY )
 			|| ( ps->weapon == WP_BOWCASTER && ps->weaponstate == WEAPON_CHARGING )
 			|| ( ps->weapon == WP_DEMP2 && ps->weaponstate == WEAPON_CHARGING_ALT ))
 		{
@@ -9635,12 +9666,6 @@ Ghoul2 Insert End
 			{
 				// Hardcoded max charge time of 1 second
 				val = ( cg.time - ps->weaponChargeTime ) * 0.001f;
-				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
-			}
-			else if ( ps->weapon == WP_REY)
-			{
-				// Hardcoded max charge time of 0.5 second
-				val = ( cg.time - ps->weaponChargeTime ) * 0.0005f;
 				shader = cgi_R_RegisterShader( "gfx/effects/bryarFrontFlash" );
 			}
 			else if ( ps->weapon == WP_BOWCASTER )

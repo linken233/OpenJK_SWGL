@@ -640,6 +640,7 @@ void		Boba_DoSniper( gentity_t *self)
 ////////////////////////////////////////////////////////////////////////////////////////
 // Call This function to make Boba actually shoot his current weapon
 ////////////////////////////////////////////////////////////////////////////////////////
+extern qboolean CG_IsWeaponPistol(gentity_t *ent);
 void	Boba_Fire()
 {
 	WeaponThink(qtrue);
@@ -648,6 +649,43 @@ void	Boba_Fire()
 	//------------------------------------------------------------------------
 	if (ucmd.buttons&BUTTON_ATTACK)
 	{
+		if (CG_IsWeaponPistol(NPC))
+		{
+			if (TIMER_Done(NPC, "nextBlasterAltFireDecide"))
+			{
+				if (Q_irand(0, (NPC->count * 2) + 3)>2)
+				{
+					TIMER_Set(NPC, "nextBlasterAltFireDecide", Q_irand(3000, 8000));
+					if (!(NPCInfo->scriptFlags&SCF_ALT_FIRE))
+					{
+						Boba_Printf("ALT FIRE On");
+						NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+						// This is for DYN_WP_JANGO
+						NPC_ChangeWeapon(WP_BLASTER);			// Update Delay Timers
+					}
+				}
+				else
+				{
+					TIMER_Set(NPC, "nextBlasterAltFireDecide", Q_irand(2000, 5000));
+					if ((NPCInfo->scriptFlags&SCF_ALT_FIRE))
+					{
+						Boba_Printf("ALT FIRE Off");
+						NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+						// This is for DYN_WP_JANGO
+						NPC_ChangeWeapon(WP_BLASTER);			// Update Delay Timers
+					}
+				}
+			}
+
+			// Occasionally Alt Fire
+			//-----------------------
+			if (NPCInfo->scriptFlags&SCF_ALT_FIRE)
+			{
+				ucmd.buttons &= ~BUTTON_ATTACK;
+				ucmd.buttons |= BUTTON_ALT_ATTACK;
+			}
+		}
+
 		switch (NPC->s.weapon)
 		{
 		case WP_ROCKET_LAUNCHER:
@@ -710,40 +748,7 @@ void	Boba_Fire()
 				ucmd.buttons |=  BUTTON_ALT_ATTACK;
 			}
 			break;
-		case WP_JANGO:
 
-			if (TIMER_Done(NPC, "nextBlasterAltFireDecide"))
-			{
-				if (Q_irand(0, (NPC->count * 2) + 3)>2)
-				{
-					TIMER_Set(NPC, "nextBlasterAltFireDecide", Q_irand(3000, 8000));
-					if (!(NPCInfo->scriptFlags&SCF_ALT_FIRE))
-					{
-						Boba_Printf("ALT FIRE On");
-						NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-						NPC_ChangeWeapon(WP_JANGO);			// Update Delay Timers
-					}
-				}
-				else
-				{
-					TIMER_Set(NPC, "nextBlasterAltFireDecide", Q_irand(2000, 5000));
-					if ((NPCInfo->scriptFlags&SCF_ALT_FIRE))
-					{
-						Boba_Printf("ALT FIRE Off");
-						NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-						NPC_ChangeWeapon(WP_JANGO);			// Update Delay Timers
-					}
-				}
-			}
-
-			// Occasionally Alt Fire
-			//-----------------------
-			if (NPCInfo->scriptFlags&SCF_ALT_FIRE)
-			{
-				ucmd.buttons &= ~BUTTON_ATTACK;
-				ucmd.buttons |= BUTTON_ALT_ATTACK;
-			}
-			break;
 		case WP_CLONECARBINE:
 
 			if (TIMER_Done(NPC, "nextBlasterAltFireDecide"))
@@ -830,7 +835,8 @@ void Boba_FireDecide( void )
 		// TODO: Add Conditions Here
 		Boba_Fire();
 		break;
-	case WP_JANGO:
+	// This is for DYN_WP_JANGO.
+	case WP_BLASTER:
 		// TODO: Add Conditions Here
 		Boba_Fire();
 		break;
@@ -967,7 +973,8 @@ void	Boba_TacticsSelect()
 			}
 			else if (NPC->client->NPC_class == CLASS_JANGO)
 			{
-				Boba_ChangeWeapon(WP_JANGO);
+				// This is for DYN_WP_JANGO.
+				Boba_ChangeWeapon(WP_BLASTER);
 			}
 			else if (NPC->client->NPC_class == CLASS_MANDALORIAN)
 			{
